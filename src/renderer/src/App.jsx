@@ -213,8 +213,13 @@ export default function App() {
             onChange={(e) => setQuery(e.target.value)}
           />
           {/* Clear empties the whole history (not just this tab), so it depends on all items. */}
-          <button className={`clear${confirmClear ? ' confirm' : ''}`} onClick={clear} disabled={!items.some((i) => !i.pinned) && !confirmClear}>
-            {confirmClear ? 'Confirm?' : 'Clear'}
+          <button
+            className={`clear${confirmClear ? ' confirm' : ''}`}
+            title="Delete all history except pinned items"
+            onClick={clear}
+            disabled={!items.some((i) => !i.pinned) && !confirmClear}
+          >
+            {confirmClear ? 'Confirm?' : 'Clear all'}
           </button>
         </div>
         )}
