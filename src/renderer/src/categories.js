@@ -8,7 +8,6 @@ export const CATEGORIES = [
   { id: 'audio', label: 'Audio' },
   { id: 'documents', label: 'Documents' },
   { id: 'text', label: 'Text' },
-  { id: 'code', label: 'Code' },
   { id: 'links', label: 'Links' },
   { id: 'emoji', label: 'Emoji' }
 ]
@@ -24,23 +23,6 @@ const hasExt = (item, cat) => item.files.some((f) => EXTENSIONS[cat].split(' ').
 
 export const isLink = (text) => /^(https?:\/\/|www\.)\S+$/i.test(text.trim())
 
-/**
- * Code detection is a guess: two or more typical signs of source code.
- * shortcut: heuristic only, misses one-line snippets without symbols; upgrade to a language detector if it misfires.
- */
-export function isCode(text) {
-  if (isLink(text)) return false
-  const signs = [
-    /[{};]\s*$/m, // line ends in a brace or semicolon
-    /^\s*(import|export|const|let|var|function|def|class|return|if|for|while|public|private|#include|using|SELECT|INSERT|UPDATE)\b/m,
-    /=>|===|!==|==|!=|&&|\|\||::/,
-    /\w+\([^()]*\)/, // a call like foo(x)
-    /^( {2,}|\t)\S/m, // indented line
-    /<\/?[a-z][\w-]*[^>]*>/i // markup tag
-  ]
-  return signs.filter((re) => re.test(text)).length >= 2
-}
-
 /** Whether an item belongs to a tab. Groups belong wherever any part belongs. */
 export function inCategory(item, cat) {
   if (cat === 'all') return true
@@ -55,9 +37,7 @@ export function inCategory(item, cat) {
     case 'documents':
       return item.kind === 'files' && hasExt(item, cat)
     case 'text':
-      return item.kind === 'text' && !isCode(item.text) && !isLink(item.text)
-    case 'code':
-      return item.kind === 'text' && isCode(item.text)
+      return item.kind === 'text' && !isLink(item.text)
     case 'links':
       return item.kind === 'text' && isLink(item.text)
     default:
