@@ -165,6 +165,7 @@ export default function App() {
       item={item}
       selected={selected.includes(item.id)}
       expanded={expandedId === item.id}
+      onCopiedPart={() => setToast({ text: 'Copied part', tone: 'ok' })}
       onToggleExpand={() => setExpandedId(expandedId === item.id ? null : item.id)}
       onClick={(e) => (e.ctrlKey || selected.length ? toggleSelect(item.id) : copy(item))}
       onSplit={() => window.panel.splitItem(item.id)}

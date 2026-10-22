@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 const timeAgo = (ms) => {
   const s = Math.round((Date.now() - ms) / 1000)
@@ -19,7 +19,8 @@ const ICONS = {
   paste: 'M9 14l-4-4 4-4M5 10h11a4 4 0 0 1 4 4v4',
   pin: 'M12 17v5M9 3h6l-1 7 4 3v2H6v-2l4-3z',
   trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
-  split: 'M4 6h16M4 12h10M4 18h16M18 9l3 3-3 3'
+  split: 'M4 6h16M4 12h10M4 18h16M18 9l3 3-3 3',
+  copy: 'M9 9h10v12H9zM5 15V3h10'
 }
 
 /** Text of an item when it can be dragged as plain text (text, or a group made only of text). */
@@ -64,7 +65,7 @@ const label = (item) =>
         ? `${item.width}×${item.height}`
         : `${item.text.length} chars`
 
-export default function ItemCard({ item, selected, expanded, onToggleExpand, onClick, onPaste, onPin, onDelete, onSplit, onDragOut }) {
+export default function ItemCard({ item, selected, expanded, onToggleExpand, onCopiedPart, onClick, onPaste, onPin, onDelete, onSplit, onDragOut }) {
   // Buttons inside the card must not also trigger the card's own click action.
   const action = (fn) => (e) => {
     e.stopPropagation()
@@ -79,6 +80,43 @@ export default function ItemCard({ item, selected, expanded, onToggleExpand, onC
   }, [item.text, expanded])
   const expandable = (item.kind === 'text' && clipped) || (item.kind === 'files' && item.files.length > FILES_SHOWN)
 
+  // Text cards are selectable, so a press-and-drag selects text; the grip in the footer drags the card instead.
+  const isText = item.kind === 'text'
+  const [selection, setSelection] = useState('')
+  const selectionInside = () => {
+    const s = window.getSelection()
+    return s.rangeCount > 0 && ref.current?.contains(s.anchorNode) && ref.current.contains(s.focusNode) ? s.toString() : ''
+  }
+  useEffect(() => {
+    if (!isText) return
+    const onChange = () => setSelection(selectionInside())
+    document.addEventListener('selectionchange', onChange)
+    return () => document.removeEventListener('selectionchange', onChange)
+  }, [isText])
+
+  // The part is written to the clipboard, where the watcher picks it up as a new item of its own.
+  const copySelection = async () => {
+    try {
+      await navigator.clipboard.writeText(selection)
+    } catch {
+      document.execCommand('copy')
+    }
+    window.getSelection().removeAllRanges()
+    onCopiedPart()
+  }
+
+  const startDrag = (e) => {
+    const text = plainText(item)
+    if (text !== null) {
+      e.dataTransfer.setData('text/plain', text)
+      e.dataTransfer.effectAllowed = 'copy'
+    } else {
+      // Images and files need a native OS drag with real files.
+      e.preventDefault()
+      onDragOut()
+    }
+  }
+
   return (
     <li
       ref={ref}
@@ -86,20 +124,11 @@ export default function ItemCard({ item, selected, expanded, onToggleExpand, onC
       role="button"
       tabIndex={0}
       aria-pressed={selected}
-      title="Click to copy · Ctrl+click to select for merging · drag to drop it anywhere"
-      onClick={onClick}
-      draggable
-      onDragStart={(e) => {
-        const text = plainText(item)
-        if (text !== null) {
-          e.dataTransfer.setData('text/plain', text)
-          e.dataTransfer.effectAllowed = 'copy'
-        } else {
-          // Images and files need a native OS drag with real files.
-          e.preventDefault()
-          onDragOut()
-        }
-      }}
+      title={isText ? 'Click to copy · select text to copy a part · Ctrl+click to select for merging' : 'Click to copy · Ctrl+click to select for merging · drag to drop it anywhere'}
+      // Finishing a text selection also fires a click; that must not copy the whole card.
+      onClick={(e) => !selectionInside() && onClick(e)}
+      draggable={!isText}
+      onDragStart={isText ? undefined : startDrag}
       onKeyDown={(e) => {
         if (e.key === 'Enter') onPaste()
         else if (e.key === ' ') onClick(e)
@@ -114,7 +143,19 @@ export default function ItemCard({ item, selected, expanded, onToggleExpand, onC
           </svg>
         </button>
       )}
+      {selection.trim() && (
+        // mousedown is cancelled so pressing the button does not clear the selection first.
+        <button className="copy-selection" onMouseDown={(e) => e.preventDefault()} onClick={action(copySelection)}>
+          <Icon d={ICONS.copy} />
+          Copy selection
+        </button>
+      )}
       <footer>
+        {isText && (
+          <span className="grip" draggable onDragStart={startDrag} title="Drag the text to another app" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><circle cx="9" cy="6" r="1.6" /><circle cx="15" cy="6" r="1.6" /><circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" /><circle cx="9" cy="18" r="1.6" /><circle cx="15" cy="18" r="1.6" /></svg>
+          </span>
+        )}
         <span className="kind">{label(item)}</span>
         <span className="time">{timeAgo(item.createdAt)}</span>
         <div className="actions">

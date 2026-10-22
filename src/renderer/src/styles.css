@@ -252,3 +252,16 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 }
 .more-toggle:hover { text-decoration: underline; }
 .more-toggle:focus-visible { outline: 2px solid var(--accent); border-radius: 4px; }
+
+/* Copying part of a text card. */
+.kind-text .card-text { user-select: text; cursor: text; }
+.kind-text .card-text::selection { background: var(--accent); color: #fff; }
+.copy-selection {
+  align-self: flex-start; display: flex; align-items: center; gap: 5px; padding: 4px 10px; margin-top: -2px;
+  border: none; border-radius: 999px; background: var(--accent); color: #fff; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+  animation: toast-in 150ms var(--ease);
+}
+.copy-selection:hover { filter: brightness(1.1); }
+.copy-selection:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.grip { display: grid; place-items: center; margin-left: -4px; color: var(--muted); cursor: grab; opacity: 0.6; }
+.grip:hover { opacity: 1; color: var(--text); }
