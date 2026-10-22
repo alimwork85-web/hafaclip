@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url'
 import { randomUUID } from 'node:crypto'
 import { foregroundWindow, pasteInto, watchClipboard, windowAddress, writeItem } from './clipboard'
 import { cleanTemp, dragPayload, itemFromDroppedPaths } from './drag'
+import { createTray } from './tray'
 import { isInHotZone } from '../renderer/src/hotZone'
 import { add, clearHistory, findItem, flush, getItems, imagesDir, loadItems, merge, remove, setPinned, split, touch } from './store'
 
@@ -77,17 +78,22 @@ function createWindow() {
     interactive = on
     if (on) {
       const fg = foregroundWindow()
-      if (windowAddress(fg) !== ownWindow) previousWindow = fg    }
+      if (windowAddress(fg) !== ownWindow) previousWindow = fg
+    }
     win.setIgnoreMouseEvents(!on, { forward: true })
   })
 
+  function setEdge(edge) {
+    if (edge !== 'left' && edge !== 'right') return
+    settings.edge = edge
+    placeWindow(win, settings.edge)
+    saveSettings(settings)
+    win.webContents.send('settings:changed', settings)
+    tray.refresh()
+  }
   ipcMain.handle('settings:get', () => settings)
   ipcMain.handle('settings:set', (_e, patch) => {
-    if (patch?.edge === 'left' || patch?.edge === 'right') {
-      settings.edge = patch.edge
-      placeWindow(win, settings.edge)
-      saveSettings(settings)
-    }
+    setEdge(patch?.edge)
     return settings
   })
 
@@ -95,6 +101,13 @@ function createWindow() {
   const watcher = watchClipboard(imagesDir(), (item) => {
     add(item)
     pushItems()
+  })
+
+  const tray = createTray({
+    getEdge: () => settings.edge,
+    setEdge,
+    setPaused: (on) => watcher.setPaused(on),
+    quit: () => app.quit()
   })
 
   /** Puts an item back on the clipboard; returns an error message for the renderer instead of throwing. */

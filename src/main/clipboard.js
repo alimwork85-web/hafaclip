@@ -141,9 +141,14 @@ export async function pasteInto(hwnd) {
 export function watchClipboard(imagesDir, onItem, intervalMs = 400) {
   let lastSeq = GetClipboardSequenceNumber()
   let busy = false
+  let paused = false
   const timer = setInterval(async () => {
     const seq = GetClipboardSequenceNumber()
     if (seq === lastSeq || busy) return
+    if (paused) {
+      lastSeq = seq // what is copied while paused is never captured, not even after resuming
+      return
+    }
     busy = true
     try {
       const item = await readClipboard(imagesDir)
@@ -162,6 +167,9 @@ export function watchClipboard(imagesDir, onItem, intervalMs = 400) {
     /** Ignore the change we just made ourselves, so a re-copied item is not captured twice. */
     skipCurrent: () => {
       lastSeq = GetClipboardSequenceNumber()
+    },
+    setPaused: (on) => {
+      paused = on
     }
   }
 }

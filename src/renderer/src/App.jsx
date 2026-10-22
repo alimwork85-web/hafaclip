@@ -53,7 +53,12 @@ export default function App() {
   useEffect(() => {
     window.panel.getSettings().then((s) => setEdge(s.edge))
     window.panel.getItems().then(setItems)
-    return window.panel.onItems(setItems)
+    const offSettings = window.panel.onSettings((s) => setEdge(s.edge))
+    const offItems = window.panel.onItems(setItems)
+    return () => {
+      offSettings()
+      offItems()
+    }
   }, [])
 
   useEffect(() => window.panel.setInteractive(expanded), [expanded])

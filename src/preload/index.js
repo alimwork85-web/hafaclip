@@ -4,6 +4,11 @@ contextBridge.exposeInMainWorld('panel', {
   setInteractive: (on) => ipcRenderer.send('panel:interactive', !!on),
   getSettings: () => ipcRenderer.invoke('settings:get'),
   updateSettings: (patch) => ipcRenderer.invoke('settings:set', patch),
+  onSettings: (cb) => {
+    const listener = (_e, s) => cb(s)
+    ipcRenderer.on('settings:changed', listener)
+    return () => ipcRenderer.removeListener('settings:changed', listener)
+  },
   getItems: () => ipcRenderer.invoke('items:get'),
   copyItem: (id) => ipcRenderer.invoke('items:copy', id),
   pasteItem: (id) => ipcRenderer.invoke('items:paste', id),
