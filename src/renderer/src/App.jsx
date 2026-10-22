@@ -1,14 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { isInHotZone } from './hotZone'
+import ItemCard from './ItemCard'
 
 export default function App() {
   const [expanded, setExpanded] = useState(false)
   const [edge, setEdge] = useState('left')
+  const [items, setItems] = useState([])
   const edgeRef = useRef(edge)
   edgeRef.current = edge
 
   useEffect(() => {
     window.panel.getSettings().then((s) => setEdge(s.edge))
+    window.panel.getItems().then(setItems)
+    return window.panel.onItems(setItems)
   }, [])
 
   useEffect(() => window.panel.setInteractive(expanded), [expanded])
@@ -48,10 +52,16 @@ export default function App() {
             ))}
           </div>
         </header>
-        <div className="empty">
-          <p>Nothing here yet</p>
-          <small>Copied items will show up here.</small>
-        </div>
+        {items.length ? (
+          <ul className="list">
+            {items.map((item) => <ItemCard key={item.id} item={item} />)}
+          </ul>
+        ) : (
+          <div className="empty">
+            <p>Nothing here yet</p>
+            <small>Copied items will show up here.</small>
+          </div>
+        )}
       </aside>
     </div>
   )

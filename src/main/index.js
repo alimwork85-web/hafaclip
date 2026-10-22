@@ -1,6 +1,9 @@
-import { app, BrowserWindow, ipcMain, screen } from 'electron'
+import { app, BrowserWindow, ipcMain, net, protocol, screen } from 'electron'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
+import { watchClipboard } from './clipboard'
+import { add, getItems, imagesDir, loadItems } from './store'
 
 const PANEL_WIDTH = 380
 const DEFAULT_SETTINGS = { edge: 'left' }
@@ -29,7 +32,18 @@ function placeWindow(win, edge) {
   win.setBounds({ x, y: workArea.y, width: PANEL_WIDTH, height: workArea.height })
 }
 
+/** clip://image/<id>.png serves stored captures; the name check keeps it inside the images folder. */
+function registerImageProtocol() {
+  protocol.handle('clip', (req) => {
+    const name = new URL(req.url).pathname.slice(1)
+    if (!/^[0-9a-f-]+\.png$/.test(name)) return new Response('Not found', { status: 404 })
+    return net.fetch(pathToFileURL(join(imagesDir(), name)).toString())
+  })
+}
+
 function createWindow() {
+  loadItems()
+  registerImageProtocol()
   const settings = loadSettings()
   const win = new BrowserWindow({
     width: PANEL_WIDTH,
@@ -61,6 +75,12 @@ function createWindow() {
       saveSettings(settings)
     }
     return settings
+  })
+
+  ipcMain.handle('items:get', () => getItems())
+  watchClipboard(imagesDir(), (item) => {
+    add(item)
+    win.webContents.send('items:changed', getItems())
   })
 
   if (process.env.ELECTRON_RENDERER_URL) win.loadURL(process.env.ELECTRON_RENDERER_URL)
