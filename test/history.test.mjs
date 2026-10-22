@@ -20,3 +20,10 @@ test('unpinned items are capped, pinned items are never dropped', () => {
   assert.deepStrictEqual(items.map((i) => i.text), ['z', 'p', 'x'])
   assert.deepStrictEqual(evicted.map((i) => i.text), ['y'])
 })
+
+test('clearing history keeps pinned items', async () => {
+  const { clearUnpinned } = await import('../src/main/history.js')
+  const { items, evicted } = clearUnpinned([text('a', { pinned: true }), text('b'), text('c')])
+  assert.deepStrictEqual(items.map((i) => i.text), ['a'])
+  assert.deepStrictEqual(evicted.map((i) => i.text), ['b', 'c'])
+})

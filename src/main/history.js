@@ -23,3 +23,8 @@ export function addItem(items, item, limit = HISTORY_LIMIT) {
   }
   return { items: kept, evicted }
 }
+
+/** "Clear history" keeps pinned items; everything else is dropped. */
+export function clearUnpinned(items) {
+  return { items: items.filter((i) => i.pinned), evicted: items.filter((i) => !i.pinned) }
+}

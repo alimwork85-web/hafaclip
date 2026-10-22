@@ -1,7 +1,7 @@
 /** Watches the Windows clipboard and turns each change into a history item (text, image or files). */
-import { clipboard, nativeImage } from 'electron'
+import { ClipboardItem, clipboard, nativeImage } from 'electron'
 import { createHash, randomUUID } from 'node:crypto'
-import { writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import koffi from 'koffi'
 
@@ -14,6 +14,17 @@ const OpenClipboard = user32.func('bool __stdcall OpenClipboard(void *hWnd)')
 const CloseClipboard = user32.func('bool __stdcall CloseClipboard()')
 const GetClipboardData = user32.func('void * __stdcall GetClipboardData(uint32 format)')
 const DragQueryFileW = shell32.func('uint32 __stdcall DragQueryFileW(void *hDrop, uint32 index, void *buf, uint32 cch)')
+const kernel32 = koffi.load('kernel32.dll')
+const EmptyClipboard = user32.func('bool __stdcall EmptyClipboard()')
+const SetClipboardData = user32.func('void * __stdcall SetClipboardData(uint32 format, void *hMem)')
+const GlobalAlloc = kernel32.func('void * __stdcall GlobalAlloc(uint32 flags, size_t bytes)')
+const GlobalLock = kernel32.func('void * __stdcall GlobalLock(void *hMem)')
+const GlobalUnlock = kernel32.func('bool __stdcall GlobalUnlock(void *hMem)')
+const GlobalFree = kernel32.func('void * __stdcall GlobalFree(void *hMem)')
+const RtlMoveMemory = kernel32.func('void __stdcall RtlMoveMemory(void *dst, void *src, size_t n)')
+const GetForegroundWindow = user32.func('void * __stdcall GetForegroundWindow()')
+const SetForegroundWindow = user32.func('bool __stdcall SetForegroundWindow(void *hWnd)')
+const keybd_event = user32.func('void __stdcall keybd_event(uint8 vk, uint8 scan, uint32 flags, uintptr_t extra)')
 
 /** Every copied file path (Electron only exposes the first one). Null when the clipboard is busy. */
 function readFilePaths() {
@@ -60,6 +71,66 @@ export async function readClipboard(imagesDir) {
   return null
 }
 
+/** Puts real file references (CF_HDROP) on the clipboard so Explorer, Word, etc. paste the files themselves. */
+function writeFileList(paths) {
+  const header = Buffer.alloc(20) // DROPFILES
+  header.writeUInt32LE(20, 0) // pFiles: list starts right after the header
+  header.writeUInt32LE(1, 16) // fWide: UTF-16 paths
+  const data = Buffer.concat([header, Buffer.from(paths.join('\0') + '\0\0', 'utf16le')])
+  const hMem = GlobalAlloc(0x2 /* GMEM_MOVEABLE */, data.length)
+  if (!hMem) throw new Error('Out of memory')
+  RtlMoveMemory(GlobalLock(hMem), data, data.length)
+  GlobalUnlock(hMem)
+  if (!OpenClipboard(null)) {
+    GlobalFree(hMem)
+    throw new Error('Clipboard is busy, try again')
+  }
+  try {
+    EmptyClipboard()
+    // On success Windows owns hMem; only free it if the hand-off failed.
+    if (!SetClipboardData(CF_HDROP, hMem)) {
+      GlobalFree(hMem)
+      throw new Error('Could not write files to the clipboard')
+    }
+  } finally {
+    CloseClipboard()
+  }
+}
+
+/** Writes a history item back to the clipboard. Throws a user-facing message when it cannot. */
+export async function writeItem(item, imagesDir) {
+  if (item.kind === 'text') return clipboard.writeText(item.text)
+  if (item.kind === 'image') {
+    const png = readFileSync(join(imagesDir, item.image))
+    return clipboard.write([new ClipboardItem({ 'image/png': new Blob([png], { type: 'image/png' }) })])
+  }
+  const files = item.files.filter((f) => existsSync(f))
+  if (!files.length) throw new Error('These files no longer exist')
+  writeFileList(files)
+}
+
+export const foregroundWindow = () => GetForegroundWindow()
+export const windowAddress = (hwnd) => (hwnd ? koffi.address(hwnd) : 0n)
+
+/** Gives focus back to the window the user was in and sends Ctrl+V to it. */
+export async function pasteInto(hwnd) {
+  const VK_CONTROL = 0x11
+  const VK_F24 = 0x87
+  const VK_V = 0x56
+  const KEYUP = 0x2
+  if (hwnd) {
+    // Windows only lets a process take focus right after it sent input. F24 satisfies that and, unlike Alt, opens no menus.
+    keybd_event(VK_F24, 0, 0, 0)
+    keybd_event(VK_F24, 0, KEYUP, 0)
+    SetForegroundWindow(hwnd)
+  }
+  await new Promise((r) => setTimeout(r, 80))
+  keybd_event(VK_CONTROL, 0, 0, 0)
+  keybd_event(VK_V, 0, 0, 0)
+  keybd_event(VK_V, 0, KEYUP, 0)
+  keybd_event(VK_CONTROL, 0, KEYUP, 0)
+}
+
 /** Polls the cheap sequence number and calls onItem for each new clipboard content. */
 export function watchClipboard(imagesDir, onItem, intervalMs = 400) {
   let lastSeq = GetClipboardSequenceNumber()
@@ -80,5 +151,11 @@ export function watchClipboard(imagesDir, onItem, intervalMs = 400) {
       busy = false
     }
   }, intervalMs)
-  return () => clearInterval(timer)
+  return {
+    stop: () => clearInterval(timer),
+    /** Ignore the change we just made ourselves, so a re-copied item is not captured twice. */
+    skipCurrent: () => {
+      lastSeq = GetClipboardSequenceNumber()
+    }
+  }
 }
