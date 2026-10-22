@@ -177,7 +177,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .tabs::-webkit-scrollbar { display: none; }
 .tabs button {
   flex: none; display: flex; align-items: center; gap: 6px; white-space: nowrap; font: inherit; font-size: 13px;
-  padding: 6px; border: none; border-radius: 9px; cursor: pointer;
+  padding: 5px; border: none; border-radius: 9px; cursor: pointer;
   background: transparent; color: var(--muted); transition: background 150ms var(--ease), color 150ms var(--ease);
 }
 .tabs button:hover { color: var(--text); background: var(--fill); }
@@ -228,3 +228,5 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .swatch.active { border-color: var(--bg); box-shadow: 0 0 0 2px var(--text); }
 .swatch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .gear, .swatch { transition: none; } }
+
+.tabs .count { margin-left: 4px; font-size: 11px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }

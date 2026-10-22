@@ -1,8 +1,11 @@
 import { useEffect, useRef } from 'react'
 import { CATEGORIES } from './categories'
 
-/** One row of tabs that scrolls sideways with the mouse wheel or by dragging when they don't fit. */
-export default function TabStrip({ tab, onPick }) {
+/**
+ * One row of tabs that scrolls sideways with the mouse wheel or by dragging when they don't fit.
+ * `counts` maps a tab id to its number of items (tabs without a count, like Emoji, show none).
+ */
+export default function TabStrip({ tab, onPick, counts = {} }) {
   const ref = useRef(null)
   const drag = useRef(null)
 
@@ -42,13 +45,16 @@ export default function TabStrip({ tab, onPick }) {
         drag.current = null
       }}
     >
-      {CATEGORIES.map((c) => (
+      {CATEGORIES.map((c) => {
+        const name = c.title ?? c.label
+        const named = counts[c.id] === undefined ? name : `${name} · ${counts[c.id]}`
+        return (
         <button
           key={c.id}
           role="tab"
           aria-selected={tab === c.id}
-          aria-label={c.title ?? c.label}
-          title={c.title ?? c.label}
+          aria-label={named}
+          title={named}
           className={tab === c.id ? 'active' : ''}
           onClick={() => onPick(c.id)}
         >
@@ -56,9 +62,15 @@ export default function TabStrip({ tab, onPick }) {
             <path d={c.icon} />
           </svg>
           {/* Only the chosen tab shows its name; the others are icons with a tooltip. */}
-          {tab === c.id && <span>{c.label}</span>}
+          {tab === c.id && (
+            <span>
+              {c.label}
+              {counts[c.id] !== undefined && <small className="count">{counts[c.id]}</small>}
+            </span>
+          )}
         </button>
-      ))}
+        )
+      })}
     </div>
   )
 }

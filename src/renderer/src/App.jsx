@@ -125,6 +125,13 @@ export default function App() {
   const visible = items.filter((i) => inCategory(i, tab) && (!q || matches(i, q)))
   const pinned = visible.filter((i) => i.pinned)
   const recent = visible.filter((i) => !i.pinned)
+  // Items per tab (pinned included); while searching, the open tab shows "matches of total".
+  const counts = Object.fromEntries(
+    CATEGORIES.filter((c) => c.id !== 'emoji').map((c) => {
+      const total = items.filter((i) => inCategory(i, c.id)).length
+      return [c.id, q && c.id === tab ? `${visible.length} of ${total}` : total]
+    })
+  )
 
   // Ctrl+click starts a selection; while one exists, plain clicks keep adding to it.
   const toggleSelect = (id) => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]))
@@ -189,7 +196,7 @@ export default function App() {
             </svg>
           </button>
         </header>
-        <TabStrip tab={tab} onPick={setTab} />
+        <TabStrip tab={tab} onPick={setTab} counts={counts} />
         {tab === 'settings' ? (
           <SettingsPanel settings={settings} onChange={updateSettings} />
         ) : tab === 'emoji' ? (
@@ -225,9 +232,9 @@ export default function App() {
         )}
         {visible.length ? (
           <ul className="list">
-            {pinned.length > 0 && <li className="group">Pinned</li>}
+            {pinned.length > 0 && <li className="group">Pinned · {pinned.length}</li>}
             {pinned.map(card)}
-            {pinned.length > 0 && recent.length > 0 && <li className="group">Recent</li>}
+            {pinned.length > 0 && recent.length > 0 && <li className="group">Recent · {recent.length}</li>}
             {recent.map(card)}
           </ul>
         ) : (
