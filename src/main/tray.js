@@ -2,7 +2,7 @@
 import { Menu, Tray } from 'electron'
 import { makeTrayIcon } from './trayIcon'
 
-export function createTray({ getEdge, setEdge, setPaused, quit }) {
+export function createTray({ getEdge, setEdge, getLaunchAtLogin, setLaunchAtLogin, setPaused, quit }) {
   const icons = { on: makeTrayIcon(false), paused: makeTrayIcon(true) }
   const tray = new Tray(icons.on)
   let paused = false
@@ -32,6 +32,12 @@ export function createTray({ getEdge, setEdge, setPaused, quit }) {
             checked: getEdge() === side,
             click: () => setEdge(side)
           }))
+        },
+        {
+          label: 'Start with Windows',
+          type: 'checkbox',
+          checked: getLaunchAtLogin(),
+          click: (mi) => setLaunchAtLogin(mi.checked)
         },
         { type: 'separator' },
         { label: 'Quit', click: quit }

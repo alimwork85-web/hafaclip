@@ -10,7 +10,7 @@ import { isInHotZone } from '../renderer/src/hotZone'
 import { add, clearHistory, findItem, flush, getItems, imagesDir, loadItems, merge, remove, setPinned, split, touch } from './store'
 
 const PANEL_WIDTH = 380
-const DEFAULT_SETTINGS = { edge: 'left' }
+const DEFAULT_SETTINGS = { edge: 'left', launchAtLogin: true }
 
 const settingsFile = () => join(app.getPath('userData'), 'settings.json')
 
@@ -28,6 +28,19 @@ function saveSettings(settings) {
   } catch (err) {
     console.error('[settings] save failed:', err)
   }
+}
+
+/**
+ * Adds or removes the HKCU Run entry. Unpackaged (dev) runs register electron.exe plus the project folder,
+ * so the packaged build later overwrites the same entry with its own exe.
+ */
+function applyLaunchAtLogin(enabled) {
+  app.setLoginItemSettings({
+    openAtLogin: enabled,
+    name: 'Edge Clipboard',
+    path: process.execPath,
+    args: app.isPackaged ? [] : [app.getAppPath()]
+  })
 }
 
 function placeWindow(win, edge) {
@@ -103,9 +116,16 @@ function createWindow() {
     pushItems()
   })
 
+  applyLaunchAtLogin(settings.launchAtLogin)
   const tray = createTray({
     getEdge: () => settings.edge,
     setEdge,
+    getLaunchAtLogin: () => settings.launchAtLogin,
+    setLaunchAtLogin: (on) => {
+      settings.launchAtLogin = on
+      applyLaunchAtLogin(on)
+      saveSettings(settings)
+    },
     setPaused: (on) => watcher.setPaused(on),
     quit: () => app.quit()
   })
