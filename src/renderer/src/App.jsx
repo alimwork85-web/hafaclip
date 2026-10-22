@@ -24,6 +24,22 @@ export default function App() {
   const [dropping, setDropping] = useState(false)
   const [selected, setSelected] = useState([])
   const [tab, setTab] = useState('all')
+  // Collapsing pinned items is a per-device view preference; storage may be unavailable, so default to open.
+  const [pinnedOpen, setPinnedOpen] = useState(() => {
+    try {
+      return localStorage.getItem('pinnedOpen') !== 'false'
+    } catch {
+      return true
+    }
+  })
+  const togglePinned = () => {
+    setPinnedOpen(!pinnedOpen)
+    try {
+      localStorage.setItem('pinnedOpen', String(!pinnedOpen))
+    } catch {
+      /* ignore */
+    }
+  }
   // Set while one of our own cards is dragged, so dropping it back on the panel adds nothing.
   const draggingOut = useRef(false)
   const settingsRef = useRef(settings)
@@ -232,8 +248,17 @@ export default function App() {
         )}
         {visible.length ? (
           <ul className="list">
-            {pinned.length > 0 && <li className="group">Pinned · {pinned.length}</li>}
-            {pinned.map(card)}
+            {pinned.length > 0 && (
+              <li className="group group-toggle">
+                <button aria-expanded={pinnedOpen} title={pinnedOpen ? 'Hide pinned items' : 'Show pinned items'} onClick={togglePinned}>
+                  <span>Pinned · {pinned.length}</span>
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </button>
+              </li>
+            )}
+            {pinnedOpen && pinned.map(card)}
             {pinned.length > 0 && recent.length > 0 && <li className="group">Recent · {recent.length}</li>}
             {recent.map(card)}
           </ul>
