@@ -30,7 +30,8 @@ const plainText = (item) =>
 const FILES_SHOWN = 3
 
 function Preview({ item, expanded = false }) {
-  if (item.kind === 'text') return <p className="card-text">{item.text}</p>
+  // dir="auto" takes the direction from the first strong letter, so Arabic and mixed text read correctly.
+  if (item.kind === 'text') return <p className="card-text" dir="auto">{item.text}</p>
   if (item.kind === 'image')
     return <img className="card-image" src={`clip://image/${item.image}`} alt={`Image ${item.width}×${item.height}`} loading="lazy" />
   if (item.kind === 'files') {
@@ -38,7 +39,7 @@ function Preview({ item, expanded = false }) {
     return (
       <ul className="card-files">
         {shown.map((f) => (
-          <li key={f} title={f}>{baseName(f)}</li>
+          <li key={f} title={f} dir="auto">{baseName(f)}</li>
         ))}
         {shown.length < item.files.length && <li className="more">+{item.files.length - shown.length} more</li>}
       </ul>

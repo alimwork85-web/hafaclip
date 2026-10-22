@@ -5,10 +5,12 @@ import EmojiPanel from './EmojiPanel'
 import SettingsPanel from './SettingsPanel'
 import TabStrip from './TabStrip'
 import { CATEGORIES, inCategory } from './categories'
+import { normalize } from './normalize'
 
+// `q` arrives already normalized.
 const matches = (item, q) => {
-  if (item.kind === 'text') return item.text.toLowerCase().includes(q)
-  if (item.kind === 'files') return item.files.some((f) => f.toLowerCase().includes(q))
+  if (item.kind === 'text') return normalize(item.text).includes(q)
+  if (item.kind === 'files') return item.files.some((f) => normalize(f).includes(q))
   if (item.kind === 'group') return item.parts.some((p) => matches(p, q))
   return 'image'.includes(q)
 }
@@ -145,7 +147,7 @@ export default function App() {
     setToast({ text: 'History cleared (pinned kept)', tone: 'ok' })
   }
 
-  const q = query.trim().toLowerCase()
+  const q = normalize(query.trim())
   const visible = items.filter((i) => inCategory(i, tab) && (!q || matches(i, q)))
   const pinned = visible.filter((i) => i.pinned)
   const recent = visible.filter((i) => !i.pinned)
@@ -241,6 +243,7 @@ export default function App() {
           <input
             className="search"
             type="search"
+            dir="auto"
             placeholder="Search…"
             aria-label="Search history"
             value={query}
