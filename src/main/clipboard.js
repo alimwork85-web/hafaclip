@@ -104,6 +104,12 @@ export async function writeItem(item, imagesDir) {
     const png = readFileSync(join(imagesDir, item.image))
     return clipboard.write([new ClipboardItem({ 'image/png': new Blob([png], { type: 'image/png' }) })])
   }
+  if (item.kind === 'group') {
+    // Text-only groups paste as one text, line by line; anything with files or images pastes as a file list.
+    const paths = item.parts.flatMap((p) => (p.kind === 'files' ? p.files : p.kind === 'image' ? [join(imagesDir, p.image)] : []))
+    if (!paths.length) return clipboard.writeText(item.parts.map((p) => p.text).join('\n'))
+    return writeItem({ kind: 'files', files: paths }, imagesDir)
+  }
   const files = item.files.filter((f) => existsSync(f))
   if (!files.length) throw new Error('These files no longer exist')
   writeFileList(files)

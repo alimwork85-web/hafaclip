@@ -10,6 +10,8 @@ contextBridge.exposeInMainWorld('panel', {
   pinItem: (id, pinned) => ipcRenderer.invoke('items:pin', id, pinned),
   deleteItem: (id) => ipcRenderer.invoke('items:delete', id),
   clearHistory: () => ipcRenderer.invoke('items:clear'),
+  mergeItems: (ids) => ipcRenderer.invoke('items:merge', ids),
+  splitItem: (id) => ipcRenderer.invoke('items:split', id),
   startDrag: (id) => ipcRenderer.send('items:drag', id),
   drop: (files, text) => ipcRenderer.invoke('items:drop', { paths: [...files].map((f) => webUtils.getPathForFile(f)), text }),
   onCursor: (cb) => {

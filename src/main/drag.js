@@ -22,6 +22,10 @@ function genericIcon() {
 
 /** Files to hand to webContents.startDrag for an item, or null when nothing can be dragged. */
 export function dragPayload(item, imagesDir) {
+  if (item.kind === 'group') {
+    const files = item.parts.flatMap((p) => dragPayload(p, imagesDir)?.files ?? [])
+    return files.length ? { files, icon: genericIcon() } : null
+  }
   if (item.kind === 'files') {
     const files = item.files.filter((f) => existsSync(f))
     return files.length ? { files, icon: genericIcon() } : null

@@ -5,6 +5,7 @@ import ItemCard from './ItemCard'
 const matches = (item, q) => {
   if (item.kind === 'text') return item.text.toLowerCase().includes(q)
   if (item.kind === 'files') return item.files.some((f) => f.toLowerCase().includes(q))
+  if (item.kind === 'group') return item.parts.some((p) => matches(p, q))
   return 'image'.includes(q)
 }
 
@@ -16,6 +17,7 @@ export default function App() {
   const [toast, setToast] = useState(null)
   const [confirmClear, setConfirmClear] = useState(false)
   const [dropping, setDropping] = useState(false)
+  const [selected, setSelected] = useState([])
   // Set while one of our own cards is dragged, so dropping it back on the panel adds nothing.
   const draggingOut = useRef(false)
   const edgeRef = useRef(edge)
@@ -107,11 +109,21 @@ export default function App() {
   const pinned = visible.filter((i) => i.pinned)
   const recent = visible.filter((i) => !i.pinned)
 
+  // Ctrl+click starts a selection; while one exists, plain clicks keep adding to it.
+  const toggleSelect = (id) => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]))
+  const merge = async () => {
+    await window.panel.mergeItems(selected)
+    setSelected([])
+    setToast({ text: 'Merged', tone: 'ok' })
+  }
+
   const card = (item) => (
     <ItemCard
       key={item.id}
       item={item}
-      onCopy={() => copy(item)}
+      selected={selected.includes(item.id)}
+      onClick={(e) => (e.ctrlKey || selected.length ? toggleSelect(item.id) : copy(item))}
+      onSplit={() => window.panel.splitItem(item.id)}
       onPaste={() => paste(item)}
       onPin={() => window.panel.pinItem(item.id, !item.pinned)}
       onDelete={() => window.panel.deleteItem(item.id)}
@@ -152,6 +164,13 @@ export default function App() {
             ))}
           </div>
         </header>
+        {selected.length > 0 ? (
+          <div className="toolbar selection-bar" role="toolbar" aria-label="Selection">
+            <span>{selected.length} selected</span>
+            <button className="primary" onClick={merge} disabled={selected.length < 2}>Merge</button>
+            <button onClick={() => setSelected([])}>Cancel</button>
+          </div>
+        ) : (
         <div className="toolbar">
           <input
             className="search"
@@ -165,6 +184,7 @@ export default function App() {
             {confirmClear ? 'Confirm?' : 'Clear'}
           </button>
         </div>
+        )}
         {visible.length ? (
           <ul className="list">
             {pinned.length > 0 && <li className="group">Pinned</li>}

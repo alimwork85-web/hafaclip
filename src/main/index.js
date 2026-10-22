@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto'
 import { foregroundWindow, pasteInto, watchClipboard, windowAddress, writeItem } from './clipboard'
 import { cleanTemp, dragPayload, itemFromDroppedPaths } from './drag'
 import { isInHotZone } from '../renderer/src/hotZone'
-import { add, clearHistory, findItem, flush, getItems, imagesDir, loadItems, remove, setPinned, touch } from './store'
+import { add, clearHistory, findItem, flush, getItems, imagesDir, loadItems, merge, remove, setPinned, split, touch } from './store'
 
 const PANEL_WIDTH = 380
 const DEFAULT_SETTINGS = { edge: 'left' }
@@ -128,6 +128,14 @@ function createWindow() {
   })
   ipcMain.handle('items:delete', (_e, id) => {
     if (typeof id === 'string') remove(id)
+    pushItems()
+  })
+  ipcMain.handle('items:merge', (_e, ids) => {
+    if (Array.isArray(ids) && ids.every((id) => typeof id === 'string')) merge(ids)
+    pushItems()
+  })
+  ipcMain.handle('items:split', (_e, id) => {
+    if (typeof id === 'string') split(id)
     pushItems()
   })
   ipcMain.handle('items:clear', () => {

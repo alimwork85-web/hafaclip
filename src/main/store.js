@@ -2,7 +2,8 @@
 import { app } from 'electron'
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { addItem, clearUnpinned } from './history'
+import { randomUUID } from 'node:crypto'
+import { addItem, clearUnpinned, mergeItems, splitItem } from './history'
 
 export const imagesDir = () => join(app.getPath('userData'), 'images')
 const indexFile = () => join(app.getPath('userData'), 'items.json')
@@ -43,7 +44,10 @@ function save() {
   saveTimer = setTimeout(flush, 300)
 }
 
-const removeImage = (item) => item.kind === 'image' && rmSync(join(imagesDir(), item.image), { force: true })
+function removeImage(item) {
+  if (item.kind === 'image') rmSync(join(imagesDir(), item.image), { force: true })
+  else if (item.kind === 'group') item.parts.forEach(removeImage)
+}
 
 export function add(item) {
   const result = addItem(items, item)
@@ -73,6 +77,10 @@ export function touch(id) {
 export const setPinned = (id, pinned) => update(items.map((i) => (i.id === id ? { ...i, pinned } : i)))
 
 export const remove = (id) => update(items.filter((i) => i.id !== id), items.filter((i) => i.id === id))
+
+export const merge = (ids) => update(mergeItems(items, ids, randomUUID()))
+
+export const split = (id) => update(splitItem(items, id))
 
 export function clearHistory() {
   const result = clearUnpinned(items)

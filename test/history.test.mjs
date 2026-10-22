@@ -27,3 +27,24 @@ test('clearing history keeps pinned items', async () => {
   assert.deepStrictEqual(items.map((i) => i.text), ['a'])
   assert.deepStrictEqual(evicted.map((i) => i.text), ['b', 'c'])
 })
+
+test('merge groups items oldest first, keeps pin, and split restores them', async () => {
+  const { mergeItems, splitItem } = await import('../src/main/history.js')
+  const start = [text('c', { createdAt: 3 }), text('b', { createdAt: 2, pinned: true }), text('a', { createdAt: 1 })]
+  const merged = mergeItems(start, ['c', 'a', 'b'], 'g', 9)
+  assert.strictEqual(merged.length, 1)
+  assert.deepStrictEqual(merged[0].parts.map((p) => p.text), ['a', 'b', 'c'])
+  assert.strictEqual(merged[0].pinned, true)
+  const split = splitItem(merged, 'g')
+  assert.deepStrictEqual(split.map((i) => i.text), ['a', 'b', 'c'])
+  assert.deepStrictEqual(split.map((i) => i.pinned), [false, true, false])
+  const unpinned = splitItem([{ ...merged[0], pinned: false }], 'g')
+  assert.ok(unpinned.every((i) => !i.pinned))
+})
+
+test('merging a group with another item flattens it', async () => {
+  const { mergeItems } = await import('../src/main/history.js')
+  const g = { id: 'g', kind: 'group', createdAt: 5, pinned: false, parts: [text('a', { createdAt: 1 }), text('b', { createdAt: 2 })] }
+  const merged = mergeItems([text('c', { createdAt: 3 }), g], ['g', 'c'], 'h')
+  assert.deepStrictEqual(merged[0].parts.map((p) => p.text), ['a', 'b', 'c'])
+})
