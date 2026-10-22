@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { isInHotZone } from './hotZone'
+import { HANDLE_COLORS, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone } from './hotZone'
 import ItemCard from './ItemCard'
 import EmojiPanel from './EmojiPanel'
+import SettingsPanel from './SettingsPanel'
 
 const matches = (item, q) => {
   if (item.kind === 'text') return item.text.toLowerCase().includes(q)
@@ -12,7 +13,8 @@ const matches = (item, q) => {
 
 export default function App() {
   const [expanded, setExpanded] = useState(false)
-  const [edge, setEdge] = useState('left')
+  const [settings, setSettings] = useState({ edge: 'left', handleLength: 'medium', handleThickness: 'medium', handleColor: 'purple' })
+  const edge = settings.edge
   const [items, setItems] = useState([])
   const [query, setQuery] = useState('')
   const [toast, setToast] = useState(null)
@@ -22,8 +24,8 @@ export default function App() {
   const [tab, setTab] = useState('history')
   // Set while one of our own cards is dragged, so dropping it back on the panel adds nothing.
   const draggingOut = useRef(false)
-  const edgeRef = useRef(edge)
-  edgeRef.current = edge
+  const settingsRef = useRef(settings)
+  settingsRef.current = settings
 
   useEffect(
     () =>
@@ -51,9 +53,9 @@ export default function App() {
   }
 
   useEffect(() => {
-    window.panel.getSettings().then((s) => setEdge(s.edge))
+    window.panel.getSettings().then(setSettings)
     window.panel.getItems().then(setItems)
-    const offSettings = window.panel.onSettings((s) => setEdge(s.edge))
+    const offSettings = window.panel.onSettings(setSettings)
     const offItems = window.panel.onItems(setItems)
     return () => {
       offSettings()
@@ -65,7 +67,8 @@ export default function App() {
 
   useEffect(() => {
     const onMove = (e) => {
-      if (isInHotZone(e.clientX, e.clientY, window.innerWidth, window.innerHeight, edgeRef.current)) setExpanded(true)
+      const s = settingsRef.current
+      if (isInHotZone(e.clientX, e.clientY, window.innerWidth, window.innerHeight, s.edge, s.handleLength, s.handleThickness)) setExpanded(true)
     }
     document.addEventListener('mousemove', onMove)
     return () => document.removeEventListener('mousemove', onMove)
@@ -83,11 +86,10 @@ export default function App() {
     return () => clearTimeout(t)
   }, [confirmClear])
 
-  const chooseEdge = async (next) => {
-    if (next === edge) return
-    setExpanded(false)
-    const s = await window.panel.updateSettings({ edge: next })
-    setEdge(s.edge)
+  const updateSettings = async (patch) => {
+    // Moving to the other edge slides the window away from the cursor, so close the panel first.
+    if (patch.edge && patch.edge !== edge) setExpanded(false)
+    setSettings(await window.panel.updateSettings(patch))
   }
 
   const copy = async (item) => {
@@ -146,7 +148,15 @@ export default function App() {
 
   return (
     <div className={`app edge-${edge}${expanded ? ' expanded' : ''}`}>
-      <div className="handle" />
+      <div
+        className="handle"
+        style={{
+          '--handle-a': HANDLE_COLORS[settings.handleColor]?.[0],
+          '--handle-b': HANDLE_COLORS[settings.handleColor]?.[1],
+          '--handle-h': `${(HANDLE_LENGTHS[settings.handleLength] ?? 0.4) * 100}vh`,
+          '--handle-w': `${HANDLE_THICKNESS[settings.handleThickness] ?? 5}px`
+        }}
+      />
       <aside
         className={`panel${dropping ? ' dropping' : ''}`}
         onMouseLeave={() => setExpanded(false)}
@@ -164,18 +174,18 @@ export default function App() {
         <header>
           <span className="dot" />
           <h1>Clipboard</h1>
-          <div className="segmented" role="group" aria-label="Screen edge">
-            {['left', 'right'].map((side) => (
-              <button
-                key={side}
-                className={side === edge ? 'active' : ''}
-                aria-pressed={side === edge}
-                onClick={() => chooseEdge(side)}
-              >
-                {side === 'left' ? 'Left' : 'Right'}
-              </button>
-            ))}
-          </div>
+          <button
+            className={`gear${tab === 'settings' ? ' active' : ''}`}
+            title="Settings"
+            aria-label="Settings"
+            aria-pressed={tab === 'settings'}
+            onClick={() => setTab(tab === 'settings' ? 'history' : 'settings')}
+          >
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+            </svg>
+          </button>
         </header>
         <div className="tabs" role="tablist" aria-label="View">
           {['history', 'emoji'].map((t) => (
@@ -184,7 +194,9 @@ export default function App() {
             </button>
           ))}
         </div>
-        {tab === 'emoji' ? (
+        {tab === 'settings' ? (
+          <SettingsPanel settings={settings} onChange={updateSettings} />
+        ) : tab === 'emoji' ? (
           <EmojiPanel onPick={pasteEmoji} />
         ) : (
         <>

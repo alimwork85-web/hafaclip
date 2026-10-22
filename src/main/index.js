@@ -6,11 +6,13 @@ import { randomUUID } from 'node:crypto'
 import { foregroundWindow, pasteInto, watchClipboard, windowAddress, writeItem } from './clipboard'
 import { cleanTemp, dragPayload, itemFromDroppedPaths } from './drag'
 import { createTray } from './tray'
-import { isInHotZone } from '../renderer/src/hotZone'
+import { HANDLE_COLORS, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone } from '../renderer/src/hotZone'
 import { add, clearHistory, findItem, flush, getItems, imagesDir, loadItems, merge, remove, setPinned, split, touch } from './store'
 
 const PANEL_WIDTH = 380
-const DEFAULT_SETTINGS = { edge: 'left', launchAtLogin: true }
+const DEFAULT_SETTINGS = { edge: 'left', launchAtLogin: true, handleLength: 'medium', handleThickness: 'medium', handleColor: 'purple' }
+// Handle settings the renderer may change, each checked against its list of allowed values.
+const HANDLE_SETTINGS = { handleLength: HANDLE_LENGTHS, handleThickness: HANDLE_THICKNESS, handleColor: HANDLE_COLORS }
 
 const settingsFile = () => join(app.getPath('userData'), 'settings.json')
 
@@ -106,7 +108,13 @@ function createWindow() {
   }
   ipcMain.handle('settings:get', () => settings)
   ipcMain.handle('settings:set', (_e, patch) => {
-    setEdge(patch?.edge)
+    if (patch?.edge) setEdge(patch.edge)
+    const valid = Object.keys(HANDLE_SETTINGS).filter((key) => Object.hasOwn(HANDLE_SETTINGS[key], patch?.[key]))
+    if (valid.length) {
+      valid.forEach((key) => (settings[key] = patch[key]))
+      saveSettings(settings)
+      win.webContents.send('settings:changed', settings)
+    }
     return settings
   })
 
@@ -207,7 +215,9 @@ function createWindow() {
     const { x, y } = screen.getCursorScreenPoint()
     const b = win.getBounds()
     const inside = x >= b.x && x < b.x + b.width && y >= b.y && y < b.y + b.height
-    if (isInHotZone(x - b.x, y - b.y, b.width, b.height, settings.edge)) win.webContents.send('cursor:edge')
+    if (isInHotZone(x - b.x, y - b.y, b.width, b.height, settings.edge, settings.handleLength, settings.handleThickness)) {
+      win.webContents.send('cursor:edge')
+    }
     else if (interactive && !inside) win.webContents.send('cursor:away')
   }, 150)
 
