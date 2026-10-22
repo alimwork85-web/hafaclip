@@ -19,7 +19,7 @@ const ICONS = {
   trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3'
 }
 
-export default function ItemCard({ item, onCopy, onPaste, onPin, onDelete }) {
+export default function ItemCard({ item, onCopy, onPaste, onPin, onDelete, onDragOut }) {
   // Buttons inside the card must not also trigger the card's own copy action.
   const action = (fn) => (e) => {
     e.stopPropagation()
@@ -30,8 +30,19 @@ export default function ItemCard({ item, onCopy, onPaste, onPin, onDelete }) {
       className={`card kind-${item.kind}${item.pinned ? ' pinned' : ''}`}
       role="button"
       tabIndex={0}
-      title="Click to copy"
+      title="Click to copy, drag to drop it anywhere"
       onClick={onCopy}
+      draggable
+      onDragStart={(e) => {
+        if (item.kind === 'text') {
+          e.dataTransfer.setData('text/plain', item.text)
+          e.dataTransfer.effectAllowed = 'copy'
+        } else {
+          // Images and files need a native OS drag with real files.
+          e.preventDefault()
+          onDragOut()
+        }
+      }}
       onKeyDown={(e) => {
         if (e.key === 'Enter') onPaste()
         else if (e.key === ' ') onCopy()

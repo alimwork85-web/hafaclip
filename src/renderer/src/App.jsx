@@ -15,8 +15,36 @@ export default function App() {
   const [query, setQuery] = useState('')
   const [toast, setToast] = useState(null)
   const [confirmClear, setConfirmClear] = useState(false)
+  const [dropping, setDropping] = useState(false)
+  // Set while one of our own cards is dragged, so dropping it back on the panel adds nothing.
+  const draggingOut = useRef(false)
   const edgeRef = useRef(edge)
   edgeRef.current = edge
+
+  useEffect(
+    () =>
+      window.panel.onCursor((where) => {
+        setExpanded(where === 'edge')
+        if (where === 'away') setDropping(false)
+      }),
+    []
+  )
+
+  const onDragOver = (e) => {
+    if (draggingOut.current) return
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'copy'
+    setDropping(true)
+  }
+
+  const onDrop = async (e) => {
+    e.preventDefault()
+    setDropping(false)
+    if (draggingOut.current) return
+    // A FileList cannot cross the context bridge; an array of File objects can.
+    const r = await window.panel.drop(Array.from(e.dataTransfer.files), e.dataTransfer.getData('text/plain'))
+    setToast(r.ok ? { text: 'Added', tone: 'ok' } : { text: r.error, tone: 'error' })
+  }
 
   useEffect(() => {
     window.panel.getSettings().then((s) => setEdge(s.edge))
@@ -87,13 +115,27 @@ export default function App() {
       onPaste={() => paste(item)}
       onPin={() => window.panel.pinItem(item.id, !item.pinned)}
       onDelete={() => window.panel.deleteItem(item.id)}
+      onDragOut={() => window.panel.startDrag(item.id)}
     />
   )
 
   return (
     <div className={`app edge-${edge}${expanded ? ' expanded' : ''}`}>
       <div className="handle" />
-      <aside className="panel" onMouseLeave={() => setExpanded(false)}>
+      <aside
+        className={`panel${dropping ? ' dropping' : ''}`}
+        onMouseLeave={() => setExpanded(false)}
+        onDragOver={onDragOver}
+        onDragLeave={() => setDropping(false)}
+        onDrop={onDrop}
+        onDragStart={(e) => {
+          // Native drags (images, files) cancel the HTML drag and never fire dragend, so only flag text drags.
+          if (!e.defaultPrevented) draggingOut.current = true
+        }}
+        onDragEnd={() => {
+          draggingOut.current = false
+        }}
+      >
         <header>
           <span className="dot" />
           <h1>Clipboard</h1>

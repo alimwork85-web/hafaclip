@@ -2,7 +2,10 @@ import { app, BrowserWindow, ipcMain, net, protocol, screen } from 'electron'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { randomUUID } from 'node:crypto'
 import { foregroundWindow, pasteInto, watchClipboard, windowAddress, writeItem } from './clipboard'
+import { cleanTemp, dragPayload, itemFromDroppedPaths } from './drag'
+import { isInHotZone } from '../renderer/src/hotZone'
 import { add, clearHistory, findItem, flush, getItems, imagesDir, loadItems, remove, setPinned, touch } from './store'
 
 const PANEL_WIDTH = 380
@@ -43,6 +46,7 @@ function registerImageProtocol() {
 
 function createWindow() {
   loadItems()
+  cleanTemp()
   registerImageProtocol()
   const settings = loadSettings()
   const win = new BrowserWindow({
@@ -67,8 +71,10 @@ function createWindow() {
   win.setIgnoreMouseEvents(true, { forward: true })
   // The window the user was working in when the panel opened; paste sends Ctrl+V back to it.
   let previousWindow = null
+  let interactive = false
   const ownWindow = win.getNativeWindowHandle().readBigUInt64LE()
   ipcMain.on('panel:interactive', (_e, on) => {
+    interactive = on
     if (on) {
       const fg = foregroundWindow()
       if (windowAddress(fg) !== ownWindow) previousWindow = fg    }
@@ -129,6 +135,31 @@ function createWindow() {
     pushItems()
   })
   app.on('before-quit', flush)
+
+  ipcMain.on('items:drag', (e, id) => {
+    const item = typeof id === 'string' && findItem(id)
+    const payload = item && dragPayload(item, imagesDir())
+    if (payload) e.sender.startDrag(payload)
+  })
+  ipcMain.handle('items:drop', (_e, { paths, text } = {}) => {
+    const item =
+      itemFromDroppedPaths(paths) ??
+      (typeof text === 'string' && text.trim() ? { id: randomUUID(), createdAt: Date.now(), pinned: false, kind: 'text', text } : null)
+    if (!item) return { ok: false, error: 'Nothing to add' }
+    add(item)
+    pushItems()
+    return { ok: true }
+  })
+
+  // During a drag (into or out of the panel) the window gets no mouse events, so watch the cursor here:
+  // open when it reaches the edge, close once it has left the window.
+  setInterval(() => {
+    const { x, y } = screen.getCursorScreenPoint()
+    const b = win.getBounds()
+    const inside = x >= b.x && x < b.x + b.width && y >= b.y && y < b.y + b.height
+    if (isInHotZone(x - b.x, y - b.y, b.width, b.height, settings.edge)) win.webContents.send('cursor:edge')
+    else if (interactive && !inside) win.webContents.send('cursor:away')
+  }, 150)
 
   if (process.env.ELECTRON_RENDERER_URL) win.loadURL(process.env.ELECTRON_RENDERER_URL)
   else win.loadFile(join(__dirname, '../renderer/index.html'))

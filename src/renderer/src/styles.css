@@ -119,3 +119,10 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .toast.error { color: #ffb3bf; }
 @keyframes toast-in { from { opacity: 0; translate: -50% 8px; } }
 @media (prefers-reduced-motion: reduce) { .toast { animation: none; } }
+
+.panel.dropping { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent), 8px 0 32px rgba(0, 0, 0, 0.35); }
+.panel.dropping::after {
+  content: 'Drop to add'; position: absolute; inset: 0; display: grid; place-items: center;
+  font-size: 14px; font-weight: 600; color: #fff; background: rgba(124, 140, 255, 0.18); border-radius: inherit; pointer-events: none;
+}
+.card[draggable='true']:active { cursor: grabbing; }
