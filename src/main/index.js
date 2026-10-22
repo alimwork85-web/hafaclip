@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, net, protocol, screen } from 'electron'
+import { app, BrowserWindow, globalShortcut, ipcMain, net, protocol, screen } from 'electron'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -91,6 +91,7 @@ function createWindow() {
   const ownWindow = win.getNativeWindowHandle().readBigUInt64LE()
   ipcMain.on('panel:interactive', (_e, on) => {
     interactive = on
+    if (!on) openedByKey = false
     if (on) {
       const fg = foregroundWindow()
       if (windowAddress(fg) !== ownWindow) previousWindow = fg
@@ -209,16 +210,33 @@ function createWindow() {
     return { ok: true }
   })
 
+  // A panel opened with the shortcut stays open while the cursor is elsewhere, until the cursor
+  // has visited it and left, the shortcut is pressed again, Esc is pressed, or another window is clicked.
+  let openedByKey = false
+  const SHORTCUT = 'Control+Alt+E'
+  if (!globalShortcut.register(SHORTCUT, () => {
+    if (interactive) return win.webContents.send('cursor:away')
+    previousWindow = foregroundWindow() // record before focusing ourselves, so paste goes back there
+    openedByKey = true
+    win.webContents.send('cursor:edge')
+    win.focus()
+  })) {
+    console.warn(`[shortcut] ${SHORTCUT} is taken by another program`)
+  }
+  app.on('will-quit', () => globalShortcut.unregisterAll())
+  win.on('blur', () => interactive && win.webContents.send('cursor:away'))
+
   // During a drag (into or out of the panel) the window gets no mouse events, so watch the cursor here:
   // open when it reaches the edge, close once it has left the window.
   setInterval(() => {
     const { x, y } = screen.getCursorScreenPoint()
     const b = win.getBounds()
     const inside = x >= b.x && x < b.x + b.width && y >= b.y && y < b.y + b.height
+    if (inside) openedByKey = false
     if (isInHotZone(x - b.x, y - b.y, b.width, b.height, settings.edge, settings.handleLength, settings.handleThickness)) {
       win.webContents.send('cursor:edge')
     }
-    else if (interactive && !inside) win.webContents.send('cursor:away')
+    else if (interactive && !inside && !openedByKey) win.webContents.send('cursor:away')
   }, 150)
 
   if (process.env.ELECTRON_RENDERER_URL) win.loadURL(process.env.ELECTRON_RENDERER_URL)

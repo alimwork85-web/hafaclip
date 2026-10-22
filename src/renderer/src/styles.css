@@ -265,3 +265,9 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .copy-selection:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 .grip { display: grid; place-items: center; margin-left: -4px; color: var(--muted); cursor: grab; opacity: 0.6; }
 .grip:hover { opacity: 1; color: var(--text); }
+
+.keys { margin-left: auto; display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: 12px; }
+kbd {
+  font: inherit; font-size: 11px; font-weight: 600; color: var(--text); padding: 2px 7px; border-radius: 6px;
+  background: var(--fill-strong); border: 1px solid var(--border); border-bottom-width: 2px;
+}

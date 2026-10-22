@@ -22,6 +22,10 @@ export default function SettingsPanel({ settings, onChange }) {
     <div className="settings">
       <div className="group">Panel</div>
       <Choice label="Screen edge" value={settings.edge} options={['left', 'right']} onPick={(edge) => onChange({ edge })} />
+      <div className="setting">
+        <span className="setting-label">Open with keyboard</span>
+        <span className="keys"><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>E</kbd></span>
+      </div>
 
       <div className="group">Edge handle</div>
       <Choice label="Length" value={settings.handleLength} options={['short', 'medium', 'long']} onPick={(handleLength) => onChange({ handleLength })} />

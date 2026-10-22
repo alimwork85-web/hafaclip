@@ -86,6 +86,12 @@ export default function App() {
   useEffect(() => window.panel.setInteractive(expanded), [expanded])
 
   useEffect(() => {
+    const onKey = (e) => e.key === 'Escape' && setExpanded(false)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  useEffect(() => {
     const onMove = (e) => {
       const s = settingsRef.current
       if (isInHotZone(e.clientX, e.clientY, window.innerWidth, window.innerHeight, s.edge, s.handleLength, s.handleThickness)) setExpanded(true)
