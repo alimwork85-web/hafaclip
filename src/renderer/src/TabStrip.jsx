@@ -43,8 +43,20 @@ export default function TabStrip({ tab, onPick }) {
       }}
     >
       {CATEGORIES.map((c) => (
-        <button key={c.id} role="tab" aria-selected={tab === c.id} className={tab === c.id ? 'active' : ''} onClick={() => onPick(c.id)}>
-          {c.label}
+        <button
+          key={c.id}
+          role="tab"
+          aria-selected={tab === c.id}
+          aria-label={c.title ?? c.label}
+          title={c.title ?? c.label}
+          className={tab === c.id ? 'active' : ''}
+          onClick={() => onPick(c.id)}
+        >
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d={c.icon} />
+          </svg>
+          {/* Only the chosen tab shows its name; the others are icons with a tooltip. */}
+          {tab === c.id && <span>{c.label}</span>}
         </button>
       ))}
     </div>
