@@ -172,9 +172,15 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .group-parts .part .card-files { font-size: 12px; }
 .group-parts .more { font-size: 12px; color: var(--muted); }
 
-.tabs { display: flex; gap: 4px; padding: 10px 12px 0; }
+.tabs {
+  display: flex; gap: 4px; margin: 10px 12px 0; overflow-x: auto; scrollbar-width: none; cursor: grab;
+  /* Fade the ends so it is clear more tabs scroll in. */
+  mask-image: linear-gradient(to right, transparent, #000 12px, #000 calc(100% - 12px), transparent);
+  padding: 0 8px;
+}
+.tabs::-webkit-scrollbar { display: none; }
 .tabs button {
-  flex: 1; font: inherit; font-size: 13px; padding: 6px 0; border: none; border-radius: 9px; cursor: pointer;
+  flex: none; white-space: nowrap; font: inherit; font-size: 13px; padding: 6px 12px; border: none; border-radius: 9px; cursor: pointer;
   background: transparent; color: var(--muted); transition: background 150ms var(--ease), color 150ms var(--ease);
 }
 .tabs button:hover { color: var(--text); }

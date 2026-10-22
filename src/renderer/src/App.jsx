@@ -3,6 +3,8 @@ import { HANDLE_COLORS, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone } from './
 import ItemCard from './ItemCard'
 import EmojiPanel from './EmojiPanel'
 import SettingsPanel from './SettingsPanel'
+import TabStrip from './TabStrip'
+import { CATEGORIES, inCategory } from './categories'
 
 const matches = (item, q) => {
   if (item.kind === 'text') return item.text.toLowerCase().includes(q)
@@ -21,7 +23,7 @@ export default function App() {
   const [confirmClear, setConfirmClear] = useState(false)
   const [dropping, setDropping] = useState(false)
   const [selected, setSelected] = useState([])
-  const [tab, setTab] = useState('history')
+  const [tab, setTab] = useState('all')
   // Set while one of our own cards is dragged, so dropping it back on the panel adds nothing.
   const draggingOut = useRef(false)
   const settingsRef = useRef(settings)
@@ -120,7 +122,7 @@ export default function App() {
   }
 
   const q = query.trim().toLowerCase()
-  const visible = q ? items.filter((i) => matches(i, q)) : items
+  const visible = items.filter((i) => inCategory(i, tab) && (!q || matches(i, q)))
   const pinned = visible.filter((i) => i.pinned)
   const recent = visible.filter((i) => !i.pinned)
 
@@ -179,7 +181,7 @@ export default function App() {
             title="Settings"
             aria-label="Settings"
             aria-pressed={tab === 'settings'}
-            onClick={() => setTab(tab === 'settings' ? 'history' : 'settings')}
+            onClick={() => setTab(tab === 'settings' ? 'all' : 'settings')}
           >
             <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <circle cx="12" cy="12" r="3" />
@@ -187,13 +189,7 @@ export default function App() {
             </svg>
           </button>
         </header>
-        <div className="tabs" role="tablist" aria-label="View">
-          {['history', 'emoji'].map((t) => (
-            <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>
-              {t === 'history' ? 'History' : 'Emoji'}
-            </button>
-          ))}
-        </div>
+        <TabStrip tab={tab} onPick={setTab} />
         {tab === 'settings' ? (
           <SettingsPanel settings={settings} onChange={updateSettings} />
         ) : tab === 'emoji' ? (
@@ -216,7 +212,8 @@ export default function App() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <button className={`clear${confirmClear ? ' confirm' : ''}`} onClick={clear} disabled={!recent.length && !confirmClear}>
+          {/* Clear empties the whole history (not just this tab), so it depends on all items. */}
+          <button className={`clear${confirmClear ? ' confirm' : ''}`} onClick={clear} disabled={!items.some((i) => !i.pinned) && !confirmClear}>
             {confirmClear ? 'Confirm?' : 'Clear'}
           </button>
         </div>
@@ -230,7 +227,7 @@ export default function App() {
           </ul>
         ) : (
           <div className="empty">
-            <p>{q ? 'No matches' : 'Nothing here yet'}</p>
+            <p>{q ? 'No matches' : tab === 'all' ? 'Nothing here yet' : `No ${CATEGORIES.find((c) => c.id === tab)?.label.toLowerCase()} yet`}</p>
             <small>{q ? 'Try another word.' : 'Copied items will show up here.'}</small>
           </div>
         )}
