@@ -216,5 +216,8 @@ function createWindow() {
   win.once('ready-to-show', () => win.showInactive())
 }
 
+// The installed build is named "Edge Clipboard"; pin the data folder so it keeps the history made by dev runs.
+app.setPath('userData', join(app.getPath('appData'), 'edge-clipboard'))
+
 if (!app.requestSingleInstanceLock()) app.quit()
 else app.whenReady().then(createWindow)

@@ -8,18 +8,46 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "start": "electron-vite preview",
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "icon": "electron scripts/make-icon.mjs",
+    "dist": "electron-vite build && electron-builder --win"
+  },
+  "build": {
+    "appId": "local.edge-clipboard",
+    "productName": "Edge Clipboard",
+    "files": [
+      "out/**"
+    ],
+    "asarUnpack": [
+      "node_modules/koffi/**"
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": false,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Edge Clipboard"
+    }
   },
   "dependencies": {
-    "emojibase-data": "^18.0.0",
-    "koffi": "^3.3.3",
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "koffi": "^3.3.3"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.1.2",
     "electron": "^45.0.0",
+    "electron-builder": "^26.15.3",
     "electron-vite": "^6.0.0",
+    "emojibase-data": "^18.0.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "vite": "^8.3.5"
   }
 }
