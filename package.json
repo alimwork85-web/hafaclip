@@ -1,0 +1,23 @@
+{
+  "name": "edge-clipboard",
+  "version": "0.1.0",
+  "description": "Personal clipboard manager that lives on the screen edge and expands on hover.",
+  "private": true,
+  "main": "out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "start": "electron-vite preview",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.2",
+    "electron": "^45.0.0",
+    "electron-vite": "^6.0.0",
+    "vite": "^8.3.5"
+  }
+}
