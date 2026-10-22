@@ -24,6 +24,8 @@ export default function App() {
   const [dropping, setDropping] = useState(false)
   const [selected, setSelected] = useState([])
   const [tab, setTab] = useState('all')
+  // Only one card is opened with "More" at a time; opening another closes it.
+  const [expandedId, setExpandedId] = useState(null)
   // Collapsing pinned items is a per-device view preference; storage may be unavailable, so default to open.
   const [pinnedOpen, setPinnedOpen] = useState(() => {
     try {
@@ -162,6 +164,8 @@ export default function App() {
       key={item.id}
       item={item}
       selected={selected.includes(item.id)}
+      expanded={expandedId === item.id}
+      onToggleExpand={() => setExpandedId(expandedId === item.id ? null : item.id)}
       onClick={(e) => (e.ctrlKey || selected.length ? toggleSelect(item.id) : copy(item))}
       onSplit={() => window.panel.splitItem(item.id)}
       onPaste={() => paste(item)}

@@ -1,3 +1,5 @@
+import { useLayoutEffect, useRef, useState } from 'react'
+
 const timeAgo = (ms) => {
   const s = Math.round((Date.now() - ms) / 1000)
   if (s < 60) return 'now'
@@ -24,19 +26,23 @@ const ICONS = {
 const plainText = (item) =>
   item.kind === 'text' ? item.text : item.kind === 'group' && item.parts.every((p) => p.kind === 'text') ? item.parts.map((p) => p.text).join('\n') : null
 
-function Preview({ item }) {
+const FILES_SHOWN = 3
+
+function Preview({ item, expanded = false }) {
   if (item.kind === 'text') return <p className="card-text">{item.text}</p>
   if (item.kind === 'image')
     return <img className="card-image" src={`clip://image/${item.image}`} alt={`Image ${item.width}×${item.height}`} loading="lazy" />
-  if (item.kind === 'files')
+  if (item.kind === 'files') {
+    const shown = expanded ? item.files : item.files.slice(0, FILES_SHOWN)
     return (
       <ul className="card-files">
-        {item.files.slice(0, 4).map((f) => (
+        {shown.map((f) => (
           <li key={f} title={f}>{baseName(f)}</li>
         ))}
-        {item.files.length > 4 && <li className="more">+{item.files.length - 4} more</li>}
+        {shown.length < item.files.length && <li className="more">+{item.files.length - shown.length} more</li>}
       </ul>
     )
+  }
   return (
     <div className="group-parts">
       {item.parts.slice(0, 3).map((p) => (
@@ -58,15 +64,25 @@ const label = (item) =>
         ? `${item.width}×${item.height}`
         : `${item.text.length} chars`
 
-export default function ItemCard({ item, selected, onClick, onPaste, onPin, onDelete, onSplit, onDragOut }) {
+export default function ItemCard({ item, selected, expanded, onToggleExpand, onClick, onPaste, onPin, onDelete, onSplit, onDragOut }) {
   // Buttons inside the card must not also trigger the card's own click action.
   const action = (fn) => (e) => {
     e.stopPropagation()
     fn()
   }
+  // Text gets "More" only when it is actually cut off at 3 lines, so measure the rendered paragraph.
+  const ref = useRef(null)
+  const [clipped, setClipped] = useState(false)
+  useLayoutEffect(() => {
+    const p = ref.current?.querySelector(':scope > .card-text')
+    if (p && !expanded) setClipped(p.scrollHeight > p.clientHeight + 1)
+  }, [item.text, expanded])
+  const expandable = (item.kind === 'text' && clipped) || (item.kind === 'files' && item.files.length > FILES_SHOWN)
+
   return (
     <li
-      className={`card kind-${item.kind}${item.pinned ? ' pinned' : ''}${selected ? ' selected' : ''}`}
+      ref={ref}
+      className={`card kind-${item.kind}${item.pinned ? ' pinned' : ''}${selected ? ' selected' : ''}${expanded ? ' expanded' : ''}`}
       role="button"
       tabIndex={0}
       aria-pressed={selected}
@@ -89,7 +105,15 @@ export default function ItemCard({ item, selected, onClick, onPaste, onPin, onDe
         else if (e.key === ' ') onClick(e)
       }}
     >
-      <Preview item={item} />
+      <Preview item={item} expanded={expanded} />
+      {expandable && (
+        <button className="more-toggle" aria-expanded={expanded} onClick={action(onToggleExpand)}>
+          {expanded ? 'Less' : 'More'}
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d={expanded ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'} />
+          </svg>
+        </button>
+      )}
       <footer>
         <span className="kind">{label(item)}</span>
         <span className="time">{timeAgo(item.createdAt)}</span>
