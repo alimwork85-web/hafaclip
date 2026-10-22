@@ -245,7 +245,8 @@ function createWindow() {
 }
 
 // The installed build is named "Edge Clipboard"; pin the data folder so it keeps the history made by dev runs.
-app.setPath('userData', join(app.getPath('appData'), 'edge-clipboard'))
+// EDGE_CLIPBOARD_DATA points tests and demos at a separate folder so real history is never touched.
+app.setPath('userData', process.env.EDGE_CLIPBOARD_DATA || join(app.getPath('appData'), 'edge-clipboard'))
 
 if (!app.requestSingleInstanceLock()) app.quit()
 else app.whenReady().then(createWindow)

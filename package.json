@@ -1,7 +1,14 @@
 {
   "name": "edge-clipboard",
-  "version": "0.1.0",
-  "description": "Personal clipboard manager that lives on the screen edge and expands on hover.",
+  "version": "2.0.0",
+  "description": "Clipboard manager for Windows that lives on the screen edge and expands on hover.",
+  "author": "Ali Alhumedi",
+  "license": "MIT",
+  "homepage": "https://github.com/alimwork85-web/edge-clipboard",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alimwork85-web/edge-clipboard.git"
+  },
   "private": true,
   "main": "out/main/index.js",
   "scripts": {
@@ -15,6 +22,7 @@
   "build": {
     "appId": "local.edge-clipboard",
     "productName": "Edge Clipboard",
+    "copyright": "© 2026 Ali Alhumedi",
     "files": [
       "out/**"
     ],
