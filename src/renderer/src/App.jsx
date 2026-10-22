@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { isInHotZone } from './hotZone'
 import ItemCard from './ItemCard'
+import EmojiPanel from './EmojiPanel'
 
 const matches = (item, q) => {
   if (item.kind === 'text') return item.text.toLowerCase().includes(q)
@@ -18,6 +19,7 @@ export default function App() {
   const [confirmClear, setConfirmClear] = useState(false)
   const [dropping, setDropping] = useState(false)
   const [selected, setSelected] = useState([])
+  const [tab, setTab] = useState('history')
   // Set while one of our own cards is dragged, so dropping it back on the panel adds nothing.
   const draggingOut = useRef(false)
   const edgeRef = useRef(edge)
@@ -97,6 +99,12 @@ export default function App() {
     }
   }
 
+  const pasteEmoji = async (emoji) => {
+    setExpanded(false)
+    const r = await window.panel.pasteEmoji(emoji)
+    if (!r.ok) setToast({ text: r.error, tone: 'error' })
+  }
+
   const clear = () => {
     if (!confirmClear) return setConfirmClear(true)
     setConfirmClear(false)
@@ -164,6 +172,17 @@ export default function App() {
             ))}
           </div>
         </header>
+        <div className="tabs" role="tablist" aria-label="View">
+          {['history', 'emoji'].map((t) => (
+            <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>
+              {t === 'history' ? 'History' : 'Emoji'}
+            </button>
+          ))}
+        </div>
+        {tab === 'emoji' ? (
+          <EmojiPanel onPick={pasteEmoji} />
+        ) : (
+        <>
         {selected.length > 0 ? (
           <div className="toolbar selection-bar" role="toolbar" aria-label="Selection">
             <span>{selected.length} selected</span>
@@ -197,6 +216,8 @@ export default function App() {
             <p>{q ? 'No matches' : 'Nothing here yet'}</p>
             <small>{q ? 'Try another word.' : 'Copied items will show up here.'}</small>
           </div>
+        )}
+        </>
         )}
         {toast && <div className={`toast ${toast.tone}`} role="status">{toast.text}</div>}
       </aside>
