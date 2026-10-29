@@ -76,6 +76,8 @@ function saveSettings(settings) {
  * so the packaged build later overwrites the same entry with its own exe.
  */
 function applyLaunchAtLogin(enabled) {
+  // Test runs use their own data folder and must not change the real "Edge Clipboard" startup entry.
+  if (process.env.EDGE_CLIPBOARD_DATA) return
   app.setLoginItemSettings({
     openAtLogin: enabled,
     name: 'Edge Clipboard',

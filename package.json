@@ -23,6 +23,11 @@
     "appId": "local.edge-clipboard",
     "productName": "Edge Clipboard",
     "copyright": "© 2026 Ali Alhumedi",
+    "electronLanguages": [
+      "en-US",
+      "ar"
+    ],
+    "compression": "maximum",
     "files": [
       "out/**"
     ],
