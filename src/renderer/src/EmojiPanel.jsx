@@ -1,17 +1,18 @@
 import { useMemo, useState } from 'react'
 import data from 'emojibase-data/en/compact.json'
 import versions_ from 'emojibase-data/versions/emoji.json'
+import { t } from './i18n'
 
 const GROUPS = [
-  { id: 0, name: 'Smileys' },
-  { id: 1, name: 'People' },
-  { id: 3, name: 'Nature' },
-  { id: 4, name: 'Food' },
-  { id: 5, name: 'Travel' },
-  { id: 6, name: 'Activities' },
-  { id: 7, name: 'Objects' },
-  { id: 8, name: 'Symbols' },
-  { id: 9, name: 'Flags' }
+  { id: 0 },
+  { id: 1 },
+  { id: 3 },
+  { id: 4 },
+  { id: 5 },
+  { id: 6 },
+  { id: 7 },
+  { id: 8 },
+  { id: 9 }
 ]
 /**
  * True when this machine's emoji font can draw the emoji. Missing single emoji draw as the same "tofu" box as an
@@ -71,7 +72,7 @@ function loadRecent() {
   }
 }
 
-export default function EmojiPanel({ onPick }) {
+export default function EmojiPanel({ lang, onPick }) {
   const [query, setQuery] = useState('')
   const [group, setGroup] = useState(0)
   const [recent, setRecent] = useState(loadRecent)
@@ -106,16 +107,16 @@ export default function EmojiPanel({ onPick }) {
         <input
           className="search"
           type="search"
-          placeholder="Search emoji…"
-          aria-label="Search emoji"
+          placeholder={t(lang, 'searchEmoji')}
+          aria-label={t(lang, 'searchEmoji')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
       </div>
       {!q && (
-        <div className="emoji-groups" role="tablist" aria-label="Emoji categories">
+        <div className="emoji-groups" role="tablist" aria-label={t(lang, 'emojiCategories')}>
           {GROUPS.map((g) => (
-            <button key={g.id} role="tab" aria-selected={g.id === group} title={g.name} className={g.id === group ? 'active' : ''} onClick={() => setGroup(g.id)}>
+            <button key={g.id} role="tab" aria-selected={g.id === group} title={t(lang, `emoji.${g.id}`)} className={g.id === group ? 'active' : ''} onClick={() => setGroup(g.id)}>
               {ICON[g.id]}
             </button>
           ))}
@@ -124,11 +125,11 @@ export default function EmojiPanel({ onPick }) {
       <div className="emoji-scroll">
         {!q && recent.length > 0 && (
           <>
-            <div className="group">Recent</div>
-            <div className="emoji-grid">{recent.map((u) => button(u, 'Recent'))}</div>
+            <div className="group">{t(lang, 'recent')}</div>
+            <div className="emoji-grid">{recent.map((u) => button(u, t(lang, 'recent')))}</div>
           </>
         )}
-        <div className="group">{q ? `${shown.length} results` : GROUPS.find((g) => g.id === group).name}</div>
+        <div className="group">{q ? t(lang, 'results', shown.length) : t(lang, `emoji.${group}`)}</div>
         <div className="emoji-grid">{shown.map((e) => button(e.unicode, e.label))}</div>
       </div>
     </div>

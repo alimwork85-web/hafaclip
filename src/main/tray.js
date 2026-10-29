@@ -1,21 +1,23 @@
 /** System tray icon: pause capturing, choose the screen edge, quit. */
 import { Menu, Tray } from 'electron'
 import { makeTrayIcon } from './trayIcon'
+import { t } from '../renderer/src/i18n'
 
-export function createTray({ getEdge, setEdge, getLaunchAtLogin, setLaunchAtLogin, setPaused, quit }) {
+export function createTray({ getLang, getEdge, setEdge, getLaunchAtLogin, setLaunchAtLogin, setPaused, quit }) {
   const icons = { on: makeTrayIcon(false), paused: makeTrayIcon(true) }
   const tray = new Tray(icons.on)
   let paused = false
 
   function refresh() {
+    const lang = getLang()
     tray.setImage(paused ? icons.paused : icons.on)
-    tray.setToolTip(paused ? 'Edge Clipboard (paused)' : 'Edge Clipboard')
+    tray.setToolTip(paused ? `Edge Clipboard (${t(lang, 'paused')})` : 'Edge Clipboard')
     tray.setContextMenu(
       Menu.buildFromTemplate([
         { label: 'Edge Clipboard', enabled: false },
         { type: 'separator' },
         {
-          label: 'Pause capturing',
+          label: t(lang, 'pauseCapturing'),
           type: 'checkbox',
           checked: paused,
           click: (mi) => {
@@ -25,22 +27,22 @@ export function createTray({ getEdge, setEdge, getLaunchAtLogin, setLaunchAtLogi
           }
         },
         {
-          label: 'Screen edge',
+          label: t(lang, 'screenEdge'),
           submenu: ['left', 'right'].map((side) => ({
-            label: side === 'left' ? 'Left' : 'Right',
+            label: t(lang, `opt.${side}`),
             type: 'radio',
             checked: getEdge() === side,
             click: () => setEdge(side)
           }))
         },
         {
-          label: 'Start with Windows',
+          label: t(lang, 'startWithWindows'),
           type: 'checkbox',
           checked: getLaunchAtLogin(),
           click: (mi) => setLaunchAtLogin(mi.checked)
         },
         { type: 'separator' },
-        { label: 'Quit', click: quit }
+        { label: t(lang, 'quit'), click: quit }
       ])
     )
   }

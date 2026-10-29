@@ -6,6 +6,7 @@ import SettingsPanel from './SettingsPanel'
 import TabStrip from './TabStrip'
 import { CATEGORIES, inCategory } from './categories'
 import { normalize } from './normalize'
+import { resolveLang, t } from './i18n'
 
 // `q` arrives already normalized.
 const matches = (item, q) => {
@@ -19,6 +20,9 @@ export default function App() {
   const [expanded, setExpanded] = useState(false)
   const [settings, setSettings] = useState({ edge: 'left', handleLength: 'medium', handleThickness: 'medium', handleColor: 'purple' })
   const edge = settings.edge
+  // navigator.language is Electron's app locale, the same one the main process uses for the tray.
+  const lang = resolveLang(settings.language, navigator.language)
+  const tr = (key, ...args) => t(lang, key, ...args)
   const [items, setItems] = useState([])
   const [query, setQuery] = useState('')
   const [toast, setToast] = useState(null)
@@ -71,7 +75,7 @@ export default function App() {
     if (draggingOut.current) return
     // A FileList cannot cross the context bridge; an array of File objects can.
     const r = await window.panel.drop(Array.from(e.dataTransfer.files), e.dataTransfer.getData('text/plain'))
-    setToast(r.ok ? { text: 'Added', tone: 'ok' } : { text: r.error, tone: 'error' })
+    setToast(r.ok ? { text: tr('added'), tone: 'ok' } : { text: tr(r.error), tone: 'error' })
   }
 
   useEffect(() => {
@@ -86,6 +90,11 @@ export default function App() {
   }, [])
 
   useEffect(() => window.panel.setInteractive(expanded), [expanded])
+
+  useEffect(() => {
+    document.documentElement.lang = lang
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'
+  }, [lang])
 
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && setExpanded(false)
@@ -122,7 +131,7 @@ export default function App() {
 
   const copy = async (item) => {
     const r = await window.panel.copyItem(item.id)
-    setToast(r.ok ? { text: 'Copied', tone: 'ok' } : { text: r.error, tone: 'error' })
+    setToast(r.ok ? { text: tr('copied'), tone: 'ok' } : { text: tr(r.error), tone: 'error' })
   }
 
   const paste = async (item) => {
@@ -130,21 +139,21 @@ export default function App() {
     const r = await window.panel.pasteItem(item.id)
     if (!r.ok) {
       setExpanded(true)
-      setToast({ text: r.error, tone: 'error' })
+      setToast({ text: tr(r.error), tone: 'error' })
     }
   }
 
   const pasteEmoji = async (emoji) => {
     setExpanded(false)
     const r = await window.panel.pasteEmoji(emoji)
-    if (!r.ok) setToast({ text: r.error, tone: 'error' })
+    if (!r.ok) setToast({ text: tr(r.error), tone: 'error' })
   }
 
   const clear = () => {
     if (!confirmClear) return setConfirmClear(true)
     setConfirmClear(false)
     window.panel.clearHistory()
-    setToast({ text: 'History cleared (pinned kept)', tone: 'ok' })
+    setToast({ text: tr('cleared'), tone: 'ok' })
   }
 
   const q = normalize(query.trim())
@@ -155,7 +164,7 @@ export default function App() {
   const counts = Object.fromEntries(
     CATEGORIES.filter((c) => c.id !== 'emoji').map((c) => {
       const total = items.filter((i) => inCategory(i, c.id)).length
-      return [c.id, q && c.id === tab ? `${visible.length} of ${total}` : total]
+      return [c.id, q && c.id === tab ? tr('of', visible.length, total) : total]
     })
   )
 
@@ -164,16 +173,17 @@ export default function App() {
   const merge = async () => {
     await window.panel.mergeItems(selected)
     setSelected([])
-    setToast({ text: 'Merged', tone: 'ok' })
+    setToast({ text: tr('merged'), tone: 'ok' })
   }
 
   const card = (item) => (
     <ItemCard
       key={item.id}
+      lang={lang}
       item={item}
       selected={selected.includes(item.id)}
       expanded={expandedId === item.id}
-      onCopiedPart={() => setToast({ text: 'Copied part', tone: 'ok' })}
+      onCopiedPart={() => setToast({ text: tr('copiedPart'), tone: 'ok' })}
       onToggleExpand={() => setExpandedId(expandedId === item.id ? null : item.id)}
       onClick={(e) => (e.ctrlKey || selected.length ? toggleSelect(item.id) : copy(item))}
       onSplit={() => window.panel.splitItem(item.id)}
@@ -211,11 +221,11 @@ export default function App() {
       >
         <header>
           <span className="dot" />
-          <h1>Clipboard</h1>
+          <h1>{tr('clipboard')}</h1>
           <button
             className={`gear${tab === 'settings' ? ' active' : ''}`}
-            title="Settings"
-            aria-label="Settings"
+            title={tr('settings')}
+            aria-label={tr('settings')}
             aria-pressed={tab === 'settings'}
             onClick={() => setTab(tab === 'settings' ? 'all' : 'settings')}
           >
@@ -225,18 +235,18 @@ export default function App() {
             </svg>
           </button>
         </header>
-        <TabStrip tab={tab} onPick={setTab} counts={counts} />
+        <TabStrip lang={lang} tab={tab} onPick={setTab} counts={counts} />
         {tab === 'settings' ? (
-          <SettingsPanel settings={settings} onChange={updateSettings} />
+          <SettingsPanel lang={lang} settings={settings} onChange={updateSettings} />
         ) : tab === 'emoji' ? (
-          <EmojiPanel onPick={pasteEmoji} />
+          <EmojiPanel lang={lang} onPick={pasteEmoji} />
         ) : (
         <>
         {selected.length > 0 ? (
-          <div className="toolbar selection-bar" role="toolbar" aria-label="Selection">
-            <span>{selected.length} selected</span>
-            <button className="primary" onClick={merge} disabled={selected.length < 2}>Merge</button>
-            <button onClick={() => setSelected([])}>Cancel</button>
+          <div className="toolbar selection-bar" role="toolbar" aria-label={tr('selection')}>
+            <span>{tr('selected', selected.length)}</span>
+            <button className="primary" onClick={merge} disabled={selected.length < 2}>{tr('merge')}</button>
+            <button onClick={() => setSelected([])}>{tr('cancel')}</button>
           </div>
         ) : (
         <div className="toolbar">
@@ -244,19 +254,19 @@ export default function App() {
             className="search"
             type="search"
             dir="auto"
-            placeholder="Search…"
-            aria-label="Search history"
+            placeholder={tr('search')}
+            aria-label={tr('searchHistory')}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
           {/* Clear empties the whole history (not just this tab), so it depends on all items. */}
           <button
             className={`clear${confirmClear ? ' confirm' : ''}`}
-            title="Delete all history except pinned items"
+            title={tr('clearTitle')}
             onClick={clear}
             disabled={!items.some((i) => !i.pinned) && !confirmClear}
           >
-            {confirmClear ? 'Confirm?' : 'Clear all'}
+            {confirmClear ? tr('confirm') : tr('clearAll')}
           </button>
         </div>
         )}
@@ -264,8 +274,8 @@ export default function App() {
           <ul className="list">
             {pinned.length > 0 && (
               <li className="group group-toggle">
-                <button aria-expanded={pinnedOpen} title={pinnedOpen ? 'Hide pinned items' : 'Show pinned items'} onClick={togglePinned}>
-                  <span>Pinned · {pinned.length}</span>
+                <button aria-expanded={pinnedOpen} title={pinnedOpen ? tr('hidePinned') : tr('showPinned')} onClick={togglePinned}>
+                  <span>{tr('pinned')} · {pinned.length}</span>
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M6 9l6 6 6-6" />
                   </svg>
@@ -273,13 +283,13 @@ export default function App() {
               </li>
             )}
             {pinnedOpen && pinned.map(card)}
-            {pinned.length > 0 && recent.length > 0 && <li className="group">Recent · {recent.length}</li>}
+            {pinned.length > 0 && recent.length > 0 && <li className="group">{tr('recent')} · {recent.length}</li>}
             {recent.map(card)}
           </ul>
         ) : (
           <div className="empty">
-            <p>{q ? 'No matches' : tab === 'all' ? 'Nothing here yet' : `No ${CATEGORIES.find((c) => c.id === tab)?.label.toLowerCase()} yet`}</p>
-            <small>{q ? 'Try another word.' : 'Copied items will show up here.'}</small>
+            <p>{q ? tr('noMatches') : tab === 'all' ? tr('nothingYet') : tr('noneInTab', tr(`cat.${tab}`))}</p>
+            <small>{q ? tr('tryAnother') : tr('willShow')}</small>
           </div>
         )}
         </>

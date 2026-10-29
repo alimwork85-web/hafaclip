@@ -1,11 +1,12 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { t } from './i18n'
 
-const timeAgo = (ms) => {
+const timeAgo = (lang, ms) => {
   const s = Math.round((Date.now() - ms) / 1000)
-  if (s < 60) return 'now'
-  if (s < 3600) return `${Math.floor(s / 60)}m`
-  if (s < 86400) return `${Math.floor(s / 3600)}h`
-  return `${Math.floor(s / 86400)}d`
+  if (s < 60) return t(lang, 'now')
+  if (s < 3600) return t(lang, 'minutes', Math.floor(s / 60))
+  if (s < 86400) return t(lang, 'hours', Math.floor(s / 3600))
+  return t(lang, 'days', Math.floor(s / 86400))
 }
 
 const baseName = (p) => p.split(/[\\/]/).pop()
@@ -29,11 +30,11 @@ const plainText = (item) =>
 
 const FILES_SHOWN = 3
 
-function Preview({ item, expanded = false }) {
+function Preview({ lang, item, expanded = false }) {
   // dir="auto" takes the direction from the first strong letter, so Arabic and mixed text read correctly.
   if (item.kind === 'text') return <p className="card-text" dir="auto">{item.text}</p>
   if (item.kind === 'image')
-    return <img className="card-image" src={`clip://image/${item.image}`} alt={`Image ${item.width}×${item.height}`} loading="lazy" />
+    return <img className="card-image" src={`clip://image/${item.image}`} alt={t(lang, 'imageAlt', item.width, item.height)} loading="lazy" />
   if (item.kind === 'files') {
     const shown = expanded ? item.files : item.files.slice(0, FILES_SHOWN)
     return (
@@ -41,7 +42,7 @@ function Preview({ item, expanded = false }) {
         {shown.map((f) => (
           <li key={f} title={f} dir="auto">{baseName(f)}</li>
         ))}
-        {shown.length < item.files.length && <li className="more">+{item.files.length - shown.length} more</li>}
+        {shown.length < item.files.length && <li className="more">{t(lang, 'moreN', item.files.length - shown.length)}</li>}
       </ul>
     )
   }
@@ -49,24 +50,24 @@ function Preview({ item, expanded = false }) {
     <div className="group-parts">
       {item.parts.slice(0, 3).map((p) => (
         <div key={p.id} className="part">
-          <Preview item={p} />
+          <Preview lang={lang} item={p} />
         </div>
       ))}
-      {item.parts.length > 3 && <div className="more">+{item.parts.length - 3} more</div>}
+      {item.parts.length > 3 && <div className="more">{t(lang, 'moreN', item.parts.length - 3)}</div>}
     </div>
   )
 }
 
-const label = (item) =>
+const label = (lang, item) =>
   item.kind === 'group'
-    ? `Group · ${item.parts.length} items`
+    ? t(lang, 'groupLabel', item.parts.length)
     : item.kind === 'files'
-      ? `${item.files.length} file${item.files.length > 1 ? 's' : ''}`
+      ? t(lang, 'filesLabel', item.files.length)
       : item.kind === 'image'
         ? `${item.width}×${item.height}`
-        : `${item.text.length} chars`
+        : t(lang, 'charsLabel', item.text.length)
 
-export default function ItemCard({ item, selected, expanded, onToggleExpand, onCopiedPart, onClick, onPaste, onPin, onDelete, onSplit, onDragOut }) {
+export default function ItemCard({ lang, item, selected, expanded, onToggleExpand, onCopiedPart, onClick, onPaste, onPin, onDelete, onSplit, onDragOut }) {
   // Buttons inside the card must not also trigger the card's own click action.
   const action = (fn) => (e) => {
     e.stopPropagation()
@@ -125,7 +126,7 @@ export default function ItemCard({ item, selected, expanded, onToggleExpand, onC
       role="button"
       tabIndex={0}
       aria-pressed={selected}
-      title={isText ? 'Click to copy · select text to copy a part · Ctrl+click to select for merging' : 'Click to copy · Ctrl+click to select for merging · drag to drop it anywhere'}
+      title={t(lang, isText ? 'textCardTitle' : 'cardTitle')}
       // Finishing a text selection also fires a click; that must not copy the whole card.
       onClick={(e) => !selectionInside() && onClick(e)}
       draggable={!isText}
@@ -135,10 +136,10 @@ export default function ItemCard({ item, selected, expanded, onToggleExpand, onC
         else if (e.key === ' ') onClick(e)
       }}
     >
-      <Preview item={item} expanded={expanded} />
+      <Preview lang={lang} item={item} expanded={expanded} />
       {expandable && (
         <button className="more-toggle" aria-expanded={expanded} onClick={action(onToggleExpand)}>
-          {expanded ? 'Less' : 'More'}
+          {t(lang, expanded ? 'less' : 'more')}
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d={expanded ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'} />
           </svg>
@@ -148,24 +149,24 @@ export default function ItemCard({ item, selected, expanded, onToggleExpand, onC
         // mousedown is cancelled so pressing the button does not clear the selection first.
         <button className="copy-selection" onMouseDown={(e) => e.preventDefault()} onClick={action(copySelection)}>
           <Icon d={ICONS.copy} />
-          Copy selection
+          {t(lang, 'copySelection')}
         </button>
       )}
       <footer>
         {isText && (
-          <span className="grip" draggable onDragStart={startDrag} title="Drag the text to another app" aria-hidden="true">
+          <span className="grip" draggable onDragStart={startDrag} title={t(lang, 'dragText')} aria-hidden="true">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><circle cx="9" cy="6" r="1.6" /><circle cx="15" cy="6" r="1.6" /><circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" /><circle cx="9" cy="18" r="1.6" /><circle cx="15" cy="18" r="1.6" /></svg>
           </span>
         )}
-        <span className="kind">{label(item)}</span>
-        <span className="time">{timeAgo(item.createdAt)}</span>
+        <span className="kind">{label(lang, item)}</span>
+        <span className="time">{timeAgo(lang, item.createdAt)}</span>
         <div className="actions">
-          <button title="Paste into the previous window" aria-label="Paste" onClick={action(onPaste)}><Icon d={ICONS.paste} /></button>
+          <button title={t(lang, 'pasteTitle')} aria-label={t(lang, 'paste')} onClick={action(onPaste)}><Icon d={ICONS.paste} /></button>
           {item.kind === 'group' && (
-            <button title="Split back into separate items" aria-label="Split" onClick={action(onSplit)}><Icon d={ICONS.split} /></button>
+            <button title={t(lang, 'splitTitle')} aria-label={t(lang, 'split')} onClick={action(onSplit)}><Icon d={ICONS.split} /></button>
           )}
-          <button title={item.pinned ? 'Unpin' : 'Pin (kept forever)'} aria-label={item.pinned ? 'Unpin' : 'Pin'} aria-pressed={item.pinned} className={item.pinned ? 'on' : ''} onClick={action(onPin)}><Icon d={ICONS.pin} /></button>
-          <button title="Delete" aria-label="Delete" className="danger" onClick={action(onDelete)}><Icon d={ICONS.trash} /></button>
+          <button title={t(lang, item.pinned ? 'unpin' : 'pinTitle')} aria-label={t(lang, item.pinned ? 'unpin' : 'pin')} aria-pressed={item.pinned} className={item.pinned ? 'on' : ''} onClick={action(onPin)}><Icon d={ICONS.pin} /></button>
+          <button title={t(lang, 'delete')} aria-label={t(lang, 'delete')} className="danger" onClick={action(onDelete)}><Icon d={ICONS.trash} /></button>
         </div>
       </footer>
     </li>

@@ -7,12 +7,13 @@ import { foregroundWindow, pasteInto, watchClipboard, windowAddress, writeItem }
 import { cleanTemp, dragPayload, itemFromDroppedPaths } from './drag'
 import { createTray } from './tray'
 import { HANDLE_COLORS, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone } from '../renderer/src/hotZone'
+import { resolveLang } from '../renderer/src/i18n'
 import { add, clearHistory, findItem, flush, getItems, imagesDir, loadItems, merge, remove, setPinned, split, touch } from './store'
 
 const PANEL_WIDTH = 380
-const DEFAULT_SETTINGS = { edge: 'left', launchAtLogin: true, handleLength: 'medium', handleThickness: 'medium', handleColor: 'purple' }
-// Handle settings the renderer may change, each checked against its list of allowed values.
-const HANDLE_SETTINGS = { handleLength: HANDLE_LENGTHS, handleThickness: HANDLE_THICKNESS, handleColor: HANDLE_COLORS }
+const DEFAULT_SETTINGS = { edge: 'left', language: 'system', launchAtLogin: true, handleLength: 'medium', handleThickness: 'medium', handleColor: 'purple' }
+// Settings the renderer may change (besides the edge), each checked against its list of allowed values.
+const CHOICE_SETTINGS = { handleLength: HANDLE_LENGTHS, handleThickness: HANDLE_THICKNESS, handleColor: HANDLE_COLORS, language: { system: 1, en: 1, ar: 1 } }
 
 const settingsFile = () => join(app.getPath('userData'), 'settings.json')
 
@@ -110,11 +111,12 @@ function createWindow() {
   ipcMain.handle('settings:get', () => settings)
   ipcMain.handle('settings:set', (_e, patch) => {
     if (patch?.edge) setEdge(patch.edge)
-    const valid = Object.keys(HANDLE_SETTINGS).filter((key) => Object.hasOwn(HANDLE_SETTINGS[key], patch?.[key]))
+    const valid = Object.keys(CHOICE_SETTINGS).filter((key) => Object.hasOwn(CHOICE_SETTINGS[key], patch?.[key]))
     if (valid.length) {
       valid.forEach((key) => (settings[key] = patch[key]))
       saveSettings(settings)
       win.webContents.send('settings:changed', settings)
+      if (patch.language) tray.refresh()
     }
     return settings
   })
@@ -127,6 +129,7 @@ function createWindow() {
 
   applyLaunchAtLogin(settings.launchAtLogin)
   const tray = createTray({
+    getLang: () => resolveLang(settings.language, app.getLocale()),
     getEdge: () => settings.edge,
     setEdge,
     getLaunchAtLogin: () => settings.launchAtLogin,
