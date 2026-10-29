@@ -73,6 +73,10 @@ Turn `hgsghl ugd;l` into «السلام عليكم» (and back) with one click.
 
 Copy part of a text, drag and drop in and out, merge several items into one (drag a card onto another, or <kbd>Ctrl</kbd>+click) and split them back.
 
+<img src="assets/features/groups-en.svg" alt="Named groups" height="44">
+
+**New in 3.2.** Give a group a name (it is found by search), paste the whole group or just one part of it, and take a part back out. A group left with one part becomes a single item again.
+
 <img src="assets/features/emoji-en.svg" alt="Emoji picker" height="44">
 
 Categories, recent emoji and search in English or Arabic.
@@ -83,7 +87,7 @@ Follows Windows, or pick one, with right-to-left layout and Arabic-aware search 
 
 <img src="assets/features/customize-en.svg" alt="Make it yours" height="44">
 
-5 themes, 4 fonts (including Cairo, Tajawal and IBM Plex Sans Arabic), text size, density, panel width, open delay, and the handle's length, thickness and colour.
+5 themes (Light, Dark, Ocean, Forest and Sand), 4 fonts (including Cairo, Tajawal and IBM Plex Sans Arabic), text size, density, panel width, open delay, and the handle's length, thickness and colour, with an optional second colour at its top and bottom.
 
 <img src="assets/features/startup-en.svg" alt="Starts with Windows" height="44">
 
@@ -127,6 +131,8 @@ Can be turned off from the tray icon, and capturing can be paused on demand.
 | Copy part of a text | Select the words → **Copy selection** (or <kbd>Ctrl</kbd>+<kbd>C</kbd>) |
 | Pin / unpin | Hover a card → 📌 button |
 | Merge items | Drag a card onto another card, or <kbd>Ctrl</kbd>+click cards → **Merge** |
+| Name a group | Hover the group → ✎ button, type, <kbd>Enter</kbd> |
+| Paste or take out one part of a group | Hover the part → ↩ (paste) or ↗ (take out) |
 | Drag a text card out | Drag the ⠿ grip in its corner |
 | Find an image by its text | Type a word that appears in it in the search box |
 | Stop capturing from a program | ⚙ → **Don't capture from** → click the program |
@@ -233,6 +239,10 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 
 انسخ جزءًا من النص، واسحب وأفلت من اللوحة وإليها، وادمج عدة عناصر في عنصر واحد (اسحب بطاقة إلى بطاقة أخرى، أو Ctrl+نقرة) ثم افصلها.
 
+<img src="assets/features/groups-ar.svg" alt="مجموعات بأسماء" height="44">
+
+**جديد في 3.2.** سمِّ المجموعة باسم تجده بالبحث، والصق المجموعة كاملة أو جزءًا واحدًا منها، وأخرج أي جزء منها. والمجموعة التي يبقى فيها جزء واحد تعود عنصرًا عاديًا.
+
 <img src="assets/features/emoji-ar.svg" alt="منتقي إيموجي" height="44">
 
 فئات وأحدث المستخدم، وبحث بالعربية أو الإنجليزية.
@@ -243,7 +253,7 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 
 <img src="assets/features/customize-ar.svg" alt="اجعله على ذوقك" height="44">
 
-5 سمات، و4 خطوط (منها القاهرة وتجوال وIBM Plex Sans Arabic)، وحجم النص، والكثافة، وعرض اللوحة، ومهلة الفتح، وطول المقبض وسماكته ولونه.
+5 سمات (فاتح، داكن، محيط، غابة، رملي)، و4 خطوط (منها القاهرة وتجوال وIBM Plex Sans Arabic)، وحجم النص، والكثافة، وعرض اللوحة، ومهلة الفتح، وطول المقبض وسماكته ولونه، مع لون ثانٍ اختياري لأعلاه وأسفله.
 
 <img src="assets/features/startup-ar.svg" alt="يعمل مع بدء Windows" height="44">
 

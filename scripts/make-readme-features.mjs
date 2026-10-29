@@ -32,10 +32,10 @@ const F = [
   { key: 'passwords', c: C.amber, icon: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4M12 15v2"/>',
     en: ['Respects password managers', 'Copies that KeePass, Bitwarden, 1Password and others mark as sensitive are never saved.'],
     ar: ['يحترم مديري كلمات المرور', 'ما ينسخه KeePass وBitwarden و1Password وغيرها ويُعلَّم كسرّي لا يُحفظ أبدًا.'] },
-  { key: 'ignore', c: C.pink, isNew: true, icon: '<path d="M3 3l18 18"/><path d="M10.6 6.1A9.6 9.6 0 0 1 12 6c5 0 9 6 9 6a16 16 0 0 1-3.2 3.8M6.6 6.6A16 16 0 0 0 3 12s4 6 9 6a9.7 9.7 0 0 0 5.4-1.6"/>',
+  { key: 'ignore', c: C.pink, isNew: '3.1', icon: '<path d="M3 3l18 18"/><path d="M10.6 6.1A9.6 9.6 0 0 1 12 6c5 0 9 6 9 6a16 16 0 0 1-3.2 3.8M6.6 6.6A16 16 0 0 0 3 12s4 6 9 6a9.7 9.7 0 0 0 5.4-1.6"/>',
     en: ['Ignore any program', 'Pick programs (your bank, a work app…) whose copies are never captured.'],
     ar: ['تجاهل أي برنامج', 'اختر برامج (تطبيق البنك، برنامج عمل…) لا يُلتقط شيء مما تنسخه منها.'] },
-  { key: 'ocr', c: C.violet, isNew: true, icon: '<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 10h8M8 14h5"/>',
+  { key: 'ocr', c: C.violet, isNew: '3.1', icon: '<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 10h8M8 14h5"/>',
     en: ['Find images by the text in them', 'New images are read on your PC by the OCR built into Windows (Arabic and English), so searching "invoice" finds a screenshot of one. The text is used only for search.'],
     ar: ['ابحث عن الصور بالنص الذي فيها', 'تُقرأ الصور الجديدة على جهازك بمحرك OCR المدمج في Windows (العربية والإنجليزية)، فتجد لقطة الشاشة بالبحث عن كلمة فيها. النص يُستعمل للبحث فقط.'] },
   { key: 'tabs', c: C.sky, icon: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
@@ -56,6 +56,9 @@ const F = [
   { key: 'merge', c: C.violet, icon: '<path d="M6 3v6a6 6 0 0 0 6 6h7M16 12l3 3-3 3M6 21v-5"/>',
     en: ['Copy, drag, merge', 'Copy part of a text, drag and drop in and out, merge several items into one (drag a card onto another, or <kbd>Ctrl</kbd>+click) and split them back.'],
     ar: ['انسخ واسحب وادمج', 'انسخ جزءًا من النص، واسحب وأفلت من اللوحة وإليها، وادمج عدة عناصر في عنصر واحد (اسحب بطاقة إلى بطاقة أخرى، أو Ctrl+نقرة) ثم افصلها.'] },
+  { key: 'groups', c: C.teal, isNew: '3.2', icon: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M8 13h8M8 16h5"/>',
+    en: ['Named groups', 'Give a group a name (it is found by search), paste the whole group or just one part of it, and take a part back out. A group left with one part becomes a single item again.'],
+    ar: ['مجموعات بأسماء', 'سمِّ المجموعة باسم تجده بالبحث، والصق المجموعة كاملة أو جزءًا واحدًا منها، وأخرج أي جزء منها. والمجموعة التي يبقى فيها جزء واحد تعود عنصرًا عاديًا.'] },
   { key: 'emoji', c: C.amber, icon: '<circle cx="12" cy="12" r="9"/><path d="M8.5 14a4 4 0 0 0 7 0M9 9.5h.01M15 9.5h.01"/>',
     en: ['Emoji picker', 'Categories, recent emoji and search in English or Arabic.'],
     ar: ['منتقي إيموجي', 'فئات وأحدث المستخدم، وبحث بالعربية أو الإنجليزية.'] },
@@ -63,15 +66,15 @@ const F = [
     en: ['English and Arabic interface', 'Follows Windows, or pick one, with right-to-left layout and Arabic-aware search that ignores diacritics, hamza forms and ة/ه.'],
     ar: ['واجهة عربية وإنجليزية', 'تتبع لغة Windows أو تختار بنفسك، باتجاه من اليمين لليسار، وبحث يفهم العربية فيتجاهل التشكيل وأشكال الهمزة والفرق بين ة وه.'] },
   { key: 'customize', c: C.pink, icon: '<path d="M4 6h9M17 6h3M15 4v4M4 12h3M11 12h9M9 10v4M4 18h11M19 18h1M17 16v4"/>',
-    en: ['Make it yours', '5 themes, 4 fonts (including Cairo, Tajawal and IBM Plex Sans Arabic), text size, density, panel width, open delay, and the handle\'s length, thickness and colour.'],
-    ar: ['اجعله على ذوقك', '5 سمات، و4 خطوط (منها القاهرة وتجوال وIBM Plex Sans Arabic)، وحجم النص، والكثافة، وعرض اللوحة، ومهلة الفتح، وطول المقبض وسماكته ولونه.'] },
+    en: ['Make it yours', '5 themes (Light, Dark, Ocean, Forest and Sand), 4 fonts (including Cairo, Tajawal and IBM Plex Sans Arabic), text size, density, panel width, open delay, and the handle\'s length, thickness and colour, with an optional second colour at its top and bottom.'],
+    ar: ['اجعله على ذوقك', '5 سمات (فاتح، داكن، محيط، غابة، رملي)، و4 خطوط (منها القاهرة وتجوال وIBM Plex Sans Arabic)، وحجم النص، والكثافة، وعرض اللوحة، ومهلة الفتح، وطول المقبض وسماكته ولونه، مع لون ثانٍ اختياري لأعلاه وأسفله.'] },
   { key: 'startup', c: C.green, icon: '<path d="M12 3v8"/><path d="M6.3 6.3a8 8 0 1 0 11.4 0"/>',
     en: ['Starts with Windows', 'Can be turned off from the tray icon, and capturing can be paused on demand.'],
     ar: ['يعمل مع بدء Windows', 'يمكن إيقاف ذلك من أيقونة شريط المهام، ويمكن إيقاف الالتقاط مؤقتًا.'] },
-  { key: 'updates', c: C.teal, isNew: true, icon: '<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/>',
+  { key: 'updates', c: C.teal, isNew: '3.1', icon: '<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/>',
     en: ['Tells you about new versions', 'A small notice with a download link; nothing is downloaded or installed by itself.'],
     ar: ['ينبّهك بالإصدارات الجديدة', 'سطر صغير فيه رابط التنزيل، ولا يُنزَّل أو يُثبَّت شيء من تلقاء نفسه.'] },
-  { key: 'backup', c: C.sky, isNew: true, icon: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 10v6M9 13l3 3 3-3"/>',
+  { key: 'backup', c: C.sky, isNew: '3.1', icon: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 10v6M9 13l3 3 3-3"/>',
     en: ['Easy backup', 'Settings → Data folder → Open, then copy that folder.'],
     ar: ['نسخ احتياطي سهل', 'الإعدادات ← مجلد البيانات ← فتح، ثم انسخ المجلد. وللاستعادة: أغلق حافة وأعد المجلد مكانه.'] }
 ]
@@ -100,7 +103,7 @@ const block = (lang) =>
   F.map((f) => {
     writeFileSync(new URL(`${f.key}-${lang}.svg`, dir), svg(f, lang))
     const [title, desc] = f[lang]
-    const tag = f.isNew ? (lang === 'ar' ? '**جديد في 3.1.** ' : '**New in 3.1.** ') : ''
+    const tag = f.isNew ? (lang === 'ar' ? `**جديد في ${f.isNew}.** ` : `**New in ${f.isNew}.** `) : ''
     return `<img src="assets/features/${f.key}-${lang}.svg" alt="${title.replace(/"/g, '&quot;')}" height="44">\n\n${tag}${desc}\n`
   }).join('\n')
 
