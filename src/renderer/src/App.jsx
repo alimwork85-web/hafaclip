@@ -64,8 +64,23 @@ export default function App() {
     []
   )
 
+  // The card being dragged from this panel; dropping it on another card merges the two.
+  const draggedId = useRef(null)
+  const [dropTarget, setDropTarget] = useState(null)
+  const cardUnder = (e) => {
+    const id = e.target.closest?.('.card')?.dataset.id
+    return draggedId.current && id && id !== draggedId.current ? id : null
+  }
+
   const onDragOver = (e) => {
-    if (draggingOut.current) return
+    const target = cardUnder(e)
+    setDropTarget(target)
+    if (target) {
+      e.preventDefault()
+      e.dataTransfer.dropEffect = 'move'
+      return setDropping(false)
+    }
+    if (draggingOut.current || draggedId.current) return
     e.preventDefault()
     e.dataTransfer.dropEffect = 'copy'
     setDropping(true)
@@ -74,7 +89,16 @@ export default function App() {
   const onDrop = async (e) => {
     e.preventDefault()
     setDropping(false)
-    if (draggingOut.current) return
+    const target = cardUnder(e)
+    const dragged = draggedId.current
+    draggedId.current = null
+    setDropTarget(null)
+    if (target) {
+      await window.panel.mergeItems([target, dragged])
+      return setToast({ text: tr('merged'), tone: 'ok' })
+    }
+    // A card dropped back on the panel (not on another card) is not a new item.
+    if (draggingOut.current || dragged) return
     // A FileList cannot cross the context bridge; an array of File objects can.
     const r = await window.panel.drop(Array.from(e.dataTransfer.files), e.dataTransfer.getData('text/plain'))
     setToast(r.ok ? { text: tr('added'), tone: 'ok' } : { text: tr(r.error), tone: 'error' })
@@ -259,6 +283,7 @@ export default function App() {
       lang={lang}
       item={item}
       selected={selected.includes(item.id)}
+      dropTarget={dropTarget === item.id}
       expanded={expandedId === item.id}
       onCopiedPart={() => setToast({ text: tr('copiedPart'), tone: 'ok' })}
       onToggleExpand={() => setExpandedId(expandedId === item.id ? null : item.id)}
@@ -289,15 +314,19 @@ export default function App() {
         data-drop={tr('dropToAdd')}
         onMouseLeave={() => setExpanded(false)}
         onDragOver={onDragOver}
-        onDragLeave={() => setDropping(false)}
+        onDragLeave={() => (setDropping(false), setDropTarget(null))}
         onDrop={onDrop}
         onDragStart={(e) => {
+          draggedId.current = e.target.closest?.('.card')?.dataset.id ?? null
           // Native drags (images, files) cancel the HTML drag and never fire dragend, so only flag text drags.
           if (!e.defaultPrevented) draggingOut.current = true
         }}
         onDragEnd={() => {
           draggingOut.current = false
+          draggedId.current = null
         }}
+        // No mouse events reach the page during an OS drag, so the first one after it means the drag is over.
+        onMouseMove={() => draggedId.current && !draggingOut.current && ((draggedId.current = null), setDropTarget(null))}
       >
         <header>
           <span className="dot" />

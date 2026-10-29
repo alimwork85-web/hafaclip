@@ -145,6 +145,32 @@ await step('Ctrl+click two cards, merge, then split', async () => {
   assert.equal(await page.locator('.card.kind-group').count(), 0)
 })
 
+await step('dragging a card onto another merges them', async () => {
+  const before = await cards().count()
+  // Playwright cannot drive an OS drag inside Electron, so the page gets the same drag events a real one fires.
+  await page.evaluate(() => {
+    const card = (text) => [...document.querySelectorAll('.list .card')].find((c) => c.innerText.includes(text))
+    const dataTransfer = new DataTransfer()
+    const fire = (el, type) => el.dispatchEvent(new DragEvent(type, { bubbles: true, cancelable: true, dataTransfer }))
+    const target = card('السلام عليكم').querySelector('.card-text') ?? card('السلام عليكم')
+    fire(card('hgsghl').querySelector('.grip'), 'dragstart')
+    fire(target, 'dragover')
+  })
+  await page.waitForSelector('.card.drop-target')
+  await shot('05-drag-merge-target')
+  await page.evaluate(() => {
+    const card = [...document.querySelectorAll('.list .card')].find((c) => c.innerText.includes('السلام عليكم'))
+    card.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: new DataTransfer() }))
+  })
+  await page.waitForSelector('.card.kind-group')
+  assert.equal(await cards().count(), before - 1)
+  const group = page.locator('.card.kind-group')
+  await group.hover()
+  await group.getByRole('button', { name: 'Split' }).click()
+  await wait(300)
+  assert.equal(await cards().count(), before)
+})
+
 await step('delete removes a card', async () => {
   const before = await cards().count()
   const card = cards().filter({ hasText: 'السلام عليكم' })

@@ -73,7 +73,7 @@ const label = (lang, item) =>
         ? `${item.width}×${item.height}`
         : t(lang, 'charsLabel', item.text.length)
 
-export default function ItemCard({ lang, number, item, selected, expanded, onToggleExpand, onCopiedPart, onClick, onPaste, onPin, onDelete, onSplit, onDragOut, onFixLayout, onPasteAs }) {
+export default function ItemCard({ lang, number, item, selected, dropTarget, expanded, onToggleExpand, onCopiedPart, onClick, onPaste, onPin, onDelete, onSplit, onDragOut, onFixLayout, onPasteAs }) {
   // Buttons inside the card must not also trigger the card's own click action.
   const action = (fn) => (e) => {
     e.stopPropagation()
@@ -130,7 +130,8 @@ export default function ItemCard({ lang, number, item, selected, expanded, onTog
   return (
     <li
       ref={ref}
-      className={`card kind-${item.kind}${item.pinned ? ' pinned' : ''}${selected ? ' selected' : ''}${expanded ? ' expanded' : ''}`}
+      data-id={item.id}
+      className={`card kind-${item.kind}${item.pinned ? ' pinned' : ''}${selected ? ' selected' : ''}${dropTarget ? ' drop-target' : ''}${expanded ? ' expanded' : ''}`}
       role="button"
       tabIndex={0}
       aria-pressed={selected}
