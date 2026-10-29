@@ -1,5 +1,5 @@
 :root {
-  --bg: rgba(22, 24, 31, 0.97);
+  --bg: rgb(22, 24, 31);
   --border: rgba(255, 255, 255, 0.08);
   --text: #eceef4;
   --muted: #8b90a0;
@@ -16,7 +16,7 @@
 }
 /* Themes: data-theme is set by App ("system" resolves to light or dark from the Windows setting). */
 :root[data-theme='light'] {
-  --bg: rgba(248, 249, 252, 0.99);
+  --bg: rgb(248, 249, 252);
   --border: rgba(20, 24, 40, 0.1);
   --text: #1d2130;
   --muted: #6b7083;
@@ -31,7 +31,7 @@
   color-scheme: light;
 }
 :root[data-theme='ocean'] {
-  --bg: rgba(12, 27, 42, 0.97);
+  --bg: rgb(12, 27, 42);
   --border: rgba(120, 200, 255, 0.12);
   --text: #e3f1fb;
   --muted: #86a3b8;
@@ -44,7 +44,7 @@
   --shadow: rgba(0, 0, 0, 0.4);
 }
 :root[data-theme='sand'] {
-  --bg: rgba(250, 245, 236, 0.99);
+  --bg: rgb(250, 245, 236);
   --border: rgba(90, 60, 20, 0.12);
   --text: #3b2f22;
   --muted: #8a7660;
