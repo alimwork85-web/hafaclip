@@ -21,7 +21,8 @@ const ICONS = {
   pin: 'M12 17v5M9 3h6l-1 7 4 3v2H6v-2l4-3z',
   trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
   split: 'M4 6h16M4 12h10M4 18h16M18 9l3 3-3 3',
-  copy: 'M9 9h10v12H9zM5 15V3h10'
+  copy: 'M9 9h10v12H9zM5 15V3h10',
+  swap: 'M4 8h15l-4-4M20 16H5l4 4'
 }
 
 /** Text of an item when it can be dragged as plain text (text, or a group made only of text). */
@@ -67,7 +68,7 @@ const label = (lang, item) =>
         ? `${item.width}×${item.height}`
         : t(lang, 'charsLabel', item.text.length)
 
-export default function ItemCard({ lang, item, selected, expanded, onToggleExpand, onCopiedPart, onClick, onPaste, onPin, onDelete, onSplit, onDragOut }) {
+export default function ItemCard({ lang, item, selected, expanded, onToggleExpand, onCopiedPart, onClick, onPaste, onPin, onDelete, onSplit, onDragOut, onFixLayout }) {
   // Buttons inside the card must not also trigger the card's own click action.
   const action = (fn) => (e) => {
     e.stopPropagation()
@@ -162,6 +163,9 @@ export default function ItemCard({ lang, item, selected, expanded, onToggleExpan
         <span className="time">{timeAgo(lang, item.createdAt)}</span>
         <div className="actions">
           <button title={t(lang, 'pasteTitle')} aria-label={t(lang, 'paste')} onClick={action(onPaste)}><Icon d={ICONS.paste} /></button>
+          {isText && (
+            <button title={t(lang, 'fixLayoutTitle')} aria-label={t(lang, 'fixLayout')} onClick={action(onFixLayout)}><Icon d={ICONS.swap} /></button>
+          )}
           {item.kind === 'group' && (
             <button title={t(lang, 'splitTitle')} aria-label={t(lang, 'split')} onClick={action(onSplit)}><Icon d={ICONS.split} /></button>
           )}

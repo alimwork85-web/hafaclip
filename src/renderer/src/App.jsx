@@ -7,6 +7,7 @@ import TabStrip from './TabStrip'
 import { CATEGORIES, inCategory } from './categories'
 import { normalize } from './normalize'
 import { resolveLang, t } from './i18n'
+import { fixLayout } from './layout'
 
 // `q` arrives already normalized.
 const matches = (item, q) => {
@@ -164,6 +165,12 @@ export default function App() {
     }
   }
 
+  // The converted text is added as a new item, so the original stays as it was.
+  const fixItemLayout = async (item) => {
+    const r = await window.panel.drop([], fixLayout(item.text))
+    setToast(r.ok ? { text: tr('layoutFixed'), tone: 'ok' } : { text: tr(r.error), tone: 'error' })
+  }
+
   const pasteEmoji = async (emoji) => {
     setExpanded(false)
     const r = await window.panel.pasteEmoji(emoji)
@@ -208,6 +215,7 @@ export default function App() {
       onToggleExpand={() => setExpandedId(expandedId === item.id ? null : item.id)}
       onClick={(e) => (e.ctrlKey || selected.length ? toggleSelect(item.id) : copy(item))}
       onSplit={() => window.panel.splitItem(item.id)}
+      onFixLayout={() => fixItemLayout(item)}
       onPaste={() => paste(item)}
       onPin={() => window.panel.pinItem(item.id, !item.pinned)}
       onDelete={() => window.panel.deleteItem(item.id)}
