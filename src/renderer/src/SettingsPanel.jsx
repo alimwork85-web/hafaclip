@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { HANDLE_COLORS, PANEL_WIDTHS } from './hotZone'
 import { t } from './i18n'
 import { pruneItems } from '../../main/history'
+import { version } from '../../../package.json'
 
 const DELAYS = { 0: 'instant', 300: 'short', 600: 'long' }
 // The font names show in their own font, so the choice previews itself.
@@ -150,6 +151,8 @@ export default function SettingsPanel({ lang, settings, items, onChange }) {
           ))}
         </div>
       </div>
+
+      <p className="about" dir="ltr">HafaClip {version} · Ali Alhumedi</p>
     </div>
   )
 }

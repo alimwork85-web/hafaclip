@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="240" viewBox="0 0 640 240" role="img" aria-label="Measured size, version 2.0.0 vs 3.0.0: installer 107.8 MB to 99.7 MB, installed 360 MB to 313 MB">
+  <rect width="640" height="240" rx="16" fill="#16181f"/>
+  <g font-family="Segoe UI, Arial, sans-serif" fill="#eceef4">
+    <text x="24" y="36" font-size="16" font-weight="700">Measured size (MB), lower is better</text>
+    <g font-size="12" fill="#a3a8bd">
+      <rect x="420" y="25" width="12" height="12" rx="3" fill="#5b6070"/><text x="438" y="35">2.0.0</text>
+      <rect x="500" y="25" width="12" height="12" rx="3" fill="#7c8cff"/><text x="518" y="35">3.0.0</text>
+    </g>
+    <!-- Bars scale: 400 px = 360 MB -->
+    <text x="24" y="86" font-size="13" fill="#a3a8bd">Installer</text>
+    <rect x="120" y="70" width="120" height="18" rx="4" fill="#5b6070"/><text x="248" y="84" font-size="12">107.8</text>
+    <rect x="120" y="92" width="111" height="18" rx="4" fill="#7c8cff"/><text x="239" y="106" font-size="12" font-weight="700">99.7 (−7.5%)</text>
+    <text x="24" y="166" font-size="13" fill="#a3a8bd">Installed</text>
+    <rect x="120" y="150" width="400" height="18" rx="4" fill="#5b6070"/><text x="528" y="164" font-size="12">360</text>
+    <rect x="120" y="172" width="348" height="18" rx="4" fill="#7c8cff"/><text x="476" y="186" font-size="12" font-weight="700">313 (−13%)</text>
+    <text x="24" y="224" font-size="11" fill="#7d8295">Measured with electron-builder 26 on Windows 11, same app code, before and after trimming locales.</text>
+  </g>
+</svg>

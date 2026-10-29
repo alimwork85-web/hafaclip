@@ -1,6 +1,6 @@
 {
   "name": "edge-clipboard",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Clipboard manager for Windows that lives on the screen edge and expands on hover.",
   "author": "Ali Alhumedi",
   "license": "MIT",

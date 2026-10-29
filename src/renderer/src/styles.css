@@ -324,3 +324,6 @@ kbd {
 
 /* Alt+1…9 quick-paste number on the first cards. */
 .card footer kbd.number { font-size: 10px; padding: 0 5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* App name, version and developer at the bottom of the settings. */
+.settings .about { margin-top: auto; padding-top: 16px; text-align: center; font-size: 11px; color: var(--muted); }
