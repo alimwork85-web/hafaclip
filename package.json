@@ -1,13 +1,13 @@
 {
-  "name": "edge-clipboard",
-  "version": "3.0.1",
+  "name": "hafaclip",
+  "version": "3.0.2",
   "description": "Clipboard manager for Windows that lives on the screen edge and expands on hover.",
   "author": "Ali Alhumedi",
   "license": "MIT",
-  "homepage": "https://github.com/alimwork85-web/edge-clipboard",
+  "homepage": "https://github.com/alimwork85-web/hafaclip",
   "repository": {
     "type": "git",
-    "url": "https://github.com/alimwork85-web/edge-clipboard.git"
+    "url": "https://github.com/alimwork85-web/hafaclip.git"
   },
   "private": true,
   "main": "out/main/index.js",

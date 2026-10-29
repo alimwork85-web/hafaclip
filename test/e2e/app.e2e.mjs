@@ -31,7 +31,7 @@ writeFileSync(
     { id: 'pin', kind: 'text', text: 'Best regards,\nAli Alhumedi', createdAt: now - 50 * minute, pinned: true },
     { id: 'ar', kind: 'text', text: 'مُحَمَّد دفع ١٢٣٤٥ ريالًا للمدرسة', createdAt: now - 1 * minute, pinned: false },
     { id: 'typo', kind: 'text', text: 'hgsghl ugd;l', createdAt: now - 2 * minute, pinned: false },
-    { id: 'link', kind: 'text', text: 'https://github.com/alimwork85-web/edge-clipboard', createdAt: now - 3 * minute, pinned: false },
+    { id: 'link', kind: 'text', text: 'https://github.com/alimwork85-web/hafaclip', createdAt: now - 3 * minute, pinned: false },
     { id: 'files', kind: 'files', files: ['C:\\Docs\\Report.pdf', 'C:\\Music\\Song.mp3', 'C:\\Video\\Clip.mp4', 'C:\\Docs\\Notes.txt'], createdAt: now - 4 * minute, pinned: false },
     { id: 'img', kind: 'image', image: '0f0f0f0f-1.png', width: 256, height: 256, hash: createHash('sha1').update('x').digest('hex'), createdAt: now - 5 * minute, pinned: false },
     { id: 'long', kind: 'text', text: 'Line one of a long note\nLine two\nLine three\nLine four\nLine five', createdAt: now - 6 * minute, pinned: false }
@@ -93,7 +93,7 @@ await page.fill('.search', '')
 await step('clicking a card copies it', async () => {
   await cards().filter({ hasText: 'github.com' }).click()
   await wait(300)
-  assert.equal(await clipboardText(), 'https://github.com/alimwork85-web/edge-clipboard')
+  assert.equal(await clipboardText(), 'https://github.com/alimwork85-web/hafaclip')
 })
 
 await step('More shows the whole long text', async () => {

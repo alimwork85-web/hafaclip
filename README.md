@@ -3,10 +3,10 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/alimwork85-web/edge-clipboard/releases/latest"><img src="https://img.shields.io/github/v/release/alimwork85-web/edge-clipboard?style=flat-square&color=7c8cff" alt="Latest release"></a>
+  <a href="https://github.com/alimwork85-web/hafaclip/releases/latest"><img src="https://img.shields.io/github/v/release/alimwork85-web/hafaclip?style=flat-square&color=7c8cff" alt="Latest release"></a>
   <img src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078d4?style=flat-square&logo=windows" alt="Windows 10 | 11">
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/alimwork85-web/edge-clipboard?style=flat-square&color=b07cff" alt="MIT license"></a>
-  <a href="https://github.com/alimwork85-web/edge-clipboard/releases"><img src="https://img.shields.io/github/downloads/alimwork85-web/edge-clipboard/total?style=flat-square&color=34d399" alt="Downloads"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/alimwork85-web/hafaclip?style=flat-square&color=b07cff" alt="MIT license"></a>
+  <a href="https://github.com/alimwork85-web/hafaclip/releases"><img src="https://img.shields.io/github/downloads/alimwork85-web/hafaclip/total?style=flat-square&color=34d399" alt="Downloads"></a>
   <img src="https://img.shields.io/badge/interface-English%20%7C%20%D8%A7%D9%84%D8%B9%D8%B1%D8%A8%D9%8A%D8%A9-f59e0b?style=flat-square" alt="English | العربية">
   <img src="https://img.shields.io/badge/built%20with-Electron-47848f?style=flat-square&logo=electron" alt="Built with Electron">
 </p>
@@ -15,7 +15,9 @@
 
 <a id="english"></a>
 
-**HafaClip** (حافة, Arabic for *edge*; formerly Edge Clipboard) is a free, open-source clipboard manager for Windows. It hides as a thin line on the edge of your screen; move the mouse there (or press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>E</kbd>) and your clipboard history slides out. Everything stays on your computer.
+<h1 align="center">HafaClip <sub><sup>(Edge Clipboard)</sup></sub></h1>
+
+**HafaClip** (حافة, Arabic for *edge*; previously named Edge Clipboard) is a free, open-source clipboard manager for Windows. It hides as a thin line on the edge of your screen; move the mouse there (or press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>E</kbd>) and your clipboard history slides out. Everything stays on your computer.
 
 <p align="center">
   <img src="assets/demo.gif" alt="Hover the screen edge to open the panel and switch tabs" width="320">
@@ -50,7 +52,7 @@
 
 ## Install
 
-1. Download **`HafaClip Setup x.y.z.exe`** from the [latest release](https://github.com/alimwork85-web/edge-clipboard/releases/latest).
+1. Download **`HafaClip Setup x.y.z.exe`** from the [latest release](https://github.com/alimwork85-web/hafaclip/releases/latest).
 2. Run it. It installs for your user only (no admin rights) and adds **HafaClip** to the Start menu. Installing it over Edge Clipboard keeps your history and settings.
 3. The handle appears on the left edge of the screen; the app also starts with Windows from now on.
 
@@ -88,7 +90,7 @@ HafaClip makes **no network connections**. History is stored only on your PC in 
 
 Feedback is very welcome, and so is help:
 
-- **Found a bug or something confusing?** [Open an issue](https://github.com/alimwork85-web/edge-clipboard/issues/new) with what you did, what you expected and what happened (a screenshot helps).
+- **Found a bug or something confusing?** [Open an issue](https://github.com/alimwork85-web/hafaclip/issues/new) with what you did, what you expected and what happened (a screenshot helps).
 - **Have an idea or a suggestion?** Open an issue and describe it; small or big, all ideas are read.
 - **Want to help build it?** Pull requests are welcome: fixes, features, translations to more languages, docs or design. For anything large, open an issue first so we can agree on the approach.
 - **Like it?** A ⭐ on the repo and sharing it with friends helps others find it.
@@ -100,8 +102,8 @@ Messages in English or Arabic are both fine.
 Requires [Node.js](https://nodejs.org) 22 or newer.
 
 ```bash
-git clone https://github.com/alimwork85-web/edge-clipboard.git
-cd edge-clipboard
+git clone https://github.com/alimwork85-web/hafaclip.git
+cd hafaclip
 npm install
 node node_modules/electron/install.js   # downloads Electron if npm skipped install scripts
 npm test
@@ -117,7 +119,7 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 
 <div dir="rtl">
 
-## العربية
+<h1 align="center">حافة · HafaClip <sub><sup>(Edge Clipboard)</sup></sub></h1>
 
 **حافة (HafaClip)**، واسمه السابق Edge Clipboard، مدير حافظة مجاني ومفتوح المصدر لنظام Windows. يختبئ كخط رفيع على حافة الشاشة؛ حرّك الفأرة إليه (أو اضغط <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>E</kbd>) فينزلق لك سجل كل ما نسخته. كل شيء يبقى على جهازك.
 
@@ -140,7 +142,7 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 
 ### التثبيت
 
-1. نزّل **`HafaClip Setup x.y.z.exe`** من [آخر إصدار](https://github.com/alimwork85-web/edge-clipboard/releases/latest).
+1. نزّل **`HafaClip Setup x.y.z.exe`** من [آخر إصدار](https://github.com/alimwork85-web/hafaclip/releases/latest).
 2. شغّله. يُثبَّت لحسابك فقط (بلا صلاحيات مدير) ويضيف **HafaClip** إلى قائمة ابدأ. تثبيته فوق Edge Clipboard يحافظ على سجلك وإعداداتك.
 3. يظهر المقبض على الحافة اليسرى من الشاشة، ويعمل التطبيق مع بدء Windows من الآن.
 
@@ -154,7 +156,7 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 
 يسعدني سماع رأيك، ويسعدني أكثر أن تشاركني:
 
-- **وجدت مشكلة أو شيئًا غير واضح؟** [افتح بلاغًا (Issue)](https://github.com/alimwork85-web/edge-clipboard/issues/new) واذكر ما فعلت، وما توقعت، وما حدث (صورة الشاشة تساعد كثيرًا).
+- **وجدت مشكلة أو شيئًا غير واضح؟** [افتح بلاغًا (Issue)](https://github.com/alimwork85-web/hafaclip/issues/new) واذكر ما فعلت، وما توقعت، وما حدث (صورة الشاشة تساعد كثيرًا).
 - **عندك فكرة أو اقتراح؟** افتح بلاغًا واشرحه؛ كل فكرة تُقرأ، صغيرة كانت أو كبيرة.
 - **تريد المساعدة في التطوير؟** طلبات الدمج (Pull requests) مرحّب بها: إصلاحات، أو مزايا، أو ترجمة لغات أخرى، أو توثيق، أو تصميم. وللتغييرات الكبيرة افتح بلاغًا أولًا لنتفق على الطريقة.
 - **أعجبك؟** نجمة ⭐ للمستودع ومشاركته مع أصدقائك تساعد غيرك على الوصول إليه.
