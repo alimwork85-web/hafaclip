@@ -29,6 +29,10 @@
 
 Hover the handle to open, move away to close. Left or right edge, your choice.
 
+<img src="assets/features/height-en.svg" alt="A panel as tall as the handle" height="44">
+
+**New in 3.6.** By default the panel opens exactly as tall as the handle, centred on it (never shorter than half the screen). Or pick Large, Medium or Small in Settings → Panel height.
+
 <img src="assets/features/keyboard-en.svg" alt="Keyboard first" height="44">
 
 <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>E</kbd> (or your own shortcut) opens the panel with the cursor in search; type to filter, <kbd>↑</kbd> <kbd>↓</kbd> to move between cards, <kbd>Enter</kbd> to paste, <kbd>Alt</kbd>+<kbd>1</kbd>…<kbd>9</kbd> to paste a numbered card, <kbd>Esc</kbd> to close.
@@ -75,7 +79,7 @@ Copy part of a text, drag and drop in and out, merge several items into one (dra
 
 <img src="assets/features/groups-en.svg" alt="Named groups" height="44">
 
-**New in 3.2.** Give a group a name (it is found by search), paste the whole group or just one part of it, and take a part back out. A group left with one part becomes a single item again.
+**New in 3.2.** Give a group a name (it is found by search), paste the whole group or just one part of it, and take a part back out. A group left with one part becomes a single item again. Don't use groups? Turn off Settings → Merging and groups.
 
 <img src="assets/features/emoji-en.svg" alt="Emoji picker" height="44">
 
@@ -195,6 +199,10 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 
 مرّر الفأرة على المقبض ليفتح، وابتعد ليُغلق. الحافة اليسرى أو اليمنى، حسب اختيارك.
 
+<img src="assets/features/height-ar.svg" alt="لوحة بطول المقبض" height="44">
+
+**جديد في 3.6.** تنفتح اللوحة افتراضيًا بطول المقبض نفسه وفي منتصفه (ولا تقل عن نصف الشاشة). أو اختر كبيرة أو متوسطة أو صغيرة من الإعدادات ← ارتفاع اللوحة.
+
 <img src="assets/features/keyboard-ar.svg" alt="لوحة المفاتيح أولًا" height="44">
 
 <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>E</kbd> (أو اختصارك الخاص) يفتح اللوحة والمؤشر في البحث؛ اكتب للتصفية، و<kbd>↑</kbd> <kbd>↓</kbd> للتنقّل بين البطاقات، و<kbd>Enter</kbd> للصق، و<kbd>Alt</kbd>+<kbd>1</kbd>…<kbd>9</kbd> للصق البطاقة المرقّمة، و<kbd>Esc</kbd> للإغلاق.
@@ -241,7 +249,7 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 
 <img src="assets/features/groups-ar.svg" alt="مجموعات بأسماء" height="44">
 
-**جديد في 3.2.** سمِّ المجموعة باسم تجده بالبحث، والصق المجموعة كاملة أو جزءًا واحدًا منها، وأخرج أي جزء منها. والمجموعة التي يبقى فيها جزء واحد تعود عنصرًا عاديًا.
+**جديد في 3.2.** سمِّ المجموعة باسم تجده بالبحث، والصق المجموعة كاملة أو جزءًا واحدًا منها، وأخرج أي جزء منها. والمجموعة التي يبقى فيها جزء واحد تعود عنصرًا عاديًا. لا تحتاج المجموعات؟ عطّلها من الإعدادات ← الدمج والمجموعات.
 
 <img src="assets/features/emoji-ar.svg" alt="منتقي إيموجي" height="44">
 
