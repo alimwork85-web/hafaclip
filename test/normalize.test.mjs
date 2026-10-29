@@ -25,3 +25,7 @@ test('removeDiacritics drops tashkeel and tatweel but keeps hamza forms', () => 
   assert.equal(removeDiacritics('مُحَمَّـد أَحْمَد'), 'محمد أحمد')
   assert.equal(removeDiacritics('دفع ١٢٣٤٥ ريالًا'), 'دفع ١٢٣٤٥ ريالا')
 })
+
+test('normalize treats taa marbuta and haa as the same letter', () => {
+  assert.equal(normalize('السعودية'), normalize('السعوديه'))
+})

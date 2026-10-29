@@ -12,4 +12,5 @@ export function normalize(s) {
   return removeDiacritics(s.toLowerCase())
     .replace(/[أإآٱ]/g, 'ا')
     .replace(/ى/g, 'ي')
+    .replace(/ة/g, 'ه')
 }
