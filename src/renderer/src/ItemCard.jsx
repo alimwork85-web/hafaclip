@@ -86,7 +86,7 @@ const label = (lang, item) =>
         ? `⁦${item.width}×${item.height}⁩` // left-to-right isolate: width stays first in the Arabic interface
         : t(lang, 'charsLabel', item.text.length)
 
-export default function ItemCard({ lang, number, item, selected, dropTarget, expanded, onToggleExpand, onCopiedPart, onClick, onPaste, onPastePart, onExtractPart, onRename, onPin, onDelete, onSplit, onDragOut, onFixLayout, onPasteAs }) {
+export default function ItemCard({ lang, number, item, selected, dropTarget, expanded, onToggleExpand, onCopiedPart, onClick, onPaste, onPastePart, onExtractPart, onRename, groupsOn = true, onPin, onDelete, onSplit, onDragOut, onFixLayout, onPasteAs }) {
   // Buttons inside the card must not also trigger the card's own click action.
   const action = (fn) => (e) => {
     e.stopPropagation()
@@ -192,7 +192,7 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
       ) : (
         item.name && <p className="group-name" dir="auto">{item.name}</p>
       )}
-      <Preview lang={lang} item={item} expanded={expanded} onPastePart={item.kind === 'group' ? onPastePart : undefined} onExtractPart={onExtractPart} />
+      <Preview lang={lang} item={item} expanded={expanded} onPastePart={item.kind === 'group' && groupsOn ? onPastePart : undefined} onExtractPart={onExtractPart} />
       {expandable && (
         <button className="more-toggle" aria-expanded={expanded} onClick={action(onToggleExpand)}>
           {t(lang, expanded ? 'less' : 'more')}
@@ -225,7 +225,7 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
           {isText && (
             <button title={t(lang, 'fixLayoutTitle')} aria-label={t(lang, 'fixLayout')} onClick={action(onFixLayout)}><Icon d={ICONS.swap} /></button>
           )}
-          {item.kind === 'group' && (
+          {item.kind === 'group' && groupsOn && (
             <button title={t(lang, 'renameGroup')} aria-label={t(lang, 'renameGroup')} onClick={action(startNaming)}><Icon d={ICONS.rename} /></button>
           )}
           {item.kind === 'group' && (

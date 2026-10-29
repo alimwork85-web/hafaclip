@@ -141,6 +141,8 @@ export default function SettingsPanel({ lang, settings, items, onChange }) {
         </div>
       </div>
       {choice('searchImageText', [true, false], { labelOf: (o) => t(lang, o ? 'on' : 'off') })}
+      {choice('groups', [true, false], { labelOf: (o) => t(lang, o ? 'on' : 'off') })}
+      {settings.groups === false && <p className="settings-note info">{t(lang, 'groupsOffHint')}</p>}
       {settings.searchImageText !== false && ocrLanguages && !ocrLanguages.some((l) => l.startsWith('ar')) && <p className="settings-note info">{t(lang, 'ocrNoArabic')}</p>}
       <div className="setting">
         <span className="setting-label">{t(lang, 'ignoreApps')}</span>

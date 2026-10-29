@@ -67,9 +67,14 @@ export default function App() {
   // The card being dragged from this panel; dropping it on another card merges the two.
   const draggedId = useRef(null)
   const [dropTarget, setDropTarget] = useState(null)
+  const groupsOn = settings.groups !== false
+  // Turning groups off drops a selection that could only have been merged.
+  useEffect(() => {
+    if (!groupsOn) setSelected([])
+  }, [groupsOn])
   const cardUnder = (e) => {
     const id = e.target.closest?.('.card')?.dataset.id
-    return draggedId.current && id && id !== draggedId.current ? id : null
+    return groupsOn && draggedId.current && id && id !== draggedId.current ? id : null
   }
 
   const onDragOver = (e) => {
@@ -283,7 +288,8 @@ export default function App() {
       expanded={expandedId === item.id}
       onCopiedPart={() => setToast({ text: tr('copiedPart'), tone: 'ok' })}
       onToggleExpand={() => setExpandedId(expandedId === item.id ? null : item.id)}
-      onClick={(e) => (e.ctrlKey || selected.length ? toggleSelect(item.id) : copy(item))}
+      onClick={(e) => (groupsOn && (e.ctrlKey || selected.length) ? toggleSelect(item.id) : copy(item))}
+      groupsOn={groupsOn}
       onSplit={() => window.panel.splitItem(item.id)}
       onFixLayout={() => fixItemLayout(item)}
       onPasteAs={(convert) => pasteAs(item, convert)}

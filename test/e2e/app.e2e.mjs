@@ -218,6 +218,32 @@ await step('drag to merge, name the group, paste one part or all', async () => {
   assert.equal(await cards().count(), before)
 })
 
+await step('turning groups off stops new merges and keeps existing groups', async () => {
+  const ids = await page.evaluate(() => window.panel.getItems().then((items) => items.filter((i) => /hgsghl|السلام عليكم/.test(i.text ?? '')).map((i) => i.id)))
+  await page.evaluate((x) => window.panel.mergeItems(x), ids)
+  await setting({ groups: false })
+  await open()
+  const group = page.locator('.card.kind-group')
+  assert.equal(await group.count(), 1, 'the existing group stays')
+  await group.hover()
+  assert.equal(await group.getByRole('button', { name: 'Name this group' }).count(), 0)
+  assert.equal(await group.locator('.part-paste').count(), 0)
+  await shot('05-groups-off')
+  // Ctrl+click copies instead of selecting, and the main process refuses a merge.
+  await cards().filter({ hasText: 'github.com' }).click({ modifiers: ['Control'] })
+  assert.equal(await page.locator('.selection-bar').count(), 0)
+  const others = await page.evaluate(() => window.panel.getItems().then((items) => items.filter((i) => !i.pinned && i.kind === 'text').slice(0, 2).map((i) => i.id)))
+  await page.evaluate((x) => window.panel.mergeItems(x), others)
+  await wait(300)
+  assert.equal(await page.locator('.card.kind-group').count(), 1)
+  await setting({ groups: true })
+  await open()
+  await group.hover()
+  await group.getByRole('button', { name: 'Split' }).click()
+  await wait(300)
+  assert.equal(await page.locator('.card.kind-group').count(), 0)
+})
+
 await step('delete removes a card', async () => {
   const before = await cards().count()
   const card = cards().filter({ hasText: 'السلام عليكم' })

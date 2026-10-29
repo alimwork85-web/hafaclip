@@ -37,7 +37,8 @@ const DEFAULT_SETTINGS = {
   textSize: 'medium',
   density: 'comfortable',
   panelWidth: 'medium',
-  panelHeight: 'large'
+  panelHeight: 'large',
+  groups: true
 }
 // Settings the renderer may change (besides the edge and shortcut), each checked against its allowed values.
 const CHOICE_SETTINGS = {
@@ -59,7 +60,8 @@ const CHOICE_SETTINGS = {
   textSize: ['small', 'medium', 'large'],
   density: ['compact', 'comfortable'],
   panelWidth: PANEL_WIDTHS,
-  panelHeight: ['large', 'medium', 'small']
+  panelHeight: ['large', 'medium', 'small'],
+  groups: [true, false]
 }
 const allowed = (key, value) => (Array.isArray(CHOICE_SETTINGS[key]) ? CHOICE_SETTINGS[key].includes(value) : Object.hasOwn(CHOICE_SETTINGS[key], value))
 // At least one of Ctrl, Alt or Win, so a shortcut never swallows plain typing.
@@ -331,7 +333,8 @@ function createWindow() {
     return { ok: true }
   })
   ipcMain.handle('items:merge', (_e, ids) => {
-    if (Array.isArray(ids) && ids.every((id) => typeof id === 'string')) merge(ids)
+    // With groups turned off no new group is made; existing ones stay as they are.
+    if (settings.groups !== false && Array.isArray(ids) && ids.every((id) => typeof id === 'string')) merge(ids)
     pushItems()
   })
   ipcMain.handle('items:split', (_e, id) => {
