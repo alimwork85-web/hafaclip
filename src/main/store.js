@@ -83,6 +83,12 @@ export const setPinned = (id, pinned) => update(items.map((i) => (i.id === id ? 
 
 export const remove = (id) => update(items.filter((i) => i.id !== id), items.filter((i) => i.id === id))
 
+/** Stores the text read from an image file (on the item itself or inside a group made since), used only by search. */
+export function setImageText(image, text) {
+  const withText = (i) => (i.kind === 'image' && i.image === image ? { ...i, ocrText: text } : i.kind === 'group' ? { ...i, parts: i.parts.map(withText) } : i)
+  return update(items.map(withText))
+}
+
 export const merge = (ids) => update(mergeItems(items, ids, randomUUID()))
 
 export const split = (id) => update(splitItem(items, id))

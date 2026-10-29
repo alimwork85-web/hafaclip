@@ -93,6 +93,10 @@ export default function SettingsPanel({ lang, settings, items, onChange }) {
     <Choice lang={lang} label={t(lang, key)} value={settings[key]} options={options} onPick={(v) => onChange({ [key]: v })} {...extra} />
   )
   const capture = { captureText: 'cat.text', captureImages: 'cat.images', captureFiles: 'cat.files' }
+  const [ocrLanguages, setOcrLanguages] = useState(null)
+  useEffect(() => {
+    window.panel.ocrLanguages?.().then(setOcrLanguages)
+  }, [])
 
   return (
     <div className="settings">
@@ -130,6 +134,8 @@ export default function SettingsPanel({ lang, settings, items, onChange }) {
           ))}
         </div>
       </div>
+      {choice('searchImageText', [true, false], { labelOf: (o) => t(lang, o ? 'on' : 'off') })}
+      {settings.searchImageText !== false && ocrLanguages && !ocrLanguages.some((l) => l.startsWith('ar')) && <p className="settings-note">{t(lang, 'ocrNoArabic')}</p>}
 
       <div className="group">{t(lang, 'edgeHandle')}</div>
       <Choice lang={lang} label={t(lang, 'length')} value={settings.handleLength} options={['short', 'medium', 'long']} onPick={(handleLength) => onChange({ handleLength })} />

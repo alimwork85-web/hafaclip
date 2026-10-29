@@ -179,6 +179,33 @@ await step('tabs filter by type', async () => {
 })
 await tab(0)
 
+await step('a copied image is found by the Arabic and English text in it', async () => {
+  // A screenshot-like image with a line mixing both languages, drawn in the page and put on the clipboard.
+  const url = await page.evaluate(() => {
+    const c = Object.assign(document.createElement('canvas'), { width: 700, height: 120 })
+    const g = c.getContext('2d')
+    g.fillStyle = '#fff'
+    g.fillRect(0, 0, c.width, c.height)
+    g.fillStyle = '#000'
+    g.font = '15px "Segoe UI"'
+    g.direction = 'rtl'
+    g.fillText('فاتورة الكهرباء رقم 4821 من Downloads', 680, 40)
+    g.direction = 'ltr'
+    g.fillText('Quarterly Invoice for Hafa', 20, 90)
+    return c.toDataURL()
+  })
+  await app.evaluate(({ clipboard, ClipboardItem }, u) => {
+    const png = Buffer.from(u.split(',')[1], 'base64')
+    return clipboard.write([new ClipboardItem({ 'image/png': new Blob([png], { type: 'image/png' }) })])
+  }, url)
+  for (const word of ['فاتوره', 'Quarterly', 'Downloads']) {
+    await page.fill('.search', word)
+    await page.waitForFunction(() => document.querySelectorAll('.list .card .card-image').length === 1, null, { timeout: 15000 })
+  }
+  await shot('06-ocr-search')
+  await page.fill('.search', '')
+})
+
 await step('emoji search in English and Arabic', async () => {
   await tab(8)
   await page.fill('.emoji-panel .search', 'heart')

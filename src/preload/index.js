@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld('panel', {
     return () => ipcRenderer.removeListener('settings:changed', listener)
   },
   getItems: () => ipcRenderer.invoke('items:get'),
+  ocrLanguages: () => ipcRenderer.invoke('ocr:languages'),
   copyItem: (id) => ipcRenderer.invoke('items:copy', id),
   pasteItem: (id) => ipcRenderer.invoke('items:paste', id),
   pinItem: (id, pinned) => ipcRenderer.invoke('items:pin', id, pinned),

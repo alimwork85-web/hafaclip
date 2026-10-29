@@ -8,7 +8,8 @@ import { cleanTemp, dragPayload, itemFromDroppedPaths } from './drag'
 import { createTray } from './tray'
 import { HANDLE_COLORS, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone, PANEL_WIDTHS } from '../renderer/src/hotZone'
 import { resolveLang } from '../renderer/src/i18n'
-import { add, clearHistory, findItem, flush, getItems, imagesDir, loadItems, merge, prune, remove, setPinned, split, touch } from './store'
+import { add, clearHistory, findItem, flush, getItems, imagesDir, loadItems, merge, prune, remove, setImageText, setPinned, split, touch } from './store'
+import { ocrLanguages, readImageText, stopOcr } from './ocr'
 
 const DEFAULT_SETTINGS = {
   edge: 'left',
@@ -22,6 +23,7 @@ const DEFAULT_SETTINGS = {
   captureText: true,
   captureImages: true,
   captureFiles: true,
+  searchImageText: true,
   shortcut: 'Control+Alt+E',
   openDelay: 0,
   theme: 'system',
@@ -41,6 +43,7 @@ const CHOICE_SETTINGS = {
   captureText: [true, false],
   captureImages: [true, false],
   captureFiles: [true, false],
+  searchImageText: [true, false],
   openDelay: [0, 300, 600],
   theme: ['system', 'light', 'dark', 'ocean', 'sand'],
   font: ['system', 'plex', 'cairo', 'tajawal'],
@@ -190,6 +193,10 @@ function createWindow() {
     (item) => {
       add(item)
       pushItems()
+      // Only new images are read, in the background; a duplicate keeps the text its first copy got.
+      if (item.kind === 'image' && settings.searchImageText && findItem(item.id)) {
+        readImageText(join(imagesDir(), item.image)).then((text) => text && (setImageText(item.image, text), pushItems()))
+      }
     },
     (kind) => settings[capture[kind]] !== false
   )
@@ -225,6 +232,7 @@ function createWindow() {
   }
 
   ipcMain.handle('items:get', () => getItems())
+  ipcMain.handle('ocr:languages', () => ocrLanguages())
   ipcMain.handle('items:copy', (_e, id) => copyItem(id))
   ipcMain.handle('items:paste', async (_e, id) => {
     const result = await copyItem(id)
@@ -317,6 +325,7 @@ function createWindow() {
     clearInterval(pruneTimer)
     clearInterval(cursorTimer)
     watcher.stop()
+    stopOcr()
   })
 
   // During a drag (into or out of the panel) the window gets no mouse events, so watch the cursor here:
