@@ -25,6 +25,30 @@ const RtlMoveMemory = kernel32.func('void __stdcall RtlMoveMemory(void *dst, voi
 const GetForegroundWindow = user32.func('void * __stdcall GetForegroundWindow()')
 const SetForegroundWindow = user32.func('bool __stdcall SetForegroundWindow(void *hWnd)')
 const keybd_event = user32.func('void __stdcall keybd_event(uint8 vk, uint8 scan, uint32 flags, uintptr_t extra)')
+const RegisterClipboardFormatW = user32.func('uint32 __stdcall RegisterClipboardFormatW(str16 name)')
+
+// Formats password managers (KeePass, 1Password, Bitwarden...) add to say "don't keep this copy".
+const EXCLUDE_FORMATS = ['ExcludeClipboardContentFromMonitorProcessing', 'Clipboard Viewer Ignore'].map((f) => RegisterClipboardFormatW(f))
+const CF_CAN_INCLUDE = RegisterClipboardFormatW('CanIncludeInClipboardHistory')
+
+/** True when the app that copied asked clipboard managers to skip it. Null when the clipboard is busy. */
+function isSensitive() {
+  if (EXCLUDE_FORMATS.some((f) => IsClipboardFormatAvailable(f))) return true
+  if (!IsClipboardFormatAvailable(CF_CAN_INCLUDE)) return false
+  if (!OpenClipboard(null)) return null
+  try {
+    const hMem = GetClipboardData(CF_CAN_INCLUDE)
+    const ptr = hMem && GlobalLock(hMem)
+    if (!ptr) return false
+    try {
+      return koffi.decode(ptr, 'uint32') === 0 // DWORD 0 = keep it out of history
+    } finally {
+      GlobalUnlock(hMem)
+    }
+  } finally {
+    CloseClipboard()
+  }
+}
 
 /** Every copied file path (Electron only exposes the first one). Null when the clipboard is busy. */
 function readFilePaths() {
@@ -49,6 +73,9 @@ function readFilePaths() {
 /** Reads the current clipboard. Returns undefined when it is busy (retry later), null when there is nothing to keep. */
 export async function readClipboard(imagesDir) {
   const base = { id: randomUUID(), createdAt: Date.now(), pinned: false }
+  const sensitive = isSensitive()
+  if (sensitive === null) return undefined
+  if (sensitive) return null
   if (IsClipboardFormatAvailable(CF_HDROP)) {
     const files = readFilePaths()
     if (files === null) return undefined
