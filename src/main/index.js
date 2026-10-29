@@ -37,7 +37,7 @@ const DEFAULT_SETTINGS = {
   textSize: 'medium',
   density: 'comfortable',
   panelWidth: 'medium',
-  panelHeight: 'large',
+  panelHeight: 'match',
   groups: true
 }
 // Settings the renderer may change (besides the edge and shortcut), each checked against its allowed values.
@@ -60,7 +60,7 @@ const CHOICE_SETTINGS = {
   textSize: ['small', 'medium', 'large'],
   density: ['compact', 'comfortable'],
   panelWidth: PANEL_WIDTHS,
-  panelHeight: ['large', 'medium', 'small'],
+  panelHeight: ['match', 'large', 'medium', 'small'],
   groups: [true, false]
 }
 const allowed = (key, value) => (Array.isArray(CHOICE_SETTINGS[key]) ? CHOICE_SETTINGS[key].includes(value) : Object.hasOwn(CHOICE_SETTINGS[key], value))

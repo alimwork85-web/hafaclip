@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { handleBackground, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone, PANEL_GAPS, PANEL_WIDTHS } from './hotZone'
+import { handleBackground, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone, panelGap, PANEL_WIDTHS } from './hotZone'
 import ItemCard from './ItemCard'
 import EmojiPanel from './EmojiPanel'
 import SettingsPanel, { FONTS } from './SettingsPanel'
@@ -140,8 +140,8 @@ export default function App() {
     root.style.setProperty('--font', FONTS[settings.font] ?? FONTS.system)
     root.style.setProperty('--zoom', { small: 0.9, large: 1.12 }[settings.textSize] ?? 1)
     root.style.setProperty('--panel-w', `${PANEL_WIDTHS[settings.panelWidth] ?? PANEL_WIDTHS.medium}px`)
-    root.style.setProperty('--panel-gap', PANEL_GAPS[settings.panelHeight] ?? PANEL_GAPS.large)
-  }, [settings.density, settings.font, settings.textSize, settings.panelWidth, settings.panelHeight])
+    root.style.setProperty('--panel-gap', panelGap(settings.panelHeight, settings.handleLength))
+  }, [settings.density, settings.font, settings.textSize, settings.panelWidth, settings.panelHeight, settings.handleLength])
 
   // Keyboard: Esc closes, Alt+1…9 pastes the numbered card, and typing anywhere in a list goes to the search box.
   const searchRef = useRef(null)

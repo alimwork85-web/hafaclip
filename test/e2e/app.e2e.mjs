@@ -46,6 +46,7 @@ const step = async (name, fn) => {
     results.push(`PASS ${name}`)
   } catch (err) {
     results.push(`FAIL ${name}: ${err.message.split('\n')[0]}`)
+    await page?.screenshot({ path: join(shots, `FAIL-${results.length}.png`) }).catch(() => {})
   }
 }
 
@@ -79,6 +80,7 @@ await step('with no saved theme, light or dark is taken from Windows', async () 
   const { theme } = await page.evaluate(() => window.panel.getSettings())
   assert.ok(['light', 'dark'].includes(theme), `theme is ${theme}`)
   assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), theme)
+  assert.equal((await page.evaluate(() => window.panel.getSettings())).panelHeight, 'match')
 })
 await step('lists all items with pinned first', async () => {
   assert.equal(await cards().count(), 7)
@@ -122,7 +124,7 @@ await step('Paste as menu offers both conversions', async () => {
   assert.equal(await page.locator('.paste-menu button:not([disabled])').count(), 2)
 })
 await shot('04-paste-as-menu')
-await page.mouse.move(200, 30)
+await page.locator('.panel header').hover() // off the card but still inside the panel, whatever its height
 
 await step('pin and unpin', async () => {
   const card = cards().filter({ hasText: 'github.com' })
@@ -424,6 +426,21 @@ await step('panel height: large, medium and small, also with large text', async 
   await setting({ panelHeight: 'large', textSize: 'medium' })
   await open()
   assert.ok((await ratio()) > 0.95)
+
+  // "Match handle" (the default) is as tall as a long handle, and half the screen for shorter ones.
+  for (const [handleLength, want] of [['long', 0.7], ['medium', 0.5], ['short', 0.5]]) {
+    await setting({ panelHeight: 'match', handleLength })
+    await open()
+    const r = await ratio()
+    assert.ok(Math.abs(r - want) < 0.04, `match/${handleLength}: ${r.toFixed(2)} of the screen`)
+  }
+  await setting({ handleLength: 'long' })
+  await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.send('cursor:away'))
+  await wait(500)
+  await shot('17-height-match-handle-closed')
+  await open()
+  await shot('17-height-match-handle-open')
+  await setting({ handleLength: 'medium' })
 })
 
 await step('Clear all asks to confirm and keeps pinned items', async () => {

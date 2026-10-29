@@ -10,6 +10,13 @@ export const PANEL_WIDTHS = { narrow: 320, medium: 360, wide: 420 }
 // Panel height: the space left above and below it, so medium (~70%) and small (~50%) stay centred on the handle.
 export const PANEL_GAPS = { large: '12px', medium: '15vh', small: '25vh' }
 
+/** The panel-height gap; "match" follows the handle's length but never drops below half the screen. */
+export function panelGap(height, handleLength) {
+  if (height !== 'match') return PANEL_GAPS[height] ?? PANEL_GAPS.large
+  const share = Math.max(0.5, HANDLE_LENGTHS[handleLength] ?? HANDLE_LENGTHS.medium)
+  return `${Math.round(((1 - share) / 2) * 1000) / 10}vh`
+}
+
 export const HANDLE_COLORS = {
   purple: ['#7c8cff', '#b07cff'],
   blue: ['#3b9eff', '#5b6cf0'],
