@@ -1,6 +1,6 @@
 /** Persists history to userData: items.json for the list, images/ for one PNG per image item. */
 import { app } from 'electron'
-import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { addItem, clearUnpinned, mergeItems, splitItem } from './history'
@@ -36,6 +36,10 @@ export function flush() {
     renameSync(tmp, indexFile())
   } catch (err) {
     console.error('[store] save failed:', err)
+    // The installed app has no console, so keep a trace on disk too.
+    try {
+      appendFileSync(join(app.getPath('userData'), 'save-errors.log'), `${new Date().toISOString()} ${err.stack}\n`)
+    } catch {}
   }
 }
 

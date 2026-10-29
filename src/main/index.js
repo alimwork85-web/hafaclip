@@ -225,6 +225,14 @@ function createWindow() {
   }
   app.on('will-quit', () => globalShortcut.unregisterAll())
   win.on('blur', () => interactive && win.webContents.send('cursor:away'))
+  // Windows sometimes drops skipTaskbar after focus/show, so the panel shows up on the taskbar; reassert it.
+  win.on('focus', () => win.setSkipTaskbar(true))
+  win.on('show', () => win.setSkipTaskbar(true))
+  // "Close window" from the taskbar must not quit the app; only the tray's Quit (or a Windows sign-out) does.
+  let quitting = false
+  app.on('before-quit', () => (quitting = true))
+  win.on('session-end', () => (quitting = true))
+  win.on('close', (e) => quitting || e.preventDefault())
 
   // During a drag (into or out of the panel) the window gets no mouse events, so watch the cursor here:
   // open when it reaches the edge, close once it has left the window.
