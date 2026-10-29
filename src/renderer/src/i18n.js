@@ -219,7 +219,7 @@ const STRINGS = {
     minutes: (n) => `${n} د`,
     hours: (n) => `${n} س`,
     days: (n) => `${n} ي`,
-    searchEmoji: 'ابحث بالإنجليزية…',
+    searchEmoji: 'ابحث بالعربية أو الإنجليزية…',
     emojiCategories: 'فئات الإيموجي',
     results: (n) => `النتائج: ${n}`,
     'emoji.0': 'الوجوه',

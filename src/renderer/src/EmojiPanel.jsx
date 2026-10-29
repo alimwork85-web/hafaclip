@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react'
 import data from 'emojibase-data/en/compact.json'
 import versions_ from 'emojibase-data/versions/emoji.json'
+import arWords from './emoji-ar.json' // Unicode CLDR Arabic names, built by scripts/make-emoji-ar.mjs
 import { t } from './i18n'
+import { normalize } from './normalize'
 
 const GROUPS = [
   { id: 0 },
@@ -56,6 +58,8 @@ function getCatalog() {
   const emoji = data
     .filter((e) => GROUPS.some((g) => g.id === e.group) && (versionOf.get(e.hexcode) ?? 0) <= newest)
     .sort((a, b) => a.order - b.order)
+    // `ar` is the normalized Arabic words for search; `arName` the first one, shown as the tooltip.
+    .map((e) => ({ ...e, ar: normalize(arWords[e.hexcode] ?? ''), arName: arWords[e.hexcode]?.split(' | ')[0] }))
   const icon = Object.fromEntries(GROUPS.map((g) => [g.id, emoji.find((e) => e.group === g.id)?.unicode]))
   catalog = { emoji, icon }
   return catalog
@@ -78,9 +82,9 @@ export default function EmojiPanel({ lang, onPick }) {
   const [recent, setRecent] = useState(loadRecent)
   const { emoji: EMOJI, icon: ICON } = getCatalog()
 
-  const q = query.trim().toLowerCase()
+  const q = normalize(query.trim())
   const shown = useMemo(
-    () => (q ? EMOJI.filter((e) => e.label.includes(q) || e.tags?.some((t) => t.includes(q))) : EMOJI.filter((e) => e.group === group)),
+    () => (q ? EMOJI.filter((e) => e.label.includes(q) || e.tags?.some((t) => t.includes(q)) || e.ar.includes(q)) : EMOJI.filter((e) => e.group === group)),
     [q, group]
   )
 
@@ -130,7 +134,7 @@ export default function EmojiPanel({ lang, onPick }) {
           </>
         )}
         <div className="group">{q ? t(lang, 'results', shown.length) : t(lang, `emoji.${group}`)}</div>
-        <div className="emoji-grid">{shown.map((e) => button(e.unicode, e.label))}</div>
+        <div className="emoji-grid">{shown.map((e) => button(e.unicode, lang === 'ar' ? e.arName ?? e.label : e.label))}</div>
       </div>
     </div>
   )
