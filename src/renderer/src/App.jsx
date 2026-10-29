@@ -127,6 +127,15 @@ export default function App() {
       if (n) {
         e.preventDefault()
         if (shown[n - 1]) paste(shown[n - 1])
+      } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        // ↓ from search goes to the first card; ↑ from the first card goes back to search. Enter on a card pastes it.
+        const cards = [...document.querySelectorAll('.list .card')]
+        const i = cards.indexOf(document.activeElement)
+        const next = e.target === searchRef.current ? (e.key === 'ArrowDown' ? cards[0] : null) : i < 0 ? null : e.key === 'ArrowDown' ? cards[i + 1] : (cards[i - 1] ?? searchRef.current)
+        if (next) {
+          e.preventDefault()
+          next.focus()
+        }
       } else if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey && !e.target.closest?.('input, textarea')) {
         searchRef.current?.focus() // focused during keydown, so this key's character lands in the box
       }
