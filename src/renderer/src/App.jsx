@@ -27,6 +27,7 @@ export default function App() {
   const [items, setItems] = useState([])
   const [query, setQuery] = useState('')
   const [toast, setToast] = useState(null)
+  const [update, setUpdate] = useState(null) // newer release found on GitHub; null after "Later"
   const [confirmClear, setConfirmClear] = useState(false)
   const [dropping, setDropping] = useState(false)
   const [selected, setSelected] = useState([])
@@ -84,9 +85,12 @@ export default function App() {
     window.panel.getItems().then(setItems)
     const offSettings = window.panel.onSettings(setSettings)
     const offItems = window.panel.onItems(setItems)
+    window.panel.getUpdate().then(setUpdate)
+    const offUpdate = window.panel.onUpdate(setUpdate)
     return () => {
       offSettings()
       offItems()
+      offUpdate()
     }
   }, [])
 
@@ -312,6 +316,13 @@ export default function App() {
           </button>
         </header>
         <TabStrip lang={lang} tab={tab} onPick={setTab} counts={counts} />
+        {update && settings.checkUpdates !== false && (
+          <div className="toolbar selection-bar update-bar" role="status">
+            <span>{tr('updateAvailable', update)}</span>
+            <button className="primary" onClick={() => window.panel.openReleases()}>{tr('download')}</button>
+            <button onClick={() => setUpdate(null)}>{tr('later')}</button>
+          </div>
+        )}
         {tab === 'settings' ? (
           <SettingsPanel lang={lang} settings={settings} items={items} onChange={updateSettings} />
         ) : tab === 'emoji' ? (

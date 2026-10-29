@@ -1,4 +1,4 @@
-import { app, BrowserWindow, globalShortcut, ipcMain, net, protocol, screen } from 'electron'
+import { app, BrowserWindow, globalShortcut, ipcMain, net, protocol, screen, shell } from 'electron'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -10,6 +10,10 @@ import { HANDLE_COLORS, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone, PANEL_WID
 import { resolveLang } from '../renderer/src/i18n'
 import { add, clearHistory, findItem, flush, getItems, imagesDir, loadItems, merge, prune, remove, setImageText, setPinned, split, touch } from './store'
 import { ocrLanguages, readImageText, stopOcr } from './ocr'
+import { isNewer } from './version'
+
+const RELEASES_URL = 'https://github.com/alimwork85-web/hafaclip/releases/latest'
+const LATEST_API = 'https://api.github.com/repos/alimwork85-web/hafaclip/releases/latest'
 
 const DEFAULT_SETTINGS = {
   edge: 'left',
@@ -24,6 +28,8 @@ const DEFAULT_SETTINGS = {
   captureImages: true,
   captureFiles: true,
   searchImageText: true,
+  checkUpdates: true,
+  ignoredApps: [],
   shortcut: 'Control+Alt+E',
   openDelay: 0,
   theme: 'system',
@@ -44,6 +50,7 @@ const CHOICE_SETTINGS = {
   captureImages: [true, false],
   captureFiles: [true, false],
   searchImageText: [true, false],
+  checkUpdates: [true, false],
   openDelay: [0, 300, 600],
   theme: ['system', 'light', 'dark', 'ocean', 'sand'],
   font: ['system', 'plex', 'cairo', 'tajawal'],
@@ -165,6 +172,13 @@ function createWindow() {
       if (patch.language) tray.refresh()
       if (patch.panelWidth) placeWindow(win, settings)
       if (('historyLimit' in patch || 'autoDeleteDays' in patch) && prune(historyRules(settings))) pushItems()
+      if (patch.checkUpdates) checkUpdate()
+    }
+    // Program names (e.g. "bank.exe") whose copies are never captured.
+    if (Array.isArray(patch?.ignoredApps) && patch.ignoredApps.length <= 100 && patch.ignoredApps.every((a) => typeof a === 'string' && /^[^\\/:*?"<>|]{1,100}\.exe$/i.test(a))) {
+      settings.ignoredApps = [...new Set(patch.ignoredApps.map((a) => a.toLowerCase()))]
+      saveSettings(settings)
+      win.webContents.send('settings:changed', settings)
     }
     return settings
   })
@@ -184,6 +198,25 @@ function createWindow() {
   })
 
   const pushItems = () => win.webContents.send('items:changed', getItems())
+
+  // Asks GitHub for the latest release once a day; only says so, never downloads or installs anything.
+  let update = null
+  async function checkUpdate() {
+    if (!settings.checkUpdates) return
+    try {
+      const res = await net.fetch(LATEST_API, { headers: { Accept: 'application/vnd.github+json' } })
+      const tag = res.ok ? (await res.json()).tag_name : null
+      if (typeof tag === 'string' && isNewer(tag, app.getVersion())) {
+        update = tag.replace(/^v/, '')
+        win.webContents.send('update:available', update)
+      }
+    } catch {} // offline: try again tomorrow
+  }
+  const updateTimer = setInterval(checkUpdate, 86400000)
+  setTimeout(checkUpdate, 15000)
+  ipcMain.handle('update:get', () => update)
+  ipcMain.handle('update:open', () => shell.openExternal(RELEASES_URL))
+  ipcMain.handle('data:open', () => shell.openPath(app.getPath('userData')))
   prune(historyRules(settings))
   // Auto-delete runs on start and then every hour, so items go soon after they pass the age.
   const pruneTimer = setInterval(() => prune() && pushItems(), 3600000)
@@ -198,7 +231,7 @@ function createWindow() {
         readImageText(join(imagesDir(), item.image)).then((text) => text && (setImageText(item.image, text), pushItems()))
       }
     },
-    (kind) => settings[capture[kind]] !== false
+    (kind, source) => (kind === 'app' ? !settings.ignoredApps?.includes(source) : settings[capture[kind]] !== false)
   )
 
   applyLaunchAtLogin(settings.launchAtLogin)
@@ -324,6 +357,7 @@ function createWindow() {
   win.on('closed', () => {
     clearInterval(pruneTimer)
     clearInterval(cursorTimer)
+    clearInterval(updateTimer)
     watcher.stop()
     stopOcr()
   })

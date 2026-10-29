@@ -206,6 +206,35 @@ await step('a copied image is found by the Arabic and English text in it', async
   await page.fill('.search', '')
 })
 
+await step('a newer release shows a notice that Later hides', async () => {
+  await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.send('update:available', '9.9.9'))
+  await page.waitForSelector('.update-bar')
+  assert.match(await page.locator('.update-bar').innerText(), /9\.9\.9/)
+  await shot('06-update-notice')
+  await page.locator('.update-bar button').last().click()
+  assert.equal(await page.locator('.update-bar').count(), 0)
+})
+
+await step('copies from an ignored program are not captured', async () => {
+  const copyText = (text) =>
+    app.evaluate(({ clipboard, ClipboardItem }, t) => clipboard.write([new ClipboardItem({ 'text/plain': new Blob([t], { type: 'text/plain' }) })]), text)
+  // The test copies from inside HafaClip itself, so that is the program to ignore.
+  await page.click('.gear')
+  await page.locator('.settings').evaluate((s) => (s.scrollTop = s.scrollHeight))
+  await page.locator('.app-chips button', { hasText: /hafaclip/i }).click()
+  await shot('10-settings-ignore-apps')
+  assert.deepEqual((await page.evaluate(() => window.panel.getSettings())).ignoredApps, ['hafaclip.exe'])
+  const before = (await page.evaluate(() => window.panel.getItems())).length
+  await copyText('secret from an ignored program')
+  await wait(1500)
+  assert.equal((await page.evaluate(() => window.panel.getItems())).length, before)
+  await page.locator('.app-chips button', { hasText: /hafaclip/i }).click()
+  await copyText('allowed again')
+  await page.waitForFunction((n) => window.panel.getItems().then((i) => i.length === n + 1), before)
+  assert.ok(await page.getByRole('button', { name: /^(Open|فتح)$/ }).isVisible())
+  await page.click('.gear')
+})
+
 await step('emoji search in English and Arabic', async () => {
   await tab(8)
   await page.fill('.emoji-panel .search', 'heart')
@@ -222,7 +251,7 @@ await step('settings open; a limit above the item count applies at once', async 
   await shot('09-settings-top')
   await page.getByRole('button', { name: '250', exact: true }).click()
   await wait(300)
-  assert.equal(await page.locator('.settings-note').count(), 0)
+  assert.equal(await page.locator('.settings-note:not(.info)').count(), 0)
   assert.equal((await page.evaluate(() => window.panel.getSettings())).historyLimit, 250)
   await page.locator('.settings').evaluate((s) => (s.scrollTop = s.scrollHeight))
   await shot('10-settings-bottom')
@@ -251,6 +280,14 @@ await step('arabic layout is right to left', async () => {
   await setting({ language: 'ar' })
   await wait(300)
   assert.equal(await page.evaluate(() => document.documentElement.dir), 'rtl')
+  await open()
+  await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.send('update:available', '9.9.9'))
+  await page.click('.gear')
+  await page.locator('.settings').evaluate((s) => (s.scrollTop = s.scrollHeight - s.clientHeight - 260))
+  await wait(300)
+  await shot('11-arabic-settings-bottom')
+  await page.click('.gear')
+  await page.locator('.update-bar button').last().click()
 })
 
 await step('Clear all asks to confirm and keeps pinned items', async () => {

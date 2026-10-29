@@ -12,6 +12,14 @@ contextBridge.exposeInMainWorld('panel', {
   },
   getItems: () => ipcRenderer.invoke('items:get'),
   ocrLanguages: () => ipcRenderer.invoke('ocr:languages'),
+  getUpdate: () => ipcRenderer.invoke('update:get'),
+  openReleases: () => ipcRenderer.invoke('update:open'),
+  openDataFolder: () => ipcRenderer.invoke('data:open'),
+  onUpdate: (cb) => {
+    const listener = (_e, version) => cb(version)
+    ipcRenderer.on('update:available', listener)
+    return () => ipcRenderer.removeListener('update:available', listener)
+  },
   copyItem: (id) => ipcRenderer.invoke('items:copy', id),
   pasteItem: (id) => ipcRenderer.invoke('items:paste', id),
   pinItem: (id, pinned) => ipcRenderer.invoke('items:pin', id, pinned),

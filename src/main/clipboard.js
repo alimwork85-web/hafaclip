@@ -26,6 +26,30 @@ const GetForegroundWindow = user32.func('void * __stdcall GetForegroundWindow()'
 const SetForegroundWindow = user32.func('bool __stdcall SetForegroundWindow(void *hWnd)')
 const keybd_event = user32.func('void __stdcall keybd_event(uint8 vk, uint8 scan, uint32 flags, uintptr_t extra)')
 const RegisterClipboardFormatW = user32.func('uint32 __stdcall RegisterClipboardFormatW(str16 name)')
+const GetClipboardOwner = user32.func('void * __stdcall GetClipboardOwner()')
+const GetWindowThreadProcessId = user32.func('uint32 __stdcall GetWindowThreadProcessId(void *hWnd, _Out_ uint32 *pid)')
+const OpenProcess = kernel32.func('void * __stdcall OpenProcess(uint32 access, bool inherit, uint32 pid)')
+const CloseHandle = kernel32.func('bool __stdcall CloseHandle(void *h)')
+const QueryFullProcessImageNameW = kernel32.func('bool __stdcall QueryFullProcessImageNameW(void *h, uint32 flags, void *buf, _Inout_ uint32 *size)')
+
+/** Lower-case program name ("chrome.exe") that put the current content on the clipboard, or null when unknown. */
+function sourceApp() {
+  // Some programs copy without an owner window; the window in front is then the best guess.
+  const hwnd = GetClipboardOwner() ?? GetForegroundWindow()
+  if (!hwnd) return null
+  const pid = [0]
+  GetWindowThreadProcessId(hwnd, pid)
+  const h = pid[0] && OpenProcess(0x1000 /* PROCESS_QUERY_LIMITED_INFORMATION */, false, pid[0])
+  if (!h) return null
+  try {
+    const buf = Buffer.alloc(1040)
+    const size = [520]
+    if (!QueryFullProcessImageNameW(h, 0, buf, size)) return null
+    return buf.toString('utf16le', 0, size[0] * 2).split('\\').pop().toLowerCase()
+  } finally {
+    CloseHandle(h)
+  }
+}
 
 // Formats password managers (KeePass, 1Password, Bitwarden...) add to say "don't keep this copy".
 const EXCLUDE_FORMATS = ['ExcludeClipboardContentFromMonitorProcessing', 'Clipboard Viewer Ignore'].map((f) => RegisterClipboardFormatW(f))
@@ -73,12 +97,14 @@ function readFilePaths() {
 /**
  * Reads the current clipboard. Returns undefined when it is busy (retry later), null when there is nothing to keep.
  * `allow(kind)` turns capturing of 'text', 'images' or 'files' off; it is asked before an image is written to disk.
+ * `allow('app', name)` turns capturing off for copies made in that program.
  */
 export async function readClipboard(imagesDir, allow = () => true) {
-  const base = { id: randomUUID(), createdAt: Date.now(), pinned: false }
+  const app = sourceApp()
+  const base = { id: randomUUID(), createdAt: Date.now(), pinned: false, ...(app && { app }) }
   const sensitive = isSensitive()
   if (sensitive === null) return undefined
-  if (sensitive) return null
+  if (sensitive || (app && !allow('app', app))) return null
   if (IsClipboardFormatAvailable(CF_HDROP)) {
     const files = readFilePaths()
     if (files === null) return undefined

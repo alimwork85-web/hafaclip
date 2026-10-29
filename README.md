@@ -29,6 +29,8 @@
 - **Keyboard first**: <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>E</kbd> (or your own shortcut) opens the panel with the cursor in search; type to filter, <kbd>↑</kbd> <kbd>↓</kbd> to move between cards, <kbd>Enter</kbd> to paste, <kbd>Alt</kbd>+<kbd>1</kbd>…<kbd>9</kbd> to paste a numbered card, <kbd>Esc</kbd> to close.
 - **Captures everything**: text, images and files (every file of a multi-file copy). Each kind can be turned off.
 - **Respects password managers**: copies that KeePass, Bitwarden, 1Password and others mark as sensitive are never saved.
+- **Ignore any program** *(new in 3.1)*: pick programs (your bank, a work app…) whose copies are never captured.
+- **Find images by the text in them** *(new in 3.1)*: new images are read on your PC by the OCR built into Windows (Arabic and English), so searching "invoice" finds a screenshot of one. The text is used only for search.
 - **Tabs by type**: All, Files, Images, Videos, Audio, Docs, Text, Links and Emoji, each with its count.
 - **History you control**: keep 250, 500, 750 or 1000 items, optionally auto-delete after 30 or 40 days. **Pinned items are kept forever.**
 - **Paste straight into the app you were using**, or just copy with a click.
@@ -39,6 +41,8 @@
 - **English and Arabic interface** (follows Windows, or pick one), with right-to-left layout and Arabic-aware search that ignores diacritics, hamza forms and ة/ه.
 - **Make it yours**: 5 themes, 4 fonts (including Cairo, Tajawal and IBM Plex Sans Arabic), text size, density, panel width, open delay, and the handle's length, thickness and colour.
 - **Starts with Windows** (can be turned off from the tray icon) and pauses capturing on demand.
+- **Tells you about new versions** *(new in 3.1)*: a small notice with a download link; nothing is downloaded or installed by itself.
+- **Easy backup** *(new in 3.1)*: Settings → Data folder → Open, then copy that folder.
 
 ## Screenshots
 
@@ -71,6 +75,9 @@
 | Pin / unpin | Hover a card → 📌 button |
 | Merge items | <kbd>Ctrl</kbd>+click cards → **Merge** |
 | Drag a text card out | Drag the ⠿ grip in its corner |
+| Find an image by its text | Type a word that appears in it in the search box |
+| Stop capturing from a program | ⚙ → **Don't capture from** → click the program |
+| Back up the history | ⚙ → **Data folder** → **Open**, copy the folder (to restore: quit HafaClip, put it back) |
 | Settings | ⚙ button in the panel header |
 | Pause capturing, quit | Right- or left-click the tray icon |
 
@@ -84,7 +91,7 @@ Version 3.0.0 ships only the English and Arabic language files of Chromium and c
 
 ## Privacy
 
-HafaClip makes **no network connections**. History is stored only on your PC in `%APPDATA%\edge-clipboard` (`items.json` plus an `images` folder). Uninstalling the app does not delete that folder, so remove it yourself if you want the history gone.
+Your clipboard **never leaves your PC**. History is stored only in `%APPDATA%\edge-clipboard` (`items.json` plus an `images` folder), and the text in images is read locally by Windows. The only network request is a once-a-day check of the latest version number on GitHub, which sends nothing about you or your clipboard and can be turned off in Settings (**Tell me about new versions**). Uninstalling the app does not delete the data folder, so remove it yourself if you want the history gone.
 
 ## Feedback and contributing
 
@@ -129,6 +136,8 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 - **لوحة المفاتيح أولًا**: <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>E</kbd> (أو اختصارك الخاص) يفتح اللوحة والمؤشر في البحث؛ اكتب للتصفية، و<kbd>↑</kbd> <kbd>↓</kbd> للتنقّل بين البطاقات، و<kbd>Enter</kbd> للصق، و<kbd>Alt</kbd>+<kbd>1</kbd>…<kbd>9</kbd> للصق البطاقة المرقّمة، و<kbd>Esc</kbd> للإغلاق.
 - **يلتقط كل شيء**: النصوص والصور والملفات (كل ملف عند نسخ عدة ملفات). ويمكن إيقاف أي نوع منها.
 - **يحترم مديري كلمات المرور**: ما ينسخه KeePass وBitwarden و1Password وغيرها ويُعلَّم كسرّي لا يُحفظ أبدًا.
+- **تجاهل أي برنامج** *(جديد في 3.1)*: اختر برامج (تطبيق البنك، برنامج عمل…) لا يُلتقط شيء مما تنسخه منها.
+- **ابحث عن الصور بالنص الذي فيها** *(جديد في 3.1)*: تُقرأ الصور الجديدة على جهازك بمحرك OCR المدمج في Windows (العربية والإنجليزية)، فتجد لقطة الشاشة بالبحث عن كلمة فيها. النص يُستعمل للبحث فقط.
 - **تبويبات حسب النوع**: الكل، الملفات، الصور، الفيديو، الصوت، المستندات، النصوص، الروابط، الإيموجي، ولكل منها عدده.
 - **سجل تتحكّم فيه**: احتفظ بـ 250 أو 500 أو 750 أو 1000 عنصر، مع حذف تلقائي اختياري بعد 30 أو 40 يومًا. **العناصر المثبّتة تبقى دائمًا.**
 - **الصق مباشرة في البرنامج الذي كنت تعمل فيه**، أو انسخ بنقرة.
@@ -139,6 +148,8 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 - **واجهة عربية وإنجليزية** (تتبع لغة Windows أو تختار بنفسك)، باتجاه من اليمين لليسار، وبحث يفهم العربية فيتجاهل التشكيل وأشكال الهمزة والفرق بين ة وه.
 - **اجعله على ذوقك**: 5 سمات، و4 خطوط (منها القاهرة وتجوال وIBM Plex Sans Arabic)، وحجم النص، والكثافة، وعرض اللوحة، ومهلة الفتح، وطول المقبض وسماكته ولونه.
 - **يعمل مع بدء Windows** (يمكن إيقاف ذلك من أيقونة شريط المهام)، ويمكن إيقاف الالتقاط مؤقتًا.
+- **ينبّهك بالإصدارات الجديدة** *(جديد في 3.1)*: سطر صغير فيه رابط التنزيل، ولا يُنزَّل أو يُثبَّت شيء من تلقاء نفسه.
+- **نسخ احتياطي سهل** *(جديد في 3.1)*: الإعدادات ← مجلد البيانات ← فتح، ثم انسخ المجلد. وللاستعادة: أغلق حافة وأعد المجلد مكانه.
 
 ### التثبيت
 
@@ -150,7 +161,7 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 
 ### الخصوصية
 
-حافة **لا يتصل بالإنترنت أبدًا**. يُحفظ السجل على جهازك فقط في `%APPDATA%\edge-clipboard`. إلغاء التثبيت لا يحذف هذا المجلد، فاحذفه بنفسك إن أردت مسح السجل.
+ما تنسخه **لا يغادر جهازك أبدًا**. يُحفظ السجل على جهازك فقط في `%APPDATA%\edge-clipboard`، ونص الصور يقرؤه Windows محليًا. الاتصال الوحيد بالإنترنت فحص يومي لرقم آخر إصدار على GitHub، لا يرسل شيئًا عنك أو عن حافظتك، ويمكن إيقافه من الإعدادات (**تنبيه بالإصدارات الجديدة**). إلغاء التثبيت لا يحذف مجلد البيانات، فاحذفه بنفسك إن أردت مسح السجل.
 
 ### ملاحظاتك ومشاركتك مرحّب بها
 
@@ -163,7 +174,15 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 
 يمكنك الكتابة بالعربية أو الإنجليزية.
 
+### المطوّر والناشر
+
+**Ali Alhumedi**
+
 </div>
+
+## Developer and publisher
+
+**Ali Alhumedi** · [@alimwork85-web](https://github.com/alimwork85-web)
 
 ## License
 

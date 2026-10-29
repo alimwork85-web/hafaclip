@@ -97,11 +97,16 @@ export default function SettingsPanel({ lang, settings, items, onChange }) {
   useEffect(() => {
     window.panel.ocrLanguages?.().then(setOcrLanguages)
   }, [])
+  // Programs seen in the history plus the ignored ones (which no longer appear in it); a click toggles ignoring.
+  const ignored = settings.ignoredApps ?? []
+  const knownApps = [...new Set([...ignored, ...items.map((i) => i.app).filter(Boolean)])].sort()
+  const toggleApp = (a) => onChange({ ignoredApps: ignored.includes(a) ? ignored.filter((x) => x !== a) : [...ignored, a] })
 
   return (
     <div className="settings">
       <div className="group">{t(lang, 'panel')}</div>
       {choice('language', ['system', 'en', 'ar'])}
+      {choice('checkUpdates', [true, false], { labelOf: (o) => t(lang, o ? 'on' : 'off') })}
       <Choice lang={lang} label={t(lang, 'screenEdge')} value={settings.edge} options={['left', 'right']} onPick={(edge) => onChange({ edge })} />
       {settings.shortcut && <ShortcutSetting lang={lang} shortcut={settings.shortcut} />}
       {choice('openDelay', [0, 300, 600], { labelOf: (o) => t(lang, `opt.${DELAYS[o]}`) })}
@@ -135,7 +140,23 @@ export default function SettingsPanel({ lang, settings, items, onChange }) {
         </div>
       </div>
       {choice('searchImageText', [true, false], { labelOf: (o) => t(lang, o ? 'on' : 'off') })}
-      {settings.searchImageText !== false && ocrLanguages && !ocrLanguages.some((l) => l.startsWith('ar')) && <p className="settings-note">{t(lang, 'ocrNoArabic')}</p>}
+      {settings.searchImageText !== false && ocrLanguages && !ocrLanguages.some((l) => l.startsWith('ar')) && <p className="settings-note info">{t(lang, 'ocrNoArabic')}</p>}
+      <div className="setting">
+        <span className="setting-label">{t(lang, 'ignoreApps')}</span>
+        <div className="app-chips" role="group" aria-label={t(lang, 'ignoreApps')}>
+          {knownApps.map((a) => (
+            <button key={a} dir="ltr" className={ignored.includes(a) ? 'active' : ''} aria-pressed={ignored.includes(a)} onClick={() => toggleApp(a)}>
+              {a.replace(/\.exe$/, '')}
+            </button>
+          ))}
+        </div>
+      </div>
+      <p className="settings-note info">{t(lang, knownApps.length ? 'ignoreAppsHint' : 'ignoreAppsEmpty')}</p>
+      <div className="setting">
+        <span className="setting-label">{t(lang, 'dataFolder')}</span>
+        <button className="link-button" onClick={() => window.panel.openDataFolder()}>{t(lang, 'openFolder')}</button>
+      </div>
+      <p className="settings-note info">{t(lang, 'dataFolderHint')}</p>
 
       <div className="group">{t(lang, 'edgeHandle')}</div>
       <Choice lang={lang} label={t(lang, 'length')} value={settings.handleLength} options={['short', 'medium', 'long']} onPick={(handleLength) => onChange({ handleLength })} />
