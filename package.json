@@ -1,6 +1,6 @@
 {
   "name": "hafaclip",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Clipboard manager for Windows that lives on the screen edge and expands on hover.",
   "author": "Ali Alhumedi",
   "license": "MIT",
