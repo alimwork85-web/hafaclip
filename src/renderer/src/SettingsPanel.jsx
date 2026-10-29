@@ -117,6 +117,7 @@ export default function SettingsPanel({ lang, settings, items, onChange }) {
       {choice('textSize', ['small', 'medium', 'large'])}
       {choice('density', ['compact', 'comfortable'])}
       {choice('panelWidth', Object.keys(PANEL_WIDTHS))}
+      {choice('panelHeight', ['large', 'medium', 'small'], { labelOf: (o) => t(lang, `height.${o}`) })}
 
       <div className="group">{t(lang, 'history')}</div>
       <Choice lang={lang} label={t(lang, 'historyLimit')} value={settings.historyLimit} options={[250, 500, 750, 1000]} labelOf={String} onPick={(v) => pickHistoryRule('historyLimit', v)} />

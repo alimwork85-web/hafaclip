@@ -85,7 +85,9 @@ html, body { background: transparent; overflow: hidden; font-family: var(--font,
 
 .panel {
   /* zoom is the text-size setting; dividing keeps the panel at its chosen on-screen width. */
-  position: fixed; left: 0; top: 12px; bottom: 12px; width: calc(var(--panel-w, 360px) / var(--zoom, 1)); zoom: var(--zoom, 1);
+  /* --panel-gap is the panel-height setting: the space left above and below the panel. */
+  position: fixed; left: 0; top: calc(var(--panel-gap, 12px) / var(--zoom, 1)); bottom: calc(var(--panel-gap, 12px) / var(--zoom, 1));
+  width: calc(var(--panel-w, 360px) / var(--zoom, 1)); zoom: var(--zoom, 1);
   background: var(--bg); border: 1px solid var(--border); border-left: none;
   border-radius: 0 18px 18px 0; box-shadow: 8px 0 32px var(--shadow);
   display: flex; flex-direction: column;

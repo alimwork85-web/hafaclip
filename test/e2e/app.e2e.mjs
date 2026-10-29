@@ -381,6 +381,25 @@ await step('handle can be two colours: ends and middle', async () => {
   await page.screenshot({ path: join(shots, '16-handle-two-colours.png'), clip: { x: Math.max(0, h.x - 30), y: h.y - 20, width: h.width + 60, height: h.height + 40 } })
 })
 
+await step('panel height: large, medium and small, also with large text', async () => {
+  const ratio = async () => {
+    const box = await page.locator('.panel').boundingBox()
+    return box.height / (await page.evaluate(() => innerHeight))
+  }
+  for (const [panelHeight, want] of [['medium', 0.7], ['small', 0.5]]) {
+    for (const textSize of ['medium', 'large']) {
+      await setting({ panelHeight, textSize })
+      await open()
+      const r = await ratio()
+      assert.ok(Math.abs(r - want) < 0.04, `${panelHeight}/${textSize}: ${r.toFixed(2)} of the screen`)
+    }
+    await shot(`17-height-${panelHeight}`)
+  }
+  await setting({ panelHeight: 'large', textSize: 'medium' })
+  await open()
+  assert.ok((await ratio()) > 0.95)
+})
+
 await step('Clear all asks to confirm and keeps pinned items', async () => {
   await open()
   await page.click('.clear')

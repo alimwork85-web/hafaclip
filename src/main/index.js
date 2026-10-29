@@ -36,7 +36,8 @@ const DEFAULT_SETTINGS = {
   font: 'system',
   textSize: 'medium',
   density: 'comfortable',
-  panelWidth: 'medium'
+  panelWidth: 'medium',
+  panelHeight: 'large'
 }
 // Settings the renderer may change (besides the edge and shortcut), each checked against its allowed values.
 const CHOICE_SETTINGS = {
@@ -57,7 +58,8 @@ const CHOICE_SETTINGS = {
   font: ['system', 'plex', 'cairo', 'tajawal'],
   textSize: ['small', 'medium', 'large'],
   density: ['compact', 'comfortable'],
-  panelWidth: PANEL_WIDTHS
+  panelWidth: PANEL_WIDTHS,
+  panelHeight: ['large', 'medium', 'small']
 }
 const allowed = (key, value) => (Array.isArray(CHOICE_SETTINGS[key]) ? CHOICE_SETTINGS[key].includes(value) : Object.hasOwn(CHOICE_SETTINGS[key], value))
 // At least one of Ctrl, Alt or Win, so a shortcut never swallows plain typing.
