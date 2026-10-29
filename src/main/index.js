@@ -1,4 +1,4 @@
-import { app, BrowserWindow, globalShortcut, ipcMain, net, protocol, screen, shell } from 'electron'
+import { app, BrowserWindow, globalShortcut, ipcMain, nativeTheme, net, protocol, screen, shell } from 'electron'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -32,7 +32,6 @@ const DEFAULT_SETTINGS = {
   ignoredApps: [],
   shortcut: 'Control+Alt+E',
   openDelay: 0,
-  theme: 'system',
   font: 'system',
   textSize: 'medium',
   density: 'comfortable',
@@ -52,7 +51,7 @@ const CHOICE_SETTINGS = {
   searchImageText: [true, false],
   checkUpdates: [true, false],
   openDelay: [0, 300, 600],
-  theme: ['system', 'light', 'dark', 'ocean', 'sand'],
+  theme: ['light', 'dark', 'ocean', 'forest', 'sand'],
   font: ['system', 'plex', 'cairo', 'tajawal'],
   textSize: ['small', 'medium', 'large'],
   density: ['compact', 'comfortable'],
@@ -66,11 +65,15 @@ const historyRules = (s) => ({ limit: s.historyLimit, maxAgeDays: s.autoDeleteDa
 const settingsFile = () => join(app.getPath('userData'), 'settings.json')
 
 function loadSettings() {
+  let settings
   try {
-    return { ...DEFAULT_SETTINGS, ...JSON.parse(readFileSync(settingsFile(), 'utf8')) }
+    settings = { ...DEFAULT_SETTINGS, ...JSON.parse(readFileSync(settingsFile(), 'utf8')) }
   } catch {
-    return { ...DEFAULT_SETTINGS }
+    settings = { ...DEFAULT_SETTINGS }
   }
+  // First run, or the old "system" theme (removed in 3.2): take light or dark from Windows once.
+  if (!CHOICE_SETTINGS.theme.includes(settings.theme)) settings.theme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light'
+  return settings
 }
 
 function saveSettings(settings) {

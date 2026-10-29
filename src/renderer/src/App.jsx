@@ -127,12 +127,7 @@ export default function App() {
 
   // Appearance settings live on <html>: theme and density as attributes, font, size and width as CSS variables.
   useEffect(() => {
-    const root = document.documentElement
-    const light = window.matchMedia('(prefers-color-scheme: light)')
-    const apply = () => (root.dataset.theme = !settings.theme || settings.theme === 'system' ? (light.matches ? 'light' : 'dark') : settings.theme)
-    apply()
-    light.addEventListener('change', apply)
-    return () => light.removeEventListener('change', apply)
+    document.documentElement.dataset.theme = settings.theme ?? 'dark'
   }, [settings.theme])
   useEffect(() => {
     const root = document.documentElement

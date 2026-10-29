@@ -14,7 +14,7 @@
   color-scheme: dark;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-/* Themes: data-theme is set by App ("system" resolves to light or dark from the Windows setting). */
+/* Themes: data-theme is set by App; dark is the default above. */
 :root[data-theme='light'] {
   --bg: rgb(248, 249, 252);
   --border: rgba(20, 24, 40, 0.1);
@@ -41,6 +41,19 @@
   --fill-hover: rgba(120, 200, 255, 0.12);
   --scroll: rgba(120, 200, 255, 0.18);
   --toast-bg: #17324a;
+  --shadow: rgba(0, 0, 0, 0.4);
+}
+:root[data-theme='forest'] {
+  --bg: rgb(14, 30, 24);
+  --border: rgba(110, 231, 183, 0.12);
+  --text: #e4f4ec;
+  --muted: #86a99a;
+  --accent: #34d399;
+  --fill: rgba(110, 231, 183, 0.06);
+  --fill-strong: rgba(110, 231, 183, 0.1);
+  --fill-hover: rgba(110, 231, 183, 0.12);
+  --scroll: rgba(110, 231, 183, 0.18);
+  --toast-bg: #173a2d;
   --shadow: rgba(0, 0, 0, 0.4);
 }
 :root[data-theme='sand'] {

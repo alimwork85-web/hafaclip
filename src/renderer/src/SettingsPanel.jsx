@@ -112,7 +112,7 @@ export default function SettingsPanel({ lang, settings, items, onChange }) {
       {choice('openDelay', [0, 300, 600], { labelOf: (o) => t(lang, `opt.${DELAYS[o]}`) })}
 
       <div className="group">{t(lang, 'appearance')}</div>
-      {choice('theme', ['system', 'light', 'dark', 'ocean', 'sand'])}
+      {choice('theme', ['light', 'dark', 'ocean', 'forest', 'sand'])}
       {choice('font', Object.keys(FONTS), { styleOf: (o) => ({ fontFamily: FONTS[o] }) })}
       {choice('textSize', ['small', 'medium', 'large'])}
       {choice('density', ['compact', 'comfortable'])}

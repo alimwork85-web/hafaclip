@@ -75,6 +75,11 @@ const open = async () => {
 const tab = (i) => page.locator('.tabs button').nth(i).click()
 
 await step('hovering the screen edge opens the panel', open)
+await step('with no saved theme, light or dark is taken from Windows', async () => {
+  const { theme } = await page.evaluate(() => window.panel.getSettings())
+  assert.ok(['light', 'dark'].includes(theme), `theme is ${theme}`)
+  assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), theme)
+})
 await step('lists all items with pinned first', async () => {
   assert.equal(await cards().count(), 7)
   assert.match(await cards().first().innerText(), /Best regards/)
@@ -186,7 +191,7 @@ await step('drag to merge, name the group, paste one part or all', async () => {
   await wait(400)
   await group.locator('.part', { hasText: 'السلام عليكم' }).hover()
   await shot('05-group-named-ar-dark')
-  await setting({ language: 'en', theme: 'system' })
+  await setting({ language: 'en', theme: 'light' })
   await wait(400)
   await page.fill('.search', '')
 
@@ -325,7 +330,8 @@ const variants = [
   ['12-light', { theme: 'light', language: 'en' }],
   ['13-sand-large-cairo', { theme: 'sand', textSize: 'large', font: 'cairo' }],
   ['14-ocean-compact-narrow', { theme: 'ocean', density: 'compact', panelWidth: 'narrow', textSize: 'small', font: 'plex' }],
-  ['15-wide-right-edge', { theme: 'dark', density: 'comfortable', panelWidth: 'wide', textSize: 'medium', font: 'system', edge: 'right' }]
+  ['14-forest-arabic', { theme: 'forest', density: 'comfortable', panelWidth: 'medium', textSize: 'medium', font: 'tajawal', language: 'ar' }],
+  ['15-wide-right-edge', { theme: 'dark', density: 'comfortable', panelWidth: 'wide', textSize: 'medium', font: 'system', edge: 'right', language: 'en' }]
 ]
 for (const [name, patch] of variants) {
   await setting(patch)
