@@ -51,7 +51,7 @@ const step = async (name, fn) => {
 
 const app = await electron.launch({
   executablePath: join(root, 'dist', 'win-unpacked', 'HafaClip.exe'),
-  env: { ...process.env, EDGE_CLIPBOARD_DATA: data }
+  env: { ...process.env, EDGE_CLIPBOARD_DATA: data, HAFACLIP_NO_PASTE: '1' }
 })
 const page = await app.firstWindow()
 page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`))
@@ -145,7 +145,7 @@ await step('Ctrl+click two cards, merge, then split', async () => {
   assert.equal(await page.locator('.card.kind-group').count(), 0)
 })
 
-await step('dragging a card onto another merges them', async () => {
+await step('drag to merge, name the group, paste one part or all', async () => {
   const before = await cards().count()
   // Playwright cannot drive an OS drag inside Electron, so the page gets the same drag events a real one fires.
   await page.evaluate(() => {
@@ -165,6 +165,43 @@ await step('dragging a card onto another merges them', async () => {
   await page.waitForSelector('.card.kind-group')
   assert.equal(await cards().count(), before - 1)
   const group = page.locator('.card.kind-group')
+
+  // Name the group: Esc cancels without closing the panel, Enter saves, and search finds the name.
+  await group.hover()
+  await group.getByRole('button', { name: 'Name this group' }).click()
+  await page.keyboard.type('Draft')
+  await page.keyboard.press('Escape')
+  assert.ok(await page.locator('.app.expanded').count(), 'Esc closed the panel')
+  assert.equal(await group.locator('.group-name').count(), 0)
+  await group.hover()
+  await group.getByRole('button', { name: 'Name this group' }).click()
+  await page.keyboard.type('Shipping details')
+  await page.keyboard.press('Enter')
+  await page.waitForSelector('.card.kind-group .group-name')
+  assert.equal(await group.locator('.group-name').innerText(), 'Shipping details')
+  await page.fill('.search', 'shipping')
+  assert.equal(await cards().count(), 1)
+  await shot('05-group-named')
+  await setting({ language: 'ar', theme: 'dark' })
+  await wait(400)
+  await group.locator('.part', { hasText: 'السلام عليكم' }).hover()
+  await shot('05-group-named-ar-dark')
+  await setting({ language: 'en', theme: 'system' })
+  await wait(400)
+  await page.fill('.search', '')
+
+  // One part pastes on its own; the whole card still pastes everything.
+  await group.locator('.part', { hasText: 'السلام عليكم' }).hover()
+  await shot('05-group-part-paste')
+  await group.locator('.part', { hasText: 'السلام عليكم' }).getByRole('button', { name: 'Paste only this' }).click()
+  await wait(400)
+  assert.equal(await clipboardText(), 'السلام عليكم')
+  await open()
+  await group.focus()
+  await page.keyboard.press('Enter')
+  await wait(400)
+  assert.match(await clipboardText(), /hgsghl ugd;l[\s\S]*السلام عليكم|السلام عليكم[\s\S]*hgsghl ugd;l/)
+  await open()
   await group.hover()
   await group.getByRole('button', { name: 'Split' }).click()
   await wait(300)

@@ -23,6 +23,8 @@ contextBridge.exposeInMainWorld('panel', {
   copyItem: (id) => ipcRenderer.invoke('items:copy', id),
   pasteItem: (id) => ipcRenderer.invoke('items:paste', id),
   pinItem: (id, pinned) => ipcRenderer.invoke('items:pin', id, pinned),
+  pastePart: (id, partId) => ipcRenderer.invoke('items:paste-part', id, partId),
+  renameGroup: (id, name) => ipcRenderer.invoke('items:rename', id, name),
   deleteItem: (id) => ipcRenderer.invoke('items:delete', id),
   clearHistory: () => ipcRenderer.invoke('items:clear'),
   mergeItems: (ids) => ipcRenderer.invoke('items:merge', ids),

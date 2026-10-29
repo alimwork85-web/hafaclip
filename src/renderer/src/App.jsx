@@ -13,7 +13,7 @@ import { fixLayout } from './layout'
 const matches = (item, q) => {
   if (item.kind === 'text') return normalize(item.text).includes(q)
   if (item.kind === 'files') return item.files.some((f) => normalize(f).includes(q))
-  if (item.kind === 'group') return item.parts.some((p) => matches(p, q))
+  if (item.kind === 'group') return normalize(item.name ?? '').includes(q) || item.parts.some((p) => matches(p, q))
   return 'image'.includes(q) || normalize(item.ocrText ?? '').includes(q)
 }
 
@@ -292,6 +292,15 @@ export default function App() {
       onFixLayout={() => fixItemLayout(item)}
       onPasteAs={(convert) => pasteAs(item, convert)}
       onPaste={() => paste(item)}
+      onPastePart={async (partId) => {
+        setExpanded(false)
+        const r = await window.panel.pastePart(item.id, partId)
+        if (!r.ok) {
+          setExpanded(true)
+          setToast({ text: tr(r.error), tone: 'error' })
+        }
+      }}
+      onRename={(name) => window.panel.renameGroup(item.id, name)}
       onPin={() => window.panel.pinItem(item.id, !item.pinned)}
       onDelete={() => window.panel.deleteItem(item.id)}
       onDragOut={() => window.panel.startDrag(item.id)}

@@ -199,6 +199,20 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .group-parts .part .card-image { max-height: 60px; }
 .group-parts .part .card-files { font-size: 12px; }
 .group-parts .more { font-size: 12px; color: var(--muted); }
+/* The paste button keeps its own space beside the part, so it never covers text (Arabic ends on that side). */
+.group-parts .part { display: flex; align-items: flex-start; gap: 6px; }
+.group-parts .part > :first-child { flex: 1; min-width: 0; }
+.part-paste {
+  flex: none; display: grid; visibility: hidden; place-items: center; width: 24px; height: 24px; padding: 0;
+  border: 1px solid var(--border); border-radius: 7px; background: var(--bg); color: var(--muted); cursor: pointer;
+}
+.part:hover .part-paste, .part-paste:focus-visible { visibility: visible; }
+.part-paste:hover { color: var(--accent); border-color: var(--accent); }
+.group-name { font-size: 14px; font-weight: 600; color: var(--accent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.group-name-input {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--text); background: var(--fill);
+  border: 1px solid var(--accent); border-radius: 8px; padding: 5px 9px; outline: none; user-select: text;
+}
 
 /* Icons fit in one row; sideways scrolling (TabStrip) stays as a fallback for narrow panels. */
 .tabs { display: flex; justify-content: space-between; gap: 2px; margin: 10px 12px 0; overflow-x: auto; scrollbar-width: none; }

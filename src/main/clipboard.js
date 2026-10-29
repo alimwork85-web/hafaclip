@@ -176,6 +176,8 @@ export const windowAddress = (hwnd) => (hwnd ? koffi.address(hwnd) : 0n)
 
 /** Gives focus back to the window the user was in and sends Ctrl+V to it. */
 export async function pasteInto(hwnd) {
+  // Tests check the clipboard instead; a real Ctrl+V would land in whatever window is in front.
+  if (process.env.HAFACLIP_NO_PASTE) return
   const VK_CONTROL = 0x11
   const VK_F24 = 0x87
   const VK_V = 0x56

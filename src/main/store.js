@@ -89,6 +89,18 @@ export function setImageText(image, text) {
   return update(items.map(withText))
 }
 
+/** Names a group (an empty name removes it); other items cannot be named. */
+export function renameGroup(id, name) {
+  const clean = name.trim().slice(0, 60)
+  return update(
+    items.map((i) => {
+      if (i.id !== id || i.kind !== 'group') return i
+      const { name: _old, ...rest } = i
+      return clean ? { ...rest, name: clean } : rest
+    })
+  )
+}
+
 export const merge = (ids) => update(mergeItems(items, ids, randomUUID()))
 
 export const split = (id) => update(splitItem(items, id))

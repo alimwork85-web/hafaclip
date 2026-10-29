@@ -8,7 +8,7 @@ import { cleanTemp, dragPayload, itemFromDroppedPaths } from './drag'
 import { createTray } from './tray'
 import { HANDLE_COLORS, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone, PANEL_WIDTHS } from '../renderer/src/hotZone'
 import { resolveLang } from '../renderer/src/i18n'
-import { add, clearHistory, findItem, flush, getItems, imagesDir, loadItems, merge, prune, remove, setImageText, setPinned, split, touch } from './store'
+import { add, clearHistory, findItem, flush, getItems, imagesDir, loadItems, merge, prune, remove, renameGroup, setImageText, setPinned, split, touch } from './store'
 import { ocrLanguages, readImageText, stopOcr } from './ocr'
 import { isNewer } from './version'
 
@@ -274,6 +274,24 @@ function createWindow() {
       await pasteInto(previousWindow)
     }
     return result
+  })
+  // One part of a group is pasted on its own; the group stays as it is.
+  ipcMain.handle('items:paste-part', async (_e, id, partId) => {
+    const part = typeof id === 'string' && findItem(id)?.parts?.find((p) => p.id === partId)
+    if (!part) return { ok: false, error: 'Item not found' }
+    try {
+      await writeItem(part, imagesDir())
+    } catch (err) {
+      return { ok: false, error: err.message }
+    }
+    watcher.skipCurrent()
+    win.setIgnoreMouseEvents(true, { forward: true })
+    await pasteInto(previousWindow)
+    return { ok: true }
+  })
+  ipcMain.handle('items:rename', (_e, id, name) => {
+    if (typeof id === 'string' && typeof name === 'string') renameGroup(id, name)
+    pushItems()
   })
   ipcMain.handle('items:pin', (_e, id, pinned) => {
     if (typeof id === 'string') setPinned(id, pinned === true)

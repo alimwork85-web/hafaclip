@@ -24,7 +24,8 @@ const ICONS = {
   split: 'M4 6h16M4 12h10M4 18h16M18 9l3 3-3 3',
   copy: 'M9 9h10v12H9zM5 15V3h10',
   swap: 'M4 8h15l-4-4M20 16H5l4 4',
-  more: 'M5 12h.01M12 12h.01M19 12h.01'
+  more: 'M5 12h.01M12 12h.01M19 12h.01',
+  rename: 'M4 20h4L19 9l-4-4L4 16zM13 7l4 4'
 }
 
 /** Text of an item when it can be dragged as plain text (text, or a group made only of text). */
@@ -36,7 +37,7 @@ const FILES_SHOWN = 3
 // "Paste as" choices for text cards; each pastes a converted copy and leaves the item itself unchanged.
 const PASTE_AS = { pasteWesternDigits: westernDigits, pasteNoDiacritics: removeDiacritics }
 
-function Preview({ lang, item, expanded = false }) {
+function Preview({ lang, item, expanded = false, onPastePart }) {
   // dir="auto" takes the direction from the first strong letter, so Arabic and mixed text read correctly.
   if (item.kind === 'text') return <p className="card-text" dir="auto">{item.text}</p>
   if (item.kind === 'image')
@@ -52,14 +53,20 @@ function Preview({ lang, item, expanded = false }) {
       </ul>
     )
   }
+  const parts = expanded ? item.parts : item.parts.slice(0, 3)
   return (
     <div className="group-parts">
-      {item.parts.slice(0, 3).map((p) => (
+      {parts.map((p) => (
         <div key={p.id} className="part">
           <Preview lang={lang} item={p} />
+          {onPastePart && (
+            <button className="part-paste" title={t(lang, 'pastePartTitle')} aria-label={t(lang, 'pastePart')} onClick={(e) => (e.stopPropagation(), onPastePart(p.id))}>
+              <Icon d={ICONS.paste} />
+            </button>
+          )}
         </div>
       ))}
-      {item.parts.length > 3 && <div className="more">{t(lang, 'moreN', item.parts.length - 3)}</div>}
+      {parts.length < item.parts.length && <div className="more">{t(lang, 'moreN', item.parts.length - parts.length)}</div>}
     </div>
   )
 }
@@ -73,7 +80,7 @@ const label = (lang, item) =>
         ? `${item.width}×${item.height}`
         : t(lang, 'charsLabel', item.text.length)
 
-export default function ItemCard({ lang, number, item, selected, dropTarget, expanded, onToggleExpand, onCopiedPart, onClick, onPaste, onPin, onDelete, onSplit, onDragOut, onFixLayout, onPasteAs }) {
+export default function ItemCard({ lang, number, item, selected, dropTarget, expanded, onToggleExpand, onCopiedPart, onClick, onPaste, onPastePart, onRename, onPin, onDelete, onSplit, onDragOut, onFixLayout, onPasteAs }) {
   // Buttons inside the card must not also trigger the card's own click action.
   const action = (fn) => (e) => {
     e.stopPropagation()
@@ -87,7 +94,18 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
     // A few px of slack: the text-size zoom rounds heights, which must not read as cut-off text.
     if (p && !expanded) setClipped(p.scrollHeight - p.clientHeight > 4)
   }, [item.text, expanded])
-  const expandable = (item.kind === 'text' && clipped) || (item.kind === 'files' && item.files.length > FILES_SHOWN)
+  const expandable = (item.kind === 'text' && clipped) || (item.kind === 'files' && item.files.length > FILES_SHOWN) || (item.kind === 'group' && item.parts.length > 3)
+  // Naming a group happens in place; null when not editing.
+  const [naming, setNaming] = useState(null)
+  // Closing the box also blurs it; this keeps that blur from saving again (or saving after Esc).
+  const namingDone = useRef(false)
+  const finishNaming = (save) => {
+    if (namingDone.current) return
+    namingDone.current = true
+    if (save) onRename(naming)
+    setNaming(null)
+  }
+  const startNaming = () => ((namingDone.current = false), setNaming(item.name ?? ''))
 
   // Text cards are selectable, so a press-and-drag selects text; the grip in the footer drags the card instead.
   const isText = item.kind === 'text'
@@ -139,14 +157,36 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
       // Finishing a text selection also fires a click; that must not copy the whole card.
       onClick={(e) => !selectionInside() && onClick(e)}
       onMouseLeave={() => setMenuOpen(false)}
-      draggable={!isText}
+      draggable={!isText && naming === null}
       onDragStart={isText ? undefined : startDrag}
       onKeyDown={(e) => {
         if (e.key === 'Enter') onPaste()
         else if (e.key === ' ') onClick(e)
       }}
     >
-      <Preview lang={lang} item={item} expanded={expanded} />
+      {naming !== null ? (
+        <input
+          className="group-name-input"
+          dir="auto"
+          autoFocus
+          maxLength={60}
+          value={naming}
+          placeholder={t(lang, 'groupNamePlaceholder')}
+          aria-label={t(lang, 'renameGroup')}
+          onChange={(e) => setNaming(e.target.value)}
+          onClick={(e) => e.stopPropagation()}
+          // Keys stay in the box: Enter and Esc must not paste the card or close the panel.
+          onKeyDown={(e) => {
+            e.stopPropagation()
+            if (e.key === 'Enter') finishNaming(true)
+            else if (e.key === 'Escape') finishNaming(false)
+          }}
+          onBlur={() => finishNaming(true)}
+        />
+      ) : (
+        item.name && <p className="group-name" dir="auto">{item.name}</p>
+      )}
+      <Preview lang={lang} item={item} expanded={expanded} onPastePart={item.kind === 'group' ? onPastePart : undefined} />
       {expandable && (
         <button className="more-toggle" aria-expanded={expanded} onClick={action(onToggleExpand)}>
           {t(lang, expanded ? 'less' : 'more')}
@@ -178,6 +218,9 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
           )}
           {isText && (
             <button title={t(lang, 'fixLayoutTitle')} aria-label={t(lang, 'fixLayout')} onClick={action(onFixLayout)}><Icon d={ICONS.swap} /></button>
+          )}
+          {item.kind === 'group' && (
+            <button title={t(lang, 'renameGroup')} aria-label={t(lang, 'renameGroup')} onClick={action(startNaming)}><Icon d={ICONS.rename} /></button>
           )}
           {item.kind === 'group' && (
             <button title={t(lang, 'splitTitle')} aria-label={t(lang, 'split')} onClick={action(onSplit)}><Icon d={ICONS.split} /></button>
