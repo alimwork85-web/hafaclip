@@ -32,3 +32,8 @@ test('English counts use the singular for one', () => {
   assert.equal(t('en', 'removeWarn', 1), '1 item will be deleted. Click again to confirm.')
   assert.equal(t('en', 'removeWarn', 3), '3 items will be deleted. Click again to confirm.')
 })
+
+test('Arabic time and digits labels', () => {
+  assert.equal(t('ar', 'days', 3), '3 يوم')
+  assert.equal(t('ar', 'pasteWesternDigits'), 'لصق بأرقام غربية (0-9)')
+})
