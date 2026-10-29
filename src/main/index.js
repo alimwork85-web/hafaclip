@@ -183,7 +183,7 @@ function createWindow() {
   const pushItems = () => win.webContents.send('items:changed', getItems())
   prune(historyRules(settings))
   // Auto-delete runs on start and then every hour, so items go soon after they pass the age.
-  setInterval(() => prune() && pushItems(), 3600000)
+  const pruneTimer = setInterval(() => prune() && pushItems(), 3600000)
   const capture = { text: 'captureText', images: 'captureImages', files: 'captureFiles' }
   const watcher = watchClipboard(
     imagesDir(),
@@ -312,11 +312,17 @@ function createWindow() {
   app.on('before-quit', () => (quitting = true))
   win.on('session-end', () => (quitting = true))
   win.on('close', (e) => quitting || e.preventDefault())
+  // Timers and the clipboard watcher must stop with the window, or a late tick touches a destroyed window on quit.
+  win.on('closed', () => {
+    clearInterval(pruneTimer)
+    clearInterval(cursorTimer)
+    watcher.stop()
+  })
 
   // During a drag (into or out of the panel) the window gets no mouse events, so watch the cursor here:
   // open when it has stayed at the edge for the open delay, close once it has left the window.
   let edgeSince = null
-  setInterval(() => {
+  const cursorTimer = setInterval(() => {
     const { x, y } = screen.getCursorScreenPoint()
     const b = win.getBounds()
     const inside = x >= b.x && x < b.x + b.width && y >= b.y && y < b.y + b.height

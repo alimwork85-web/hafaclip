@@ -84,7 +84,8 @@ export default function ItemCard({ lang, number, item, selected, expanded, onTog
   const [clipped, setClipped] = useState(false)
   useLayoutEffect(() => {
     const p = ref.current?.querySelector(':scope > .card-text')
-    if (p && !expanded) setClipped(p.scrollHeight > p.clientHeight + 1)
+    // A few px of slack: the text-size zoom rounds heights, which must not read as cut-off text.
+    if (p && !expanded) setClipped(p.scrollHeight - p.clientHeight > 4)
   }, [item.text, expanded])
   const expandable = (item.kind === 'text' && clipped) || (item.kind === 'files' && item.files.length > FILES_SHOWN)
 
