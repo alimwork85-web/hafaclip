@@ -76,11 +76,13 @@ function saveSettings(settings) {
  * so the packaged build later overwrites the same entry with its own exe.
  */
 function applyLaunchAtLogin(enabled) {
-  // Test runs use their own data folder and must not change the real "Edge Clipboard" startup entry.
+  // Test runs use their own data folder and must not change the real startup entry.
   if (process.env.EDGE_CLIPBOARD_DATA) return
+  // Before the rename the app registered as "Edge Clipboard"; drop that entry so it never points at a removed exe.
+  app.setLoginItemSettings({ openAtLogin: false, name: 'Edge Clipboard' })
   app.setLoginItemSettings({
     openAtLogin: enabled,
-    name: 'Edge Clipboard',
+    name: 'HafaClip',
     path: process.execPath,
     args: app.isPackaged ? [] : [app.getAppPath()]
   })
@@ -333,7 +335,7 @@ function createWindow() {
   win.once('ready-to-show', () => win.showInactive())
 }
 
-// The installed build is named "Edge Clipboard"; pin the data folder so it keeps the history made by dev runs.
+// Pin the data folder to its original name, so history survives the rename to HafaClip and is shared with dev runs.
 // EDGE_CLIPBOARD_DATA points tests and demos at a separate folder so real history is never touched.
 app.setPath('userData', process.env.EDGE_CLIPBOARD_DATA || join(app.getPath('appData'), 'edge-clipboard'))
 

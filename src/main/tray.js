@@ -11,10 +11,10 @@ export function createTray({ getLang, getEdge, setEdge, getLaunchAtLogin, setLau
   function refresh() {
     const lang = getLang()
     tray.setImage(paused ? icons.paused : icons.on)
-    tray.setToolTip(paused ? `Edge Clipboard (${t(lang, 'paused')})` : 'Edge Clipboard')
+    tray.setToolTip(paused ? `${t(lang, 'appName')} (${t(lang, 'paused')})` : t(lang, 'appName'))
     tray.setContextMenu(
       Menu.buildFromTemplate([
-        { label: 'Edge Clipboard', enabled: false },
+        { label: t(lang, 'appName'), enabled: false },
         { type: 'separator' },
         {
           label: t(lang, 'pauseCapturing'),

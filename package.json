@@ -21,7 +21,7 @@
   },
   "build": {
     "appId": "local.edge-clipboard",
-    "productName": "Edge Clipboard",
+    "productName": "HafaClip",
     "copyright": "© 2026 Ali Alhumedi",
     "electronLanguages": [
       "en-US",
@@ -47,7 +47,7 @@
       "perMachine": false,
       "createDesktopShortcut": false,
       "createStartMenuShortcut": true,
-      "shortcutName": "Edge Clipboard"
+      "shortcutName": "HafaClip"
     }
   },
   "dependencies": {

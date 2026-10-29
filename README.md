@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="Edge Clipboard" width="100%">
+  <img src="assets/banner.svg" alt="HafaClip" width="100%">
 </p>
 
 <p align="center">
@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/badge/built%20with-Electron-47848f?style=flat-square&logo=electron" alt="Built with Electron">
 </p>
 
-**Edge Clipboard** is a free, open-source clipboard manager for Windows. It hides as a thin line on the edge of your screen; move the mouse there (or press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>E</kbd>) and your clipboard history slides out. Everything stays on your computer.
+**HafaClip** (حافة, Arabic for *edge*; formerly Edge Clipboard) is a free, open-source clipboard manager for Windows. It hides as a thin line on the edge of your screen; move the mouse there (or press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>E</kbd>) and your clipboard history slides out. Everything stays on your computer.
 
 <p align="center">
   <img src="assets/demo.gif" alt="Hover the screen edge to open the panel and switch tabs" width="320">
@@ -45,8 +45,8 @@
 
 ## Install
 
-1. Download **`Edge Clipboard Setup x.y.z.exe`** from the [latest release](https://github.com/alimwork85-web/edge-clipboard/releases/latest).
-2. Run it. It installs for your user only (no admin rights) and adds **Edge Clipboard** to the Start menu.
+1. Download **`HafaClip Setup x.y.z.exe`** from the [latest release](https://github.com/alimwork85-web/edge-clipboard/releases/latest).
+2. Run it. It installs for your user only (no admin rights) and adds **HafaClip** to the Start menu. Installing it over Edge Clipboard keeps your history and settings.
 3. The handle appears on the left edge of the screen; the app also starts with Windows from now on.
 
 > The installer is not code-signed, so Windows SmartScreen may warn the first time. Choose **More info → Run anyway**.
@@ -67,7 +67,7 @@
 
 ## Privacy
 
-Edge Clipboard makes **no network connections**. History is stored only on your PC in `%APPDATA%\edge-clipboard` (`items.json` plus an `images` folder). Uninstalling the app does not delete that folder, so remove it yourself if you want the history gone.
+HafaClip makes **no network connections**. History is stored only on your PC in `%APPDATA%\edge-clipboard` (`items.json` plus an `images` folder). Uninstalling the app does not delete that folder, so remove it yourself if you want the history gone.
 
 ## Build from source
 

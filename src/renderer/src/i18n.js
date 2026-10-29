@@ -8,6 +8,7 @@ const arCount = (n, [one, two, few, many]) => (n === 1 ? one : n === 2 ? two : n
 
 const STRINGS = {
   en: {
+    appName: 'HafaClip',
     clipboard: 'Clipboard',
     settings: 'Settings',
     added: 'Added',
@@ -152,6 +153,7 @@ const STRINGS = {
     paused: 'paused'
   },
   ar: {
+    appName: 'حافة',
     clipboard: 'الحافظة',
     settings: 'الإعدادات',
     added: 'أُضيف',
