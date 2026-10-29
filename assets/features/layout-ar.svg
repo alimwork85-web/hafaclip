@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="342" height="52" viewBox="0 0 342 52" role="img" aria-label="تصحيح لغة الكيبورد">
+<svg xmlns="http://www.w3.org/2000/svg" width="419" height="52" viewBox="0 0 419 52" role="img" aria-label="تصحيح لغة لوحة المفاتيح">
   <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#db2777"/><stop offset="1" stop-color="#9333ea"/></linearGradient></defs>
-  <rect x="294" y="2" width="48" height="48" rx="13" fill="url(#g)"/>
-  <g transform="translate(306 14)" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h8M8 3v2M5 11c2.5 0 5-2.5 6-6M7 8c1 2 3 3 5 3M13 20l4-9 4 9M14.5 17h5"/></g>
-  <text x="280" y="36" direction="rtl" text-anchor="start" fill="url(#g)" font-family="'Segoe UI', system-ui, -apple-system, 'Noto Sans Arabic', 'Helvetica Neue', Arial, sans-serif" font-size="28" font-weight="700">تصحيح لغة الكيبورد</text>
+  <rect x="371" y="2" width="48" height="48" rx="13" fill="url(#g)"/>
+  <g transform="translate(383 14)" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h8M8 3v2M5 11c2.5 0 5-2.5 6-6M7 8c1 2 3 3 5 3M13 20l4-9 4 9M14.5 17h5"/></g>
+  <text x="357" y="36" direction="rtl" text-anchor="start" fill="url(#g)" font-family="'Segoe UI', system-ui, -apple-system, 'Noto Sans Arabic', 'Helvetica Neue', Arial, sans-serif" font-size="28" font-weight="700">تصحيح لغة لوحة المفاتيح</text>
 </svg>

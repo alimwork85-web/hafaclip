@@ -198,7 +198,7 @@ function createWindow() {
     globalShortcut.unregister(settings.shortcut)
     if (!globalShortcut.register(accelerator, onShortcut)) {
       globalShortcut.register(settings.shortcut, onShortcut)
-      return { ok: false, error: 'This shortcut is used by another program' }
+      return { ok: false, error: 'This shortcut is used by another app' }
     }
     settings.shortcut = accelerator
     saveSettings(settings)

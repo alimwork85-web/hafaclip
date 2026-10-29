@@ -231,7 +231,7 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 
 بأرقام غربية (٠١٢ ← 012) أو بدون تشكيل، دون تغيير العنصر المحفوظ.
 
-<img src="assets/features/layout-ar.svg" alt="تصحيح لغة الكيبورد" height="44">
+<img src="assets/features/layout-ar.svg" alt="تصحيح لغة لوحة المفاتيح" height="44">
 
 حوّل `hgsghl ugd;l` إلى «السلام عليكم» (والعكس) بنقرة.
 

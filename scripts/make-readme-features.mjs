@@ -52,7 +52,7 @@ const F = [
     ar: ['لصق بعد تحويل', 'بأرقام غربية (٠١٢ ← 012) أو بدون تشكيل، دون تغيير العنصر المحفوظ.'] },
   { key: 'layout', c: C.pink, icon: '<path d="M4 5h8M8 3v2M5 11c2.5 0 5-2.5 6-6M7 8c1 2 3 3 5 3M13 20l4-9 4 9M14.5 17h5"/>',
     en: ['Fix keyboard layout', 'Turn `hgsghl ugd;l` into «السلام عليكم» (and back) with one click.'],
-    ar: ['تصحيح لغة الكيبورد', 'حوّل `hgsghl ugd;l` إلى «السلام عليكم» (والعكس) بنقرة.'] },
+    ar: ['تصحيح لغة لوحة المفاتيح', 'حوّل `hgsghl ugd;l` إلى «السلام عليكم» (والعكس) بنقرة.'] },
   { key: 'merge', c: C.violet, icon: '<path d="M6 3v6a6 6 0 0 0 6 6h7M16 12l3 3-3 3M6 21v-5"/>',
     en: ['Copy, drag, merge', 'Copy part of a text, drag and drop in and out, merge several items into one (drag a card onto another, or <kbd>Ctrl</kbd>+click) and split them back.'],
     ar: ['انسخ واسحب وادمج', 'انسخ جزءًا من النص، واسحب وأفلت من اللوحة وإليها، وادمج عدة عناصر في عنصر واحد (اسحب بطاقة إلى بطاقة أخرى، أو Ctrl+نقرة) ثم افصلها.'] },

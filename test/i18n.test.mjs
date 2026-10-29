@@ -24,3 +24,11 @@ test('unknown keys fall back to English, then to the key itself', () => {
   assert.equal(t('ar', 'Item not found'), 'العنصر غير موجود')
   assert.equal(t('ar', 'Some system error'), 'Some system error')
 })
+
+test('English counts use the singular for one', () => {
+  assert.equal(t('en', 'charsLabel', 1), '1 char')
+  assert.equal(t('en', 'charsLabel', 12), '12 chars')
+  assert.equal(t('en', 'results', 1), '1 result')
+  assert.equal(t('en', 'removeWarn', 1), '1 item will be deleted. Click again to confirm.')
+  assert.equal(t('en', 'removeWarn', 3), '3 items will be deleted. Click again to confirm.')
+})
