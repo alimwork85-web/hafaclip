@@ -219,6 +219,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
   flex: none; display: grid; visibility: hidden; place-items: center; width: 24px; height: 24px; padding: 0;
   border: 1px solid var(--border); border-radius: 7px; background: var(--bg); color: var(--muted); cursor: pointer;
 }
+.part-actions { flex: none; display: flex; gap: 4px; }
 .part:hover .part-paste, .part-paste:focus-visible { visibility: visible; }
 .part-paste:hover { color: var(--accent); border-color: var(--accent); }
 .group-name { font-size: 14px; font-weight: 600; color: var(--accent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

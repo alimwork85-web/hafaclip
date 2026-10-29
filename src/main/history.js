@@ -45,6 +45,22 @@ export function mergeItems(items, ids, id, now = Date.now()) {
   return [group, ...items.filter((i) => !ids.includes(i.id))]
 }
 
+/**
+ * Takes one part out of a group and puts it back in the list where its copy time places it.
+ * A group left with one part dissolves into that item. Pins follow the same rule as splitItem.
+ */
+export function extractPart(items, id, partId) {
+  const group = items.find((i) => i.id === id && i.kind === 'group')
+  const part = group?.parts.find((p) => p.id === partId)
+  if (!part) return items
+  const keepPin = (p) => ({ ...p, pinned: group.pinned && p.pinned })
+  const rest = group.parts.filter((p) => p !== part)
+  const next = items.map((i) => (i !== group ? i : rest.length > 1 ? { ...group, parts: rest } : keepPin(rest[0])))
+  const at = next.findIndex((i) => i.createdAt < part.createdAt)
+  next.splice(at < 0 ? next.length : at, 0, keepPin(part))
+  return next
+}
+
 /** Replaces a group with its original items. Each keeps its own pin, unless the group was unpinned meanwhile. */
 export function splitItem(items, id) {
   const group = items.find((i) => i.id === id && i.kind === 'group')

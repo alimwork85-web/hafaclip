@@ -25,7 +25,8 @@ const ICONS = {
   copy: 'M9 9h10v12H9zM5 15V3h10',
   swap: 'M4 8h15l-4-4M20 16H5l4 4',
   more: 'M5 12h.01M12 12h.01M19 12h.01',
-  rename: 'M4 20h4L19 9l-4-4L4 16zM13 7l4 4'
+  rename: 'M4 20h4L19 9l-4-4L4 16zM13 7l4 4',
+  extract: 'M14 4h6v6M20 4l-8 8M10 5H5v14h14v-5'
 }
 
 /** Text of an item when it can be dragged as plain text (text, or a group made only of text). */
@@ -37,7 +38,7 @@ const FILES_SHOWN = 3
 // "Paste as" choices for text cards; each pastes a converted copy and leaves the item itself unchanged.
 const PASTE_AS = { pasteWesternDigits: westernDigits, pasteNoDiacritics: removeDiacritics }
 
-function Preview({ lang, item, expanded = false, onPastePart }) {
+function Preview({ lang, item, expanded = false, onPastePart, onExtractPart }) {
   // dir="auto" takes the direction from the first strong letter, so Arabic and mixed text read correctly.
   if (item.kind === 'text') return <p className="card-text" dir="auto">{item.text}</p>
   if (item.kind === 'image')
@@ -60,9 +61,14 @@ function Preview({ lang, item, expanded = false, onPastePart }) {
         <div key={p.id} className="part">
           <Preview lang={lang} item={p} />
           {onPastePart && (
-            <button className="part-paste" title={t(lang, 'pastePartTitle')} aria-label={t(lang, 'pastePart')} onClick={(e) => (e.stopPropagation(), onPastePart(p.id))}>
-              <Icon d={ICONS.paste} />
-            </button>
+            <span className="part-actions">
+              <button className="part-paste" title={t(lang, 'pastePartTitle')} aria-label={t(lang, 'pastePart')} onClick={(e) => (e.stopPropagation(), onPastePart(p.id))}>
+                <Icon d={ICONS.paste} />
+              </button>
+              <button className="part-paste" title={t(lang, 'extractPartTitle')} aria-label={t(lang, 'extractPart')} onClick={(e) => (e.stopPropagation(), onExtractPart(p.id))}>
+                <Icon d={ICONS.extract} />
+              </button>
+            </span>
           )}
         </div>
       ))}
@@ -80,7 +86,7 @@ const label = (lang, item) =>
         ? `⁦${item.width}×${item.height}⁩` // left-to-right isolate: width stays first in the Arabic interface
         : t(lang, 'charsLabel', item.text.length)
 
-export default function ItemCard({ lang, number, item, selected, dropTarget, expanded, onToggleExpand, onCopiedPart, onClick, onPaste, onPastePart, onRename, onPin, onDelete, onSplit, onDragOut, onFixLayout, onPasteAs }) {
+export default function ItemCard({ lang, number, item, selected, dropTarget, expanded, onToggleExpand, onCopiedPart, onClick, onPaste, onPastePart, onExtractPart, onRename, onPin, onDelete, onSplit, onDragOut, onFixLayout, onPasteAs }) {
   // Buttons inside the card must not also trigger the card's own click action.
   const action = (fn) => (e) => {
     e.stopPropagation()
@@ -186,7 +192,7 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
       ) : (
         item.name && <p className="group-name" dir="auto">{item.name}</p>
       )}
-      <Preview lang={lang} item={item} expanded={expanded} onPastePart={item.kind === 'group' ? onPastePart : undefined} />
+      <Preview lang={lang} item={item} expanded={expanded} onPastePart={item.kind === 'group' ? onPastePart : undefined} onExtractPart={onExtractPart} />
       {expandable && (
         <button className="more-toggle" aria-expanded={expanded} onClick={action(onToggleExpand)}>
           {t(lang, expanded ? 'less' : 'more')}

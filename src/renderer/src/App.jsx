@@ -296,6 +296,7 @@ export default function App() {
         }
       }}
       onRename={(name) => window.panel.renameGroup(item.id, name)}
+      onExtractPart={(partId) => window.panel.extractPart(item.id, partId)}
       onPin={() => window.panel.pinItem(item.id, !item.pinned)}
       onDelete={() => window.panel.deleteItem(item.id)}
       onDragOut={() => window.panel.startDrag(item.id)}

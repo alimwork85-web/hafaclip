@@ -207,9 +207,14 @@ await step('drag to merge, name the group, paste one part or all', async () => {
   await wait(400)
   assert.match(await clipboardText(), /hgsghl ugd;l[\s\S]*السلام عليكم|السلام عليكم[\s\S]*hgsghl ugd;l/)
   await open()
-  await group.hover()
-  await group.getByRole('button', { name: 'Split' }).click()
+
+  // Taking a part out of a two-part group dissolves it: both are single cards again.
+  const part = group.locator('.part', { hasText: 'السلام عليكم' })
+  await part.hover()
+  await shot('05-group-part-actions')
+  await part.getByRole('button', { name: 'Take out of the group' }).click()
   await wait(300)
+  assert.equal(await page.locator('.card.kind-group').count(), 0)
   assert.equal(await cards().count(), before)
 })
 

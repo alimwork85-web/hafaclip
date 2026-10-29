@@ -3,7 +3,7 @@ import { app } from 'electron'
 import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
-import { addItem, clearUnpinned, HISTORY_LIMIT, mergeItems, pruneItems, splitItem } from './history'
+import { addItem, clearUnpinned, extractPart, HISTORY_LIMIT, mergeItems, pruneItems, splitItem } from './history'
 
 export const imagesDir = () => join(app.getPath('userData'), 'images')
 const indexFile = () => join(app.getPath('userData'), 'items.json')
@@ -104,6 +104,8 @@ export function renameGroup(id, name) {
 export const merge = (ids) => update(mergeItems(items, ids, randomUUID()))
 
 export const split = (id) => update(splitItem(items, id))
+
+export const extract = (id, partId) => update(extractPart(items, id, partId))
 
 /** Drops unpinned items past the history limit or older than the auto-delete age. True when something was dropped. */
 export function prune(next = rules) {

@@ -8,7 +8,7 @@ import { cleanTemp, dragPayload, itemFromDroppedPaths } from './drag'
 import { createTray } from './tray'
 import { HANDLE_COLORS, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone, PANEL_WIDTHS } from '../renderer/src/hotZone'
 import { resolveLang } from '../renderer/src/i18n'
-import { add, clearHistory, findItem, flush, getItems, imagesDir, loadItems, merge, prune, remove, renameGroup, setImageText, setPinned, split, touch } from './store'
+import { add, clearHistory, extract, findItem, flush, getItems, imagesDir, loadItems, merge, prune, remove, renameGroup, setImageText, setPinned, split, touch } from './store'
 import { ocrLanguages, readImageText, stopOcr } from './ocr'
 import { isNewer } from './version'
 
@@ -293,6 +293,10 @@ function createWindow() {
     win.setIgnoreMouseEvents(true, { forward: true })
     await pasteInto(previousWindow)
     return { ok: true }
+  })
+  ipcMain.handle('items:extract', (_e, id, partId) => {
+    if (typeof id === 'string' && typeof partId === 'string') extract(id, partId)
+    pushItems()
   })
   ipcMain.handle('items:rename', (_e, id, name) => {
     if (typeof id === 'string' && typeof name === 'string') renameGroup(id, name)

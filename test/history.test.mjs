@@ -42,6 +42,27 @@ test('merge groups items oldest first, keeps pin, and split restores them', asyn
   assert.ok(unpinned.every((i) => !i.pinned))
 })
 
+test('a part taken out of a group returns to its place by copy time', async () => {
+  const { extractPart } = await import('../src/main/history.js')
+  const g = { id: 'g', kind: 'group', createdAt: 9, pinned: false, name: 'Trip', parts: [text('a', { createdAt: 1 }), text('b', { createdAt: 4 }), text('c', { createdAt: 6 })] }
+  const list = [g, text('x', { createdAt: 5 }), text('y', { createdAt: 2 })]
+  const out = extractPart(list, 'g', 'b')
+  assert.deepStrictEqual(out.map((i) => i.id), ['g', 'x', 'b', 'y'])
+  assert.deepStrictEqual(out[0].parts.map((p) => p.id), ['a', 'c'])
+  assert.strictEqual(out[0].name, 'Trip')
+  assert.strictEqual(extractPart(list, 'g', 'nope'), list)
+})
+
+test('a group left with one part dissolves into that item', async () => {
+  const { extractPart } = await import('../src/main/history.js')
+  const g = { id: 'g', kind: 'group', createdAt: 9, pinned: true, parts: [text('a', { createdAt: 1, pinned: true }), text('b', { createdAt: 4 })] }
+  const out = extractPart([g, text('x', { createdAt: 3 })], 'g', 'b')
+  // The remaining part takes the group's place; the extracted one goes before older items.
+  assert.deepStrictEqual(out.map((i) => i.id), ['b', 'a', 'x'])
+  assert.ok(out.every((i) => i.kind === 'text'))
+  assert.deepStrictEqual(out.map((i) => i.pinned), [false, true, false])
+})
+
 test('merging a group with another item flattens it', async () => {
   const { mergeItems } = await import('../src/main/history.js')
   const g = { id: 'g', kind: 'group', createdAt: 5, pinned: false, parts: [text('a', { createdAt: 1 }), text('b', { createdAt: 2 })] }
