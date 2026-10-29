@@ -18,6 +18,7 @@ contextBridge.exposeInMainWorld('panel', {
   clearHistory: () => ipcRenderer.invoke('items:clear'),
   mergeItems: (ids) => ipcRenderer.invoke('items:merge', ids),
   pasteEmoji: (text) => ipcRenderer.invoke('emoji:paste', text),
+  pasteText: (text) => ipcRenderer.invoke('text:paste', text),
   splitItem: (id) => ipcRenderer.invoke('items:split', id),
   startDrag: (id) => ipcRenderer.send('items:drag', id),
   drop: (files, text) => ipcRenderer.invoke('items:drop', { paths: [...files].map((f) => webUtils.getPathForFile(f)), text }),

@@ -171,6 +171,15 @@ export default function App() {
     setToast(r.ok ? { text: tr('layoutFixed'), tone: 'ok' } : { text: tr(r.error), tone: 'error' })
   }
 
+  const pasteAs = async (item, convert) => {
+    setExpanded(false)
+    const r = await window.panel.pasteText(convert(item.text))
+    if (!r.ok) {
+      setExpanded(true)
+      setToast({ text: tr(r.error), tone: 'error' })
+    }
+  }
+
   const pasteEmoji = async (emoji) => {
     setExpanded(false)
     const r = await window.panel.pasteEmoji(emoji)
@@ -216,6 +225,7 @@ export default function App() {
       onClick={(e) => (e.ctrlKey || selected.length ? toggleSelect(item.id) : copy(item))}
       onSplit={() => window.panel.splitItem(item.id)}
       onFixLayout={() => fixItemLayout(item)}
+      onPasteAs={(convert) => pasteAs(item, convert)}
       onPaste={() => paste(item)}
       onPin={() => window.panel.pinItem(item.id, !item.pinned)}
       onDelete={() => window.panel.deleteItem(item.id)}

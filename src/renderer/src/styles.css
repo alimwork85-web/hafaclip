@@ -311,3 +311,13 @@ kbd {
 }
 .keys button:focus-visible { outline: 2px solid var(--accent); border-radius: 4px; }
 .keys-list { display: flex; align-items: center; gap: 4px; }
+
+/* "Paste as" menu inside a text card. */
+.paste-menu { display: flex; flex-direction: column; gap: 2px; padding: 4px; margin-top: -4px; border-radius: 10px; background: var(--fill-strong); }
+.paste-menu button {
+  font: inherit; font-size: 12px; text-align: start; padding: 6px 8px; border: none; border-radius: 7px;
+  background: transparent; color: var(--text); cursor: pointer;
+}
+.paste-menu button:hover:not(:disabled) { background: var(--fill-hover); }
+.paste-menu button:disabled { color: var(--muted); opacity: 0.6; cursor: default; }
+.paste-menu button:focus-visible { outline: 2px solid var(--accent); }

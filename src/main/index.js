@@ -247,6 +247,15 @@ function createWindow() {
     await pasteInto(previousWindow)
     return { ok: true }
   })
+  // A converted copy of an item's text (digits, diacritics) is pasted once and kept out of the history.
+  ipcMain.handle('text:paste', async (_e, text) => {
+    if (typeof text !== 'string' || !text) return { ok: false, error: 'Nothing to add' }
+    await writeItem({ kind: 'text', text }, imagesDir())
+    watcher.skipCurrent()
+    win.setIgnoreMouseEvents(true, { forward: true })
+    await pasteInto(previousWindow)
+    return { ok: true }
+  })
   ipcMain.handle('items:merge', (_e, ids) => {
     if (Array.isArray(ids) && ids.every((id) => typeof id === 'string')) merge(ids)
     pushItems()

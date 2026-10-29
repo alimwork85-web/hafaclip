@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { t } from './i18n'
+import { removeDiacritics, westernDigits } from './normalize'
 
 const timeAgo = (lang, ms) => {
   const s = Math.round((Date.now() - ms) / 1000)
@@ -22,7 +23,8 @@ const ICONS = {
   trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
   split: 'M4 6h16M4 12h10M4 18h16M18 9l3 3-3 3',
   copy: 'M9 9h10v12H9zM5 15V3h10',
-  swap: 'M4 8h15l-4-4M20 16H5l4 4'
+  swap: 'M4 8h15l-4-4M20 16H5l4 4',
+  more: 'M5 12h.01M12 12h.01M19 12h.01'
 }
 
 /** Text of an item when it can be dragged as plain text (text, or a group made only of text). */
@@ -30,6 +32,9 @@ const plainText = (item) =>
   item.kind === 'text' ? item.text : item.kind === 'group' && item.parts.every((p) => p.kind === 'text') ? item.parts.map((p) => p.text).join('\n') : null
 
 const FILES_SHOWN = 3
+
+// "Paste as" choices for text cards; each pastes a converted copy and leaves the item itself unchanged.
+const PASTE_AS = { pasteWesternDigits: westernDigits, pasteNoDiacritics: removeDiacritics }
 
 function Preview({ lang, item, expanded = false }) {
   // dir="auto" takes the direction from the first strong letter, so Arabic and mixed text read correctly.
@@ -68,7 +73,7 @@ const label = (lang, item) =>
         ? `${item.width}×${item.height}`
         : t(lang, 'charsLabel', item.text.length)
 
-export default function ItemCard({ lang, item, selected, expanded, onToggleExpand, onCopiedPart, onClick, onPaste, onPin, onDelete, onSplit, onDragOut, onFixLayout }) {
+export default function ItemCard({ lang, item, selected, expanded, onToggleExpand, onCopiedPart, onClick, onPaste, onPin, onDelete, onSplit, onDragOut, onFixLayout, onPasteAs }) {
   // Buttons inside the card must not also trigger the card's own click action.
   const action = (fn) => (e) => {
     e.stopPropagation()
@@ -85,6 +90,7 @@ export default function ItemCard({ lang, item, selected, expanded, onToggleExpan
 
   // Text cards are selectable, so a press-and-drag selects text; the grip in the footer drags the card instead.
   const isText = item.kind === 'text'
+  const [menuOpen, setMenuOpen] = useState(false)
   const [selection, setSelection] = useState('')
   const selectionInside = () => {
     const s = window.getSelection()
@@ -130,6 +136,7 @@ export default function ItemCard({ lang, item, selected, expanded, onToggleExpan
       title={t(lang, isText ? 'textCardTitle' : 'cardTitle')}
       // Finishing a text selection also fires a click; that must not copy the whole card.
       onClick={(e) => !selectionInside() && onClick(e)}
+      onMouseLeave={() => setMenuOpen(false)}
       draggable={!isText}
       onDragStart={isText ? undefined : startDrag}
       onKeyDown={(e) => {
@@ -164,6 +171,9 @@ export default function ItemCard({ lang, item, selected, expanded, onToggleExpan
         <div className="actions">
           <button title={t(lang, 'pasteTitle')} aria-label={t(lang, 'paste')} onClick={action(onPaste)}><Icon d={ICONS.paste} /></button>
           {isText && (
+            <button title={t(lang, 'pasteAs')} aria-label={t(lang, 'pasteAs')} aria-haspopup="menu" aria-expanded={menuOpen} onClick={action(() => setMenuOpen(!menuOpen))}><Icon d={ICONS.more} /></button>
+          )}
+          {isText && (
             <button title={t(lang, 'fixLayoutTitle')} aria-label={t(lang, 'fixLayout')} onClick={action(onFixLayout)}><Icon d={ICONS.swap} /></button>
           )}
           {item.kind === 'group' && (
@@ -173,6 +183,16 @@ export default function ItemCard({ lang, item, selected, expanded, onToggleExpan
           <button title={t(lang, 'delete')} aria-label={t(lang, 'delete')} className="danger" onClick={action(onDelete)}><Icon d={ICONS.trash} /></button>
         </div>
       </footer>
+      {menuOpen && (
+        <div className="paste-menu" role="menu">
+          {Object.entries(PASTE_AS).map(([key, fn]) => (
+            // Greyed out when the conversion would change nothing in this text.
+            <button key={key} role="menuitem" disabled={fn(item.text) === item.text} onClick={action(() => (setMenuOpen(false), onPasteAs(fn)))}>
+              {t(lang, key)}
+            </button>
+          ))}
+        </div>
+      )}
     </li>
   )
 }
