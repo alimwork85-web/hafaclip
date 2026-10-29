@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { HANDLE_COLORS, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone, PANEL_WIDTHS } from './hotZone'
+import { handleBackground, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone, PANEL_WIDTHS } from './hotZone'
 import ItemCard from './ItemCard'
 import EmojiPanel from './EmojiPanel'
 import SettingsPanel, { FONTS } from './SettingsPanel'
@@ -307,8 +307,7 @@ export default function App() {
       <div
         className="handle"
         style={{
-          '--handle-a': HANDLE_COLORS[settings.handleColor]?.[0],
-          '--handle-b': HANDLE_COLORS[settings.handleColor]?.[1],
+          '--handle-bg': handleBackground(settings.handleColor, settings.handleEndsColor),
           '--handle-h': `${(HANDLE_LENGTHS[settings.handleLength] ?? 0.4) * 100}vh`,
           '--handle-w': `${HANDLE_THICKNESS[settings.handleThickness] ?? 5}px`
         }}

@@ -359,6 +359,23 @@ await step('arabic layout is right to left', async () => {
   await page.locator('.update-bar button').last().click()
 })
 
+await step('handle can be two colours: ends and middle', async () => {
+  await open()
+  await page.click('.gear')
+  await page.locator('.settings').evaluate((s) => (s.scrollTop = s.scrollHeight))
+  await page.getByRole('radiogroup', { name: 'الأعلى والأسفل' }).getByRole('radio', { name: 'برتقالي' }).click()
+  await wait(300)
+  assert.equal((await page.evaluate(() => window.panel.getSettings())).handleEndsColor, 'orange')
+  assert.match(await page.locator('.handle').evaluate((h) => getComputedStyle(h).backgroundImage), /253, 186, 116/)
+  await shot('16-handle-two-colours-settings')
+  await page.click('.gear')
+  // Collapsed, so the handle itself shows.
+  await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.send('cursor:away'))
+  await wait(500)
+  const h = await page.locator('.handle').boundingBox()
+  await page.screenshot({ path: join(shots, '16-handle-two-colours.png'), clip: { x: Math.max(0, h.x - 30), y: h.y - 20, width: h.width + 60, height: h.height + 40 } })
+})
+
 await step('Clear all asks to confirm and keeps pinned items', async () => {
   await open()
   await page.click('.clear')

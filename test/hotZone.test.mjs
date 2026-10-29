@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert'
-import { isInHotZone } from '../src/renderer/src/hotZone.js'
+import { handleBackground, isInHotZone } from '../src/renderer/src/hotZone.js'
 
 test('left hot zone covers the middle of the left edge only', () => {
   assert.ok(isInHotZone(0, 500, 380, 1000))
@@ -20,4 +20,10 @@ test('hot zone follows handle length and thickness', () => {
   assert.ok(!isInHotZone(0, 350, 380, 1000, 'left', 'short'))
   assert.ok(isInHotZone(8, 500, 380, 1000, 'left', 'medium', 'thick'))
   assert.ok(!isInHotZone(8, 500, 380, 1000, 'left', 'medium', 'thin'))
+})
+
+test('handle is one colour, or two with the ends colour at top and bottom', () => {
+  assert.equal(handleBackground('blue', 'same'), 'linear-gradient(#3b9eff, #5b6cf0)')
+  assert.equal(handleBackground('blue', 'orange'), 'linear-gradient(#fdba74, #3b9eff 35%, #5b6cf0 65%, #fdba74)')
+  assert.equal(handleBackground('nope'), 'linear-gradient(#7c8cff, #b07cff)')
 })

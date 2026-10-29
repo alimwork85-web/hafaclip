@@ -77,7 +77,7 @@ const label = (lang, item) =>
     : item.kind === 'files'
       ? t(lang, 'filesLabel', item.files.length)
       : item.kind === 'image'
-        ? `${item.width}×${item.height}`
+        ? `⁦${item.width}×${item.height}⁩` // left-to-right isolate: width stays first in the Arabic interface
         : t(lang, 'charsLabel', item.text.length)
 
 export default function ItemCard({ lang, number, item, selected, dropTarget, expanded, onToggleExpand, onCopiedPart, onClick, onPaste, onPastePart, onRename, onPin, onDelete, onSplit, onDragOut, onFixLayout, onPasteAs }) {

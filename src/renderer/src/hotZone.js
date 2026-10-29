@@ -20,6 +20,16 @@ export const HANDLE_COLORS = {
   white: ['#ffffff', '#cbd5e1']
 }
 
+/**
+ * The handle's CSS background: the colour's own gradient, or, when an ends colour is chosen,
+ * that colour at the top and bottom with the main colour in the middle.
+ */
+export function handleBackground(color, ends) {
+  const [a, b] = HANDLE_COLORS[color] ?? HANDLE_COLORS.purple
+  const edge = HANDLE_COLORS[ends]?.[0]
+  return edge ? `linear-gradient(${edge}, ${a} 35%, ${b} 65%, ${edge})` : `linear-gradient(${a}, ${b})`
+}
+
 /** The hot zone matches the handle: its length, and at least 4px wide so a thin handle is still easy to hit. */
 export function isInHotZone(x, y, width, height, edge = 'left', length = 'medium', thickness = 'medium') {
   const fromEdge = edge === 'right' ? width - 1 - x : x

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { HANDLE_COLORS, PANEL_WIDTHS } from './hotZone'
+import { HANDLE_COLORS, handleBackground, PANEL_WIDTHS } from './hotZone'
 import { t } from './i18n'
 import { pruneItems } from '../../main/history'
 import { version } from '../../../package.json'
@@ -176,6 +176,27 @@ export default function SettingsPanel({ lang, settings, items, onChange }) {
               onClick={() => onChange({ handleColor: name })}
             />
           ))}
+        </div>
+      </div>
+      {/* A second colour for the top and bottom of the handle; "same" keeps it one colour. */}
+      <div className="setting">
+        <span className="setting-label">{t(lang, 'handleEnds')}</span>
+        <div className="swatches" role="radiogroup" aria-label={t(lang, 'handleEnds')}>
+          {['same', ...Object.keys(HANDLE_COLORS)].map((name) => {
+            const on = (settings.handleEndsColor ?? 'same') === name
+            return (
+              <button
+                key={name}
+                role="radio"
+                aria-checked={on}
+                aria-label={t(lang, name === 'same' ? 'sameColor' : `color.${name}`)}
+                title={t(lang, name === 'same' ? 'sameColor' : `color.${name}`)}
+                className={`swatch${name === 'same' ? ' same' : ''}${on ? ' active' : ''}`}
+                style={{ background: handleBackground(name === 'same' ? settings.handleColor : name).replace('linear-gradient(', 'linear-gradient(135deg, ') }}
+                onClick={() => onChange({ handleEndsColor: name })}
+              />
+            )
+          })}
         </div>
       </div>
 
