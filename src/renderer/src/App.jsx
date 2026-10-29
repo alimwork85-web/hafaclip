@@ -114,11 +114,33 @@ export default function App() {
     root.style.setProperty('--panel-w', `${PANEL_WIDTHS[settings.panelWidth] ?? PANEL_WIDTHS.medium}px`)
   }, [settings.density, settings.font, settings.textSize, settings.panelWidth])
 
+  // Keyboard: Esc closes, Alt+1…9 pastes the numbered card, and typing anywhere in a list goes to the search box.
+  const searchRef = useRef(null)
+  const keys = useRef(null)
   useEffect(() => {
-    const onKey = (e) => e.key === 'Escape' && setExpanded(false)
+    const onKey = (e) => {
+      if (e.key === 'Escape') return setExpanded(false)
+      const { shown, paste, inList } = keys.current
+      if (!inList) return
+      // e.code for real keys; e.key as a fallback for input that comes without a scan code.
+      const n = e.altKey && !e.ctrlKey && Number(/^Digit([1-9])$/.exec(e.code)?.[1] ?? (/^[1-9]$/.test(e.key) && e.key))
+      if (n) {
+        e.preventDefault()
+        if (shown[n - 1]) paste(shown[n - 1])
+      } else if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey && !e.target.closest?.('input, textarea')) {
+        searchRef.current?.focus() // focused during keydown, so this key's character lands in the box
+      }
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
+  // Opening (by shortcut or hover) puts the cursor in the search box; an old query is selected so typing replaces it.
+  useEffect(() => {
+    if (expanded && keys.current?.inList) {
+      searchRef.current?.focus({ preventScroll: true })
+      searchRef.current?.select()
+    }
+  }, [expanded])
 
   // Open once the cursor has stayed in the hot zone for the open delay (the main process covers a still cursor).
   const hoverSince = useRef(null)
@@ -197,6 +219,10 @@ export default function App() {
   const visible = items.filter((i) => inCategory(i, tab) && (!q || matches(i, q)))
   const pinned = visible.filter((i) => i.pinned)
   const recent = visible.filter((i) => !i.pinned)
+  // Cards in the order they show, for the Alt+1…9 numbers.
+  const shown = [...(pinnedOpen ? pinned : []), ...recent]
+  const inList = tab !== 'settings' && tab !== 'emoji' && !selected.length
+  keys.current = { shown, paste, inList }
   // Items per tab (pinned included); while searching, the open tab shows "matches of total".
   const counts = Object.fromEntries(
     CATEGORIES.filter((c) => c.id !== 'emoji').map((c) => {
@@ -216,6 +242,7 @@ export default function App() {
   const card = (item) => (
     <ItemCard
       key={item.id}
+      number={inList && shown.indexOf(item) < 9 ? shown.indexOf(item) + 1 : 0}
       lang={lang}
       item={item}
       selected={selected.includes(item.id)}
@@ -291,6 +318,7 @@ export default function App() {
         ) : (
         <div className="toolbar">
           <input
+            ref={searchRef}
             className="search"
             type="search"
             dir="auto"

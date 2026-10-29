@@ -321,3 +321,6 @@ kbd {
 .paste-menu button:hover:not(:disabled) { background: var(--fill-hover); }
 .paste-menu button:disabled { color: var(--muted); opacity: 0.6; cursor: default; }
 .paste-menu button:focus-visible { outline: 2px solid var(--accent); }
+
+/* Alt+1…9 quick-paste number on the first cards. */
+.card footer kbd.number { font-size: 10px; padding: 0 5px; color: var(--muted); font-variant-numeric: tabular-nums; }

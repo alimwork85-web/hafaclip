@@ -73,7 +73,7 @@ const label = (lang, item) =>
         ? `${item.width}×${item.height}`
         : t(lang, 'charsLabel', item.text.length)
 
-export default function ItemCard({ lang, item, selected, expanded, onToggleExpand, onCopiedPart, onClick, onPaste, onPin, onDelete, onSplit, onDragOut, onFixLayout, onPasteAs }) {
+export default function ItemCard({ lang, number, item, selected, expanded, onToggleExpand, onCopiedPart, onClick, onPaste, onPin, onDelete, onSplit, onDragOut, onFixLayout, onPasteAs }) {
   // Buttons inside the card must not also trigger the card's own click action.
   const action = (fn) => (e) => {
     e.stopPropagation()
@@ -166,6 +166,7 @@ export default function ItemCard({ lang, item, selected, expanded, onToggleExpan
             <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><circle cx="9" cy="6" r="1.6" /><circle cx="15" cy="6" r="1.6" /><circle cx="9" cy="12" r="1.6" /><circle cx="15" cy="12" r="1.6" /><circle cx="9" cy="18" r="1.6" /><circle cx="15" cy="18" r="1.6" /></svg>
           </span>
         )}
+        {number > 0 && <kbd className="number" title={t(lang, 'quickPaste', number)}>{number}</kbd>}
         <span className="kind">{label(lang, item)}</span>
         <span className="time">{timeAgo(lang, item.createdAt)}</span>
         <div className="actions">
