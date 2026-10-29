@@ -14,26 +14,52 @@
   color-scheme: dark;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-/* Follows the Windows light/dark setting. */
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg: rgba(248, 249, 252, 0.99);
-    --border: rgba(20, 24, 40, 0.1);
-    --text: #1d2130;
-    --muted: #6b7083;
-    --accent: #5b6cf0;
-    --fill: rgba(20, 24, 40, 0.04);
-    --fill-strong: rgba(20, 24, 40, 0.07);
-    --fill-hover: rgba(20, 24, 40, 0.08);
-    --scroll: rgba(20, 24, 40, 0.18);
-    --toast-bg: #ffffff;
-    --danger-text: #c8344d;
-    --shadow: rgba(20, 24, 40, 0.18);
-    color-scheme: light;
-  }
+/* Themes: data-theme is set by App ("system" resolves to light or dark from the Windows setting). */
+:root[data-theme='light'] {
+  --bg: rgba(248, 249, 252, 0.99);
+  --border: rgba(20, 24, 40, 0.1);
+  --text: #1d2130;
+  --muted: #6b7083;
+  --accent: #5b6cf0;
+  --fill: rgba(20, 24, 40, 0.04);
+  --fill-strong: rgba(20, 24, 40, 0.07);
+  --fill-hover: rgba(20, 24, 40, 0.08);
+  --scroll: rgba(20, 24, 40, 0.18);
+  --toast-bg: #ffffff;
+  --danger-text: #c8344d;
+  --shadow: rgba(20, 24, 40, 0.18);
+  color-scheme: light;
+}
+:root[data-theme='ocean'] {
+  --bg: rgba(12, 27, 42, 0.97);
+  --border: rgba(120, 200, 255, 0.12);
+  --text: #e3f1fb;
+  --muted: #86a3b8;
+  --accent: #38bdf8;
+  --fill: rgba(120, 200, 255, 0.06);
+  --fill-strong: rgba(120, 200, 255, 0.1);
+  --fill-hover: rgba(120, 200, 255, 0.12);
+  --scroll: rgba(120, 200, 255, 0.18);
+  --toast-bg: #17324a;
+  --shadow: rgba(0, 0, 0, 0.4);
+}
+:root[data-theme='sand'] {
+  --bg: rgba(250, 245, 236, 0.99);
+  --border: rgba(90, 60, 20, 0.12);
+  --text: #3b2f22;
+  --muted: #8a7660;
+  --accent: #c2410c;
+  --fill: rgba(90, 60, 20, 0.05);
+  --fill-strong: rgba(90, 60, 20, 0.08);
+  --fill-hover: rgba(90, 60, 20, 0.1);
+  --scroll: rgba(90, 60, 20, 0.2);
+  --toast-bg: #fffaf2;
+  --danger-text: #b42318;
+  --shadow: rgba(90, 60, 20, 0.18);
+  color-scheme: light;
 }
 * { box-sizing: border-box; margin: 0; }
-html, body { background: transparent; overflow: hidden; font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif; color: var(--text); user-select: none; }
+html, body { background: transparent; overflow: hidden; font-family: var(--font, 'Segoe UI Variable', 'Segoe UI', sans-serif); color: var(--text); user-select: none; }
 
 .handle {
   position: fixed; left: 0; top: 50%; translate: 0 -50%;
@@ -45,7 +71,8 @@ html, body { background: transparent; overflow: hidden; font-family: 'Segoe UI V
 .expanded .handle { opacity: 0; }
 
 .panel {
-  position: fixed; left: 0; top: 12px; bottom: 12px; width: 360px;
+  /* zoom is the text-size setting; dividing keeps the panel at its chosen on-screen width. */
+  position: fixed; left: 0; top: 12px; bottom: 12px; width: calc(var(--panel-w, 360px) / var(--zoom, 1)); zoom: var(--zoom, 1);
   background: var(--bg); border: 1px solid var(--border); border-left: none;
   border-radius: 0 18px 18px 0; box-shadow: 8px 0 32px var(--shadow);
   display: flex; flex-direction: column;
@@ -82,8 +109,8 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .segmented button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .list { list-style: none; padding: 12px; margin: 0; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px; }
-.list::-webkit-scrollbar { width: 6px; }
-.list::-webkit-scrollbar-thumb { background: var(--scroll); border-radius: 3px; }
+.list::-webkit-scrollbar, .settings::-webkit-scrollbar { width: 6px; }
+.list::-webkit-scrollbar-thumb, .settings::-webkit-scrollbar-thumb { background: var(--scroll); border-radius: 3px; }
 .card {
   background: var(--fill); border: 1px solid var(--fill-hover); border-radius: 12px;
   padding: 10px 12px; display: flex; flex-direction: column; gap: 8px;
@@ -122,7 +149,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .card { cursor: pointer; transition: background 150ms var(--ease), border-color 150ms var(--ease); }
 .card:hover { background: var(--fill-hover); }
 .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.card.pinned { border-color: rgba(124, 140, 255, 0.45); }
+.card.pinned { border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
 .card footer { align-items: center; gap: 8px; min-height: 22px; }
 .card footer .time { margin-inline-start: auto; }
 .actions { display: none; gap: 2px; margin-inline-start: auto; }
@@ -149,12 +176,12 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 
 .panel.dropping { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent), 8px 0 32px var(--shadow); }
 .panel.dropping::after {
-  content: 'Drop to add'; position: absolute; inset: 0; display: grid; place-items: center;
+  content: attr(data-drop); position: absolute; inset: 0; display: grid; place-items: center;
   font-size: 14px; font-weight: 600; color: #fff; background: rgba(124, 140, 255, 0.18); border-radius: inherit; pointer-events: none;
 }
 .card[draggable='true']:active { cursor: grabbing; }
 
-.card.selected { border-color: var(--accent); background: rgba(124, 140, 255, 0.14); box-shadow: inset 0 0 0 1px var(--accent); }
+.card.selected { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); box-shadow: inset 0 0 0 1px var(--accent); }
 .selection-bar { align-items: center; font-size: 13px; }
 .selection-bar span { flex: 1; color: var(--text); }
 .selection-bar button {
@@ -271,3 +298,16 @@ kbd {
   font: inherit; font-size: 11px; font-weight: 600; color: var(--text); padding: 2px 7px; border-radius: 6px;
   background: var(--fill-strong); border: 1px solid var(--border); border-bottom-width: 2px;
 }
+
+/* Density setting: compact cards. */
+:root[data-density='compact'] .list { gap: 5px; padding: 8px; }
+:root[data-density='compact'] .card { padding: 6px 10px; gap: 4px; }
+
+/* Settings rows with many options wrap instead of overflowing. */
+.segmented { flex-wrap: wrap; justify-content: flex-end; }
+.settings-note { font-size: 12px; color: var(--danger-text); margin-top: -4px; }
+.keys button {
+  font: inherit; font-size: 12px; color: var(--accent); background: none; border: none; cursor: pointer; padding: 2px 4px; margin-inline-start: 4px;
+}
+.keys button:focus-visible { outline: 2px solid var(--accent); border-radius: 4px; }
+.keys-list { display: flex; align-items: center; gap: 4px; }

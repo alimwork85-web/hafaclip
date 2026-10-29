@@ -1,14 +1,25 @@
-import { HANDLE_COLORS } from './hotZone'
+import { useEffect, useState } from 'react'
+import { HANDLE_COLORS, PANEL_WIDTHS } from './hotZone'
 import { t } from './i18n'
+import { pruneItems } from '../../main/history'
 
-function Choice({ lang, label, value, options, onPick }) {
+const DELAYS = { 0: 'instant', 300: 'short', 600: 'long' }
+// The font names show in their own font, so the choice previews itself.
+export const FONTS = {
+  system: "'Segoe UI Variable', 'Segoe UI', sans-serif",
+  plex: "'IBM Plex Sans Arabic', 'Segoe UI', sans-serif",
+  cairo: "'Cairo', 'Segoe UI', sans-serif",
+  tajawal: "'Tajawal', 'Segoe UI', sans-serif"
+}
+
+function Choice({ lang, label, value, options, onPick, labelOf = (o) => t(lang, `opt.${o}`), styleOf }) {
   return (
     <div className="setting">
       <span className="setting-label">{label}</span>
       <div className="segmented" role="group" aria-label={label}>
         {options.map((o) => (
-          <button key={o} className={o === value ? 'active' : ''} aria-pressed={o === value} onClick={() => onPick(o)}>
-            {t(lang, `opt.${o}`)}
+          <button key={o} className={o === value ? 'active' : ''} aria-pressed={o === value} style={styleOf?.(o)} onClick={() => onPick(o)}>
+            {labelOf(o)}
           </button>
         ))}
       </div>
@@ -16,15 +27,107 @@ function Choice({ lang, label, value, options, onPick }) {
   )
 }
 
-export default function SettingsPanel({ lang, settings, onChange }) {
+/** "Control+Alt+E" from a key press, or null for keys a shortcut cannot use (or a lone modifier). */
+function acceleratorOf(e) {
+  const key = /^Key[A-Z]$/.test(e.code) ? e.code.slice(3) : /^Digit\d$/.test(e.code) ? e.code.slice(5) : /^F\d{1,2}$/.test(e.code) || e.code === 'Space' ? e.code : null
+  if (!key) return null
+  return [e.ctrlKey && 'Control', e.altKey && 'Alt', e.shiftKey && 'Shift', e.metaKey && 'Super', key].filter(Boolean).join('+')
+}
+
+function ShortcutSetting({ lang, shortcut }) {
+  const [recording, setRecording] = useState(false)
+  const [error, setError] = useState('')
+  useEffect(() => {
+    if (!recording) return
+    const onKey = async (e) => {
+      e.preventDefault()
+      e.stopPropagation() // Esc here cancels recording instead of closing the panel
+      if (e.key === 'Escape') return setRecording(false)
+      const accelerator = acceleratorOf(e)
+      if (!accelerator) return
+      setRecording(false)
+      const r = await window.panel.setShortcut(accelerator)
+      setError(r.ok ? '' : t(lang, r.error))
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [recording, lang])
+
+  return (
+    <>
+      <div className="setting">
+        <span className="setting-label">{t(lang, 'openWithKeyboard')}</span>
+        <span className="keys">
+          {recording ? (
+            t(lang, 'pressKeys')
+          ) : (
+            <span className="keys-list" dir="ltr">
+              {shortcut.split('+').map((k, i) => (
+                <span key={k}>
+                  {i > 0 && '+ '}
+                  <kbd>{{ Control: 'Ctrl', Super: 'Win' }[k] ?? k}</kbd>
+                </span>
+              ))}
+            </span>
+          )}
+          {!recording && <button onClick={() => (setError(''), setRecording(true))}>{t(lang, 'change')}</button>}
+        </span>
+      </div>
+      {error && <p className="settings-note" role="alert">{error}</p>}
+    </>
+  )
+}
+
+export default function SettingsPanel({ lang, settings, items, onChange }) {
+  // Lowering the history limit or turning on auto-delete removes items, so it takes a second click.
+  const [pending, setPending] = useState(null)
+  const pickHistoryRule = (key, value) => {
+    const next = { historyLimit: settings.historyLimit, autoDeleteDays: settings.autoDeleteDays, [key]: value }
+    const count = pruneItems(items, next.historyLimit, next.autoDeleteDays).evicted.length
+    if (count && !(pending?.key === key && pending.value === value)) return setPending({ key, value, count })
+    setPending(null)
+    onChange({ [key]: value })
+  }
+  const choice = (key, options, extra) => (
+    <Choice lang={lang} label={t(lang, key)} value={settings[key]} options={options} onPick={(v) => onChange({ [key]: v })} {...extra} />
+  )
+  const capture = { captureText: 'cat.text', captureImages: 'cat.images', captureFiles: 'cat.files' }
+
   return (
     <div className="settings">
       <div className="group">{t(lang, 'panel')}</div>
-      <Choice lang={lang} label={t(lang, 'language')} value={settings.language} options={['system', 'en', 'ar']} onPick={(language) => onChange({ language })} />
+      {choice('language', ['system', 'en', 'ar'])}
       <Choice lang={lang} label={t(lang, 'screenEdge')} value={settings.edge} options={['left', 'right']} onPick={(edge) => onChange({ edge })} />
+      {settings.shortcut && <ShortcutSetting lang={lang} shortcut={settings.shortcut} />}
+      {choice('openDelay', [0, 300, 600], { labelOf: (o) => t(lang, `opt.${DELAYS[o]}`) })}
+
+      <div className="group">{t(lang, 'appearance')}</div>
+      {choice('theme', ['system', 'light', 'dark', 'ocean', 'sand'])}
+      {choice('font', Object.keys(FONTS), { styleOf: (o) => ({ fontFamily: FONTS[o] }) })}
+      {choice('textSize', ['small', 'medium', 'large'])}
+      {choice('density', ['compact', 'comfortable'])}
+      {choice('panelWidth', Object.keys(PANEL_WIDTHS))}
+
+      <div className="group">{t(lang, 'history')}</div>
+      <Choice lang={lang} label={t(lang, 'historyLimit')} value={settings.historyLimit} options={[250, 500, 750, 1000]} labelOf={String} onPick={(v) => pickHistoryRule('historyLimit', v)} />
+      <Choice
+        lang={lang}
+        label={t(lang, 'autoDelete')}
+        value={settings.autoDeleteDays}
+        options={[0, 30, 40]}
+        labelOf={(o) => (o ? t(lang, 'nDays', o) : t(lang, 'off'))}
+        onPick={(v) => pickHistoryRule('autoDeleteDays', v)}
+      />
+      {pending && <p className="settings-note" role="alert">{t(lang, 'removeWarn', pending.count)}</p>}
       <div className="setting">
-        <span className="setting-label">{t(lang, 'openWithKeyboard')}</span>
-        <span className="keys" dir="ltr"><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>E</kbd></span>
+        <span className="setting-label">{t(lang, 'capture')}</span>
+        <div className="segmented" role="group" aria-label={t(lang, 'capture')}>
+          {Object.entries(capture).map(([key, label]) => (
+            <button key={key} className={settings[key] !== false ? 'active' : ''} aria-pressed={settings[key] !== false} onClick={() => onChange({ [key]: settings[key] === false })}>
+              {t(lang, label)}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="group">{t(lang, 'edgeHandle')}</div>

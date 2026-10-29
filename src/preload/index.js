@@ -4,6 +4,7 @@ contextBridge.exposeInMainWorld('panel', {
   setInteractive: (on) => ipcRenderer.send('panel:interactive', !!on),
   getSettings: () => ipcRenderer.invoke('settings:get'),
   updateSettings: (patch) => ipcRenderer.invoke('settings:set', patch),
+  setShortcut: (accelerator) => ipcRenderer.invoke('shortcut:set', accelerator),
   onSettings: (cb) => {
     const listener = (_e, s) => cb(s)
     ipcRenderer.on('settings:changed', listener)

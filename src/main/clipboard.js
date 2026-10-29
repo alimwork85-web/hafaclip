@@ -70,8 +70,11 @@ function readFilePaths() {
   }
 }
 
-/** Reads the current clipboard. Returns undefined when it is busy (retry later), null when there is nothing to keep. */
-export async function readClipboard(imagesDir) {
+/**
+ * Reads the current clipboard. Returns undefined when it is busy (retry later), null when there is nothing to keep.
+ * `allow(kind)` turns capturing of 'text', 'images' or 'files' off; it is asked before an image is written to disk.
+ */
+export async function readClipboard(imagesDir, allow = () => true) {
   const base = { id: randomUUID(), createdAt: Date.now(), pinned: false }
   const sensitive = isSensitive()
   if (sensitive === null) return undefined
@@ -79,16 +82,16 @@ export async function readClipboard(imagesDir) {
   if (IsClipboardFormatAvailable(CF_HDROP)) {
     const files = readFilePaths()
     if (files === null) return undefined
-    if (files.length) return { ...base, kind: 'files', files }
+    if (files.length) return allow('files') ? { ...base, kind: 'files', files } : null
   }
   const [entry] = await clipboard.read()
   if (!entry) return null
   // Text wins over the picture Office apps also put on the clipboard.
   if (entry.types.includes('text/plain')) {
     const text = await (await entry.getType('text/plain')).text()
-    if (text.trim()) return { ...base, kind: 'text', text }
+    if (text.trim()) return allow('text') ? { ...base, kind: 'text', text } : null
   }
-  if (entry.types.includes('image/png')) {
+  if (entry.types.includes('image/png') && allow('images')) {
     const png = Buffer.from(await (await entry.getType('image/png')).arrayBuffer())
     const file = `${base.id}.png`
     writeFileSync(join(imagesDir, file), png)
@@ -165,7 +168,7 @@ export async function pasteInto(hwnd) {
 }
 
 /** Polls the cheap sequence number and calls onItem for each new clipboard content. */
-export function watchClipboard(imagesDir, onItem, intervalMs = 400) {
+export function watchClipboard(imagesDir, onItem, allow, intervalMs = 400) {
   let lastSeq = GetClipboardSequenceNumber()
   let busy = false
   let paused = false
@@ -178,7 +181,7 @@ export function watchClipboard(imagesDir, onItem, intervalMs = 400) {
     }
     busy = true
     try {
-      const item = await readClipboard(imagesDir)
+      const item = await readClipboard(imagesDir, allow)
       if (item === undefined) return // clipboard locked by another app; try again next tick
       lastSeq = seq
       if (item) onItem(item)

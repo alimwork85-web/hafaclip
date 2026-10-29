@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { HANDLE_COLORS, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone } from './hotZone'
+import { HANDLE_COLORS, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone, PANEL_WIDTHS } from './hotZone'
 import ItemCard from './ItemCard'
 import EmojiPanel from './EmojiPanel'
-import SettingsPanel from './SettingsPanel'
+import SettingsPanel, { FONTS } from './SettingsPanel'
 import TabStrip from './TabStrip'
 import { CATEGORIES, inCategory } from './categories'
 import { normalize } from './normalize'
@@ -96,16 +96,37 @@ export default function App() {
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'
   }, [lang])
 
+  // Appearance settings live on <html>: theme and density as attributes, font, size and width as CSS variables.
+  useEffect(() => {
+    const root = document.documentElement
+    const light = window.matchMedia('(prefers-color-scheme: light)')
+    const apply = () => (root.dataset.theme = !settings.theme || settings.theme === 'system' ? (light.matches ? 'light' : 'dark') : settings.theme)
+    apply()
+    light.addEventListener('change', apply)
+    return () => light.removeEventListener('change', apply)
+  }, [settings.theme])
+  useEffect(() => {
+    const root = document.documentElement
+    root.dataset.density = settings.density ?? 'comfortable'
+    root.style.setProperty('--font', FONTS[settings.font] ?? FONTS.system)
+    root.style.setProperty('--zoom', { small: 0.9, large: 1.12 }[settings.textSize] ?? 1)
+    root.style.setProperty('--panel-w', `${PANEL_WIDTHS[settings.panelWidth] ?? PANEL_WIDTHS.medium}px`)
+  }, [settings.density, settings.font, settings.textSize, settings.panelWidth])
+
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && setExpanded(false)
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
+  // Open once the cursor has stayed in the hot zone for the open delay (the main process covers a still cursor).
+  const hoverSince = useRef(null)
   useEffect(() => {
     const onMove = (e) => {
       const s = settingsRef.current
-      if (isInHotZone(e.clientX, e.clientY, window.innerWidth, window.innerHeight, s.edge, s.handleLength, s.handleThickness)) setExpanded(true)
+      if (!isInHotZone(e.clientX, e.clientY, window.innerWidth, window.innerHeight, s.edge, s.handleLength, s.handleThickness)) return (hoverSince.current = null)
+      hoverSince.current ??= Date.now()
+      if (Date.now() - hoverSince.current >= (s.openDelay ?? 0)) setExpanded(true)
     }
     document.addEventListener('mousemove', onMove)
     return () => document.removeEventListener('mousemove', onMove)
@@ -207,6 +228,7 @@ export default function App() {
       />
       <aside
         className={`panel${dropping ? ' dropping' : ''}`}
+        data-drop={tr('dropToAdd')}
         onMouseLeave={() => setExpanded(false)}
         onDragOver={onDragOver}
         onDragLeave={() => setDropping(false)}
@@ -237,7 +259,7 @@ export default function App() {
         </header>
         <TabStrip lang={lang} tab={tab} onPick={setTab} counts={counts} />
         {tab === 'settings' ? (
-          <SettingsPanel lang={lang} settings={settings} onChange={updateSettings} />
+          <SettingsPanel lang={lang} settings={settings} items={items} onChange={updateSettings} />
         ) : tab === 'emoji' ? (
           <EmojiPanel lang={lang} onPick={pasteEmoji} />
         ) : (

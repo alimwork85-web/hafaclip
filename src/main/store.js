@@ -3,13 +3,14 @@ import { app } from 'electron'
 import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
-import { addItem, clearUnpinned, mergeItems, splitItem } from './history'
+import { addItem, clearUnpinned, HISTORY_LIMIT, mergeItems, pruneItems, splitItem } from './history'
 
 export const imagesDir = () => join(app.getPath('userData'), 'images')
 const indexFile = () => join(app.getPath('userData'), 'items.json')
 
 let items = []
 let saveTimer = null
+let rules = { limit: HISTORY_LIMIT, maxAgeDays: 0 }
 
 export function loadItems() {
   mkdirSync(imagesDir(), { recursive: true })
@@ -54,7 +55,7 @@ function removeImage(item) {
 }
 
 export function add(item) {
-  const result = addItem(items, item)
+  const result = addItem(items, item, rules.limit)
   items = result.items
   result.evicted.forEach(removeImage)
   // A duplicate image reuses the stored file, so the freshly written one is not needed.
@@ -85,6 +86,14 @@ export const remove = (id) => update(items.filter((i) => i.id !== id), items.fil
 export const merge = (ids) => update(mergeItems(items, ids, randomUUID()))
 
 export const split = (id) => update(splitItem(items, id))
+
+/** Drops unpinned items past the history limit or older than the auto-delete age. True when something was dropped. */
+export function prune(next = rules) {
+  rules = next
+  const result = pruneItems(items, rules.limit, rules.maxAgeDays)
+  if (result.evicted.length) update(result.items, result.evicted)
+  return result.evicted.length > 0
+}
 
 export function clearHistory() {
   const result = clearUnpinned(items)

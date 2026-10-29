@@ -14,12 +14,17 @@ export function addItem(items, item, limit = HISTORY_LIMIT) {
   const existing = items.find((i) => signatureOf(i) === sig)
   const rest = items.filter((i) => i !== existing)
   const fresh = existing ? { ...existing, createdAt: item.createdAt } : item
-  const next = [fresh, ...rest]
+  return pruneItems([fresh, ...rest], limit)
+}
+
+/** Keeps pinned items, plus the newest `limit` unpinned ones that are under `maxAgeDays` old (0 = no age limit). */
+export function pruneItems(items, limit = HISTORY_LIMIT, maxAgeDays = 0, now = Date.now()) {
+  const cutoff = maxAgeDays ? now - maxAgeDays * 86400000 : -Infinity
   let unpinned = 0
   const kept = []
   const evicted = []
-  for (const i of next) {
-    if (i.pinned || ++unpinned <= limit) kept.push(i)
+  for (const i of items) {
+    if (i.pinned || (i.createdAt >= cutoff && ++unpinned <= limit)) kept.push(i)
     else evicted.push(i)
   }
   return { items: kept, evicted }

@@ -5,6 +5,9 @@ export const HANDLE_LENGTHS = { short: 0.2, medium: 0.4, long: 0.7 }
 /** Handle thickness in px. */
 export const HANDLE_THICKNESS = { thin: 3, medium: 5, thick: 9 }
 /** Handle gradients, top to bottom. */
+/** Panel widths in CSS px; the window is 20px wider to leave room for the shadow. */
+export const PANEL_WIDTHS = { narrow: 320, medium: 360, wide: 420 }
+
 export const HANDLE_COLORS = {
   purple: ['#7c8cff', '#b07cff'],
   blue: ['#3b9eff', '#5b6cf0'],

@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert'
-import { addItem } from '../src/main/history.js'
+import { addItem, pruneItems } from '../src/main/history.js'
 
 const text = (t, extra = {}) => ({ id: t, kind: 'text', text: t, createdAt: 0, pinned: false, ...extra })
 
@@ -47,4 +47,14 @@ test('merging a group with another item flattens it', async () => {
   const g = { id: 'g', kind: 'group', createdAt: 5, pinned: false, parts: [text('a', { createdAt: 1 }), text('b', { createdAt: 2 })] }
   const merged = mergeItems([text('c', { createdAt: 3 }), g], ['g', 'c'], 'h')
   assert.deepStrictEqual(merged[0].parts.map((p) => p.text), ['a', 'b', 'c'])
+})
+
+test('pruneItems keeps pinned items and drops unpinned ones past the limit or the age', () => {
+  const day = 86400000
+  const now = 100 * day
+  const items = [text('new', { createdAt: now }), text('old pin', { createdAt: 0, pinned: true }), text('mid', { createdAt: now - 10 * day }), text('old', { createdAt: now - 40 * day })]
+  assert.deepEqual(pruneItems(items, 2, 0, now).items.map((i) => i.id), ['new', 'old pin', 'mid'])
+  assert.deepEqual(pruneItems(items, 1000, 30, now).items.map((i) => i.id), ['new', 'old pin', 'mid'])
+  assert.deepEqual(pruneItems(items, 1000, 30, now).evicted.map((i) => i.id), ['old'])
+  assert.equal(pruneItems(items, 1000, 0, now).evicted.length, 0)
 })
