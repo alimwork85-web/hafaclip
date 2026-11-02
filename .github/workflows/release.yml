@@ -1,0 +1,50 @@
+# Builds HafaClip on GitHub and attaches the installer to the release, so every download is built from the published code.
+# Runs when a release is published (write its notes first, then publish), or by hand for an existing tag.
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to build and attach (e.g. v3.6.0)
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        shell: pwsh
+        run: |
+          $v = $env:TAG.TrimStart('v')
+          # --publish never: the upload below is the only one, electron-builder must not publish on its own.
+          npm run dist -- --publish never
+          if ($LASTEXITCODE) { throw "build failed" }
+          # The installer is named from package.json, so a missing file means the version was not bumped.
+          if (-not (Test-Path "dist/HafaClip Setup $v.exe")) { throw "package.json version does not match the tag $v" }
+          Copy-Item "dist/HafaClip Setup $v.exe" "HafaClip.Setup.$v.exe"
+
+      - name: Attach to the release
+        shell: pwsh
+        run: |
+          $v = $env:TAG.TrimStart('v')
+          gh release upload $env:TAG "HafaClip.Setup.$v.exe" --clobber
