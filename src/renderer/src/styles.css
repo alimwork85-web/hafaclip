@@ -11,6 +11,7 @@
   --scroll: rgba(255, 255, 255, 0.12);
   --toast-bg: #2b2f3c;
   --danger-text: #ff8a9b;
+  --ok: #5ee0a0;
   --shadow: rgba(0, 0, 0, 0.35);
   color-scheme: dark;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -29,6 +30,7 @@
   --scroll: rgba(20, 24, 40, 0.18);
   --toast-bg: #ffffff;
   --danger-text: #c8344d;
+  --ok: #1a7f4b;
   --shadow: rgba(20, 24, 40, 0.18);
   color-scheme: light;
 }
@@ -73,6 +75,7 @@
   --scroll: rgba(90, 60, 20, 0.2);
   --toast-bg: #fffaf2;
   --danger-text: #b42318;
+  --ok: #2f7a3a;
   --shadow: rgba(90, 60, 20, 0.18);
   color-scheme: light;
 }
@@ -162,7 +165,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
   border-radius: 10px; padding: 0 12px; cursor: pointer;
 }
 .clear:hover:not(:disabled) { color: var(--text); }
-.clear.confirm { color: #fff; background: #d9485f; border-color: #d9485f; }
+.clear.confirm { color: var(--bg); background: var(--danger-text); border-color: var(--danger-text); }
 .clear:disabled { opacity: 0.4; cursor: default; }
 
 .group { list-style: none; font-size: 11px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); padding: 4px 2px 0; }
@@ -191,7 +194,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
   font-size: 12px; background: var(--toast-bg); border: 1px solid var(--border); box-shadow: 0 6px 20px var(--shadow);
   animation: toast-in 180ms var(--ease);
 }
-.toast.ok::before { content: '✓ '; color: #5ee0a0; }
+.toast.ok::before { content: '✓ '; color: var(--ok); }
 .toast.error { color: var(--danger-text); }
 @keyframes toast-in { from { opacity: 0; translate: -50% 8px; } }
 @media (prefers-reduced-motion: reduce) { .toast { animation: none; } }
@@ -199,7 +202,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .panel.dropping { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent), 8px 0 32px var(--shadow); }
 .panel.dropping::after {
   content: attr(data-drop); position: absolute; inset: 0; display: grid; place-items: center;
-  font-size: 14px; font-weight: 600; color: #fff; background: rgba(124, 140, 255, 0.18); border-radius: inherit; pointer-events: none;
+  font-size: 14px; font-weight: 600; color: var(--text); background: color-mix(in srgb, var(--accent) 18%, transparent); border-radius: inherit; pointer-events: none;
 }
 .card[draggable='true']:active { cursor: grabbing; }
 
