@@ -166,6 +166,8 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .clear:disabled { opacity: 0.4; cursor: default; }
 
 .group { list-style: none; font-size: 11px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); padding: 4px 2px 0; }
+/* Letter spacing breaks joined Arabic letters apart. */
+[dir='rtl'] header h1, [dir='rtl'] .group { letter-spacing: 0; }
 .card { cursor: pointer; transition: background 150ms var(--ease), border-color 150ms var(--ease); }
 .card:hover { background: var(--fill-hover); }
 .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
