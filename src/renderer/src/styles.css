@@ -22,7 +22,7 @@
   --border: rgba(20, 24, 40, 0.1);
   --text: #1d2130;
   --muted: #6b7083;
-  --accent: #5566ec; /* darkest step that keeps the same hue with white text at 4.5:1 */
+  --accent: #5566ec; /* lightest shade of the old #5b6cf0 that gives white text 4.5:1 */
   --on-accent: #ffffff;
   --fill: rgba(20, 24, 40, 0.04);
   --fill-strong: rgba(20, 24, 40, 0.07);
