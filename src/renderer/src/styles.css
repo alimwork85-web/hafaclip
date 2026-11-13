@@ -4,6 +4,7 @@
   --text: #eceef4;
   --muted: #8b90a0;
   --accent: #7c8cff;
+  --on-accent: #16181f; /* text on accent fills; dark where white falls under 4.5:1 */
   --fill: rgba(255, 255, 255, 0.06);
   --fill-strong: rgba(255, 255, 255, 0.08);
   --fill-hover: rgba(255, 255, 255, 0.1);
@@ -21,6 +22,7 @@
   --text: #1d2130;
   --muted: #6b7083;
   --accent: #5b6cf0;
+  --on-accent: #ffffff;
   --fill: rgba(20, 24, 40, 0.04);
   --fill-strong: rgba(20, 24, 40, 0.07);
   --fill-hover: rgba(20, 24, 40, 0.08);
@@ -36,6 +38,7 @@
   --text: #e3f1fb;
   --muted: #86a3b8;
   --accent: #38bdf8;
+  --on-accent: #0c1b2a;
   --fill: rgba(120, 200, 255, 0.06);
   --fill-strong: rgba(120, 200, 255, 0.1);
   --fill-hover: rgba(120, 200, 255, 0.12);
@@ -49,6 +52,7 @@
   --text: #e4f4ec;
   --muted: #86a99a;
   --accent: #34d399;
+  --on-accent: #0e1e18;
   --fill: rgba(110, 231, 183, 0.06);
   --fill-strong: rgba(110, 231, 183, 0.1);
   --fill-hover: rgba(110, 231, 183, 0.12);
@@ -62,6 +66,7 @@
   --text: #3b2f22;
   --muted: #8a7660;
   --accent: #c2410c;
+  --on-accent: #ffffff;
   --fill: rgba(90, 60, 20, 0.05);
   --fill-strong: rgba(90, 60, 20, 0.08);
   --fill-hover: rgba(90, 60, 20, 0.1);
@@ -120,7 +125,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
   padding: 4px 10px; border-radius: 7px; cursor: pointer; transition: background 150ms var(--ease), color 150ms var(--ease);
 }
 .segmented button:hover { color: var(--text); }
-.segmented button.active { background: var(--accent); color: #fff; }
+.segmented button.active { background: var(--accent); color: var(--on-accent); }
 .segmented button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .list { list-style: none; padding: 12px; margin: 0; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px; }
@@ -205,7 +210,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
   border: 1px solid var(--border); background: transparent; color: var(--muted);
 }
 .selection-bar button:hover { color: var(--text); }
-.selection-bar button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.selection-bar button.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .selection-bar button:disabled { opacity: 0.45; cursor: default; }
 
 .group-parts { display: flex; flex-direction: column; gap: 6px; }
@@ -317,10 +322,10 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 
 /* Copying part of a text card. */
 .kind-text .card-text { user-select: text; cursor: text; }
-.kind-text .card-text::selection { background: var(--accent); color: #fff; }
+.kind-text .card-text::selection { background: var(--accent); color: var(--on-accent); }
 .copy-selection {
   align-self: flex-start; display: flex; align-items: center; gap: 5px; padding: 4px 10px; margin-top: -2px;
-  border: none; border-radius: 999px; background: var(--accent); color: #fff; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+  border: none; border-radius: 999px; background: var(--accent); color: var(--on-accent); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
   animation: toast-in 150ms var(--ease);
 }
 .copy-selection:hover { filter: brightness(1.1); }
