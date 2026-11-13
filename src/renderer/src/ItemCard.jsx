@@ -146,6 +146,25 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
   const [menuOpen, setMenuOpen] = useState(false)
   const [slotMenu, setSlotMenu] = useState(false)
   const slotMenuRef = useRef(null)
+  const menuRef = useRef(null)
+  // A menu folds away in 150ms, like a deleted card, before it leaves the page.
+  const fold = (el, done) => {
+    if (!el || matchMedia('(prefers-reduced-motion: reduce)').matches) return done()
+    el.style.pointerEvents = 'none'
+    el.animate([{ height: `${el.offsetHeight}px` }, { height: '0px', opacity: 0, paddingBlock: '0px' }], { duration: 150, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', fill: 'forwards' }).finished.then(done)
+  }
+  const closeMenu = () => fold(menuRef.current, () => setMenuOpen(false))
+  const closeSlotMenu = () => fold(slotMenuRef.current, () => setSlotMenu(false))
+  // "More"/"Less": the card's height eases from what it was before the click to its new height.
+  const fromHeight = useRef(null)
+  const toggleExpand = () => ((fromHeight.current = ref.current?.offsetHeight), onToggleExpand())
+  useLayoutEffect(() => {
+    const el = ref.current
+    const from = fromHeight.current
+    fromHeight.current = el?.offsetHeight
+    if (!el || from == null || from === el.offsetHeight || matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    el.animate([{ height: `${from}px`, overflow: 'hidden' }, { height: `${el.offsetHeight}px`, overflow: 'hidden' }], { duration: 200, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)' })
+  }, [expanded])
   // A card near the bottom of the list would open its number menu out of sight.
   useEffect(() => {
     if (slotMenu) slotMenuRef.current?.scrollIntoView({ block: 'nearest' })
@@ -196,7 +215,7 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
       title={t(lang, isText ? 'textCardTitle' : 'cardTitle')}
       // Finishing a text selection also fires a click; that must not copy the whole card.
       onClick={(e) => !selectionInside() && onClick(e)}
-      onMouseLeave={() => (setMenuOpen(false), setSlotMenu(false))}
+      onMouseLeave={() => (closeMenu(), closeSlotMenu())}
       draggable={!isText && naming === null}
       onDragStart={isText ? undefined : startDrag}
       onKeyDown={(e) => {
@@ -234,7 +253,7 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
       )}
       <Preview lang={lang} item={item} expanded={expanded} onPastePart={item.kind === 'group' && groupsOn ? onPastePart : undefined} onExtractPart={onExtractPart} />
       {expandable && (
-        <button className="more-toggle" aria-expanded={expanded} onClick={action(onToggleExpand)}>
+        <button className="more-toggle" aria-expanded={expanded} onClick={action(toggleExpand)}>
           {t(lang, expanded ? 'less' : 'more')}
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d={expanded ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'} />
@@ -268,7 +287,7 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
         <div className="actions">
           <button title={t(lang, 'pasteTitle')} aria-label={t(lang, 'paste')} onClick={action(onPaste)}><Icon d={ICONS.paste} /></button>
           {isText && (
-            <button title={t(lang, 'pasteAs')} aria-label={t(lang, 'pasteAs')} aria-haspopup="menu" aria-expanded={menuOpen} onClick={action(() => (setSlotMenu(false), setMenuOpen(!menuOpen)))}><Icon d={ICONS.more} /></button>
+            <button title={t(lang, 'pasteAs')} aria-label={t(lang, 'pasteAs')} aria-haspopup="menu" aria-expanded={menuOpen} onClick={action(() => (closeSlotMenu(), menuOpen ? closeMenu() : setMenuOpen(true)))}><Icon d={ICONS.more} /></button>
           )}
           {isText && (
             <button title={t(lang, 'fixLayoutTitle')} aria-label={t(lang, 'fixLayout')} onClick={action(onFixLayout)}><Icon d={ICONS.swap} /></button>
@@ -279,13 +298,13 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
           {item.kind === 'group' && (
             <button title={t(lang, 'splitTitle')} aria-label={t(lang, 'split')} onClick={action(onSplit)}><Icon d={ICONS.split} /></button>
           )}
-          <button title={t(lang, 'slotTitle')} aria-label={t(lang, 'slotTitle')} aria-haspopup="menu" aria-expanded={slotMenu} className={item.slot ? 'on' : ''} onClick={action(() => (setMenuOpen(false), setSlotMenu(!slotMenu)))}><Icon d={ICONS.hash} /></button>
+          <button title={t(lang, 'slotTitle')} aria-label={t(lang, 'slotTitle')} aria-haspopup="menu" aria-expanded={slotMenu} className={item.slot ? 'on' : ''} onClick={action(() => (closeMenu(), slotMenu ? closeSlotMenu() : setSlotMenu(true)))}><Icon d={ICONS.hash} /></button>
           <button title={t(lang, item.pinned ? 'unpin' : 'pinTitle')} aria-label={t(lang, item.pinned ? 'unpin' : 'pin')} aria-pressed={item.pinned} className={item.pinned ? 'on' : ''} onClick={action(onPin)}><Icon d={ICONS.pin} /></button>
           <button title={t(lang, 'delete')} aria-label={t(lang, 'delete')} className="danger" onClick={action(remove)}><Icon d={ICONS.trash} /></button>
         </div>
       </footer>
       {slotMenu && (
-        <div ref={slotMenuRef} className="paste-menu slot-menu" role="menu" aria-label={t(lang, 'slotTitle')}>
+        <div ref={slotMenuRef} className="paste-menu slot-menu" role="menu" aria-label={t(lang, 'slotTitle')} onAnimationEnd={(e) => e.target === e.currentTarget && e.target.scrollIntoView({ block: 'nearest' })}>
           <div className="slot-grid">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => {
               const holder = slots[n]
@@ -297,7 +316,7 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
                   aria-checked={mine}
                   className={mine ? 'active' : holder ? 'taken' : ''}
                   title={mine ? t(lang, 'quickPaste', n) : holder ? t(lang, 'slotTaken', n, holder.name ?? holder.text?.replace(/\s+/g, ' ').slice(0, 40) ?? label(lang, holder)) : `Alt+${n}`}
-                  onClick={action(() => (setSlotMenu(false), mine || onSetSlot(n)))}
+                  onClick={action(() => (closeSlotMenu(), mine || onSetSlot(n)))}
                 >
                   {n}
                 </button>
@@ -305,17 +324,17 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
             })}
           </div>
           {item.slot && (
-            <button role="menuitem" onClick={action(() => (setSlotMenu(false), onSetSlot(null)))}>
+            <button role="menuitem" onClick={action(() => (closeSlotMenu(), onSetSlot(null)))}>
               {t(lang, 'slotRemove')}
             </button>
           )}
         </div>
       )}
       {menuOpen && (
-        <div className="paste-menu" role="menu">
+        <div ref={menuRef} className="paste-menu" role="menu">
           {Object.entries(PASTE_AS).map(([key, fn]) => (
             // Greyed out when the conversion would change nothing in this text.
-            <button key={key} role="menuitem" disabled={fn(item.text) === item.text} onClick={action(() => (setMenuOpen(false), onPasteAs(fn)))}>
+            <button key={key} role="menuitem" disabled={fn(item.text) === item.text} onClick={action(() => (closeMenu(), onPasteAs(fn)))}>
               {t(lang, key)}
             </button>
           ))}

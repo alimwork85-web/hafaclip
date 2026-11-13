@@ -413,6 +413,9 @@ kbd {
 .paste-menu button:hover:not(:disabled) { background: var(--fill-hover); }
 .paste-menu button:disabled { color: var(--muted); opacity: 0.6; cursor: default; }
 .paste-menu button:focus-visible { outline: 2px solid var(--accent); }
+.paste-menu { overflow: hidden; interpolate-size: allow-keywords; animation: menu-in 150ms var(--ease); }
+@keyframes menu-in { from { height: 0; opacity: 0; padding-block: 0; } }
+@media (prefers-reduced-motion: reduce) { .paste-menu { animation: none; } }
 
 /* Alt+1…9 number menu: nine numbers in a row; taken ones are marked with a dot, the card's own one is filled. */
 .slot-grid { display: grid; grid-template-columns: repeat(9, 1fr); gap: 2px; }

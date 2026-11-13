@@ -30,6 +30,7 @@ export default function App() {
   const newestSeen = useRef(Infinity) // Infinity until the first load, so nothing animates on start
   const [query, setQuery] = useState('')
   const [toast, setToast] = useState(null)
+  const toastRef = useRef(null)
   const [update, setUpdate] = useState(null) // newer release found on GitHub; null after "Later"
   const [confirmClear, setConfirmClear] = useState(false)
   const [dropping, setDropping] = useState(false)
@@ -223,8 +224,15 @@ export default function App() {
 
   useEffect(() => {
     if (!toast) return
-    const t = setTimeout(() => setToast(null), 1600)
-    return () => clearTimeout(t)
+    // The toast fades out before it goes; a new toast during the fade cancels it.
+    let fade
+    const t = setTimeout(() => {
+      const el = toastRef.current
+      if (!el || matchMedia('(prefers-reduced-motion: reduce)').matches) return setToast(null)
+      fade = el.animate([{ opacity: 0, translate: '-50% 8px' }], { duration: 150, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', fill: 'forwards' })
+      fade.finished.then(() => setToast(null), () => {})
+    }, 1600)
+    return () => (clearTimeout(t), fade?.cancel())
   }, [toast])
 
   useEffect(() => {
@@ -501,7 +509,7 @@ export default function App() {
         )}
         </>
         )}
-        {toast && <div className={`toast ${toast.tone}`} role="status">
+        {toast && <div ref={toastRef} className={`toast ${toast.tone}`} role="status">
             {toast.tone === 'ok' && (
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M5 12l5 5L20 7" />
