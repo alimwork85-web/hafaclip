@@ -384,4 +384,5 @@ kbd {
 
 /* Press feedback: a small shrink while held, so clicks feel physical. Uses `scale`, not `transform`, so it stacks with hover effects. */
 button { transition: scale 120ms var(--ease); }
-button:active:not(:disabled), .card:active:not(:has(button:active)) { scale: 0.97; }
+/* Not while pressing a button inside the card, nor while selecting its text. */
+button:active:not(:disabled), .card:active:not(:has(button:active, .card-text:active)) { scale: 0.97; }
