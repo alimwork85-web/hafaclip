@@ -179,6 +179,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .card.pinned { border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
 .card footer { align-items: center; gap: 8px; min-height: 22px; }
 .card footer .time { margin-inline-start: auto; }
+.card footer .kind { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .actions { display: none; gap: 2px; margin-inline-start: auto; }
 .card:hover .actions, .card:focus-within .actions { display: flex; }
 .card:hover .time, .card:focus-within .time { display: none; }

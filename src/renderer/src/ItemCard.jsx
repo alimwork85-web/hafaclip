@@ -238,7 +238,15 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
           </span>
         )}
         {number > 0 && <kbd className="number" title={t(lang, 'quickPaste', number)}>{number}</kbd>}
-        <span className="kind">{label(lang, item)}</span>
+        {/* The program it was copied from, beside the size; bdi keeps a Latin name whole inside Arabic text. */}
+        <span className="kind" title={item.app ?? undefined}>
+          {item.app && (
+            <>
+              <bdi>{item.app.replace(/\.exe$/i, '')}</bdi> ·{' '}
+            </>
+          )}
+          {label(lang, item)}
+        </span>
         <span className="time">{timeAgo(lang, item.createdAt)}</span>
         <div className="actions">
           <button title={t(lang, 'pasteTitle')} aria-label={t(lang, 'paste')} onClick={action(onPaste)}><Icon d={ICONS.paste} /></button>
