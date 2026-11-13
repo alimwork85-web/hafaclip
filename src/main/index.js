@@ -9,7 +9,7 @@ import { cleanTemp, dragPayload, itemFromDroppedPaths } from './drag'
 import { createTray } from './tray'
 import { HANDLE_COLORS, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone, PANEL_WIDTHS } from '../renderer/src/hotZone'
 import { resolveLang } from '../renderer/src/i18n'
-import { add, clearHistory, extract, findItem, flush, getItems, imagesDir, loadItems, merge, prune, remove, renameGroup, setImageText, setPinned, split, touch } from './store'
+import { add, clearHistory, extract, findItem, flush, getItems, imagesDir, loadItems, merge, prune, remove, renameGroup, setImageText, setPinned, setSlot, split, touch } from './store'
 import { ocrLanguages, readImageText, stopOcr } from './ocr'
 import { isNewer } from './version'
 
@@ -318,6 +318,11 @@ function createWindow() {
   })
   ipcMain.handle('items:pin', (_e, id, pinned) => {
     if (typeof id === 'string') setPinned(id, pinned === true)
+    pushItems()
+  })
+  // slot is the Alt+N number 1-9, or null to remove it.
+  ipcMain.handle('items:slot', (_e, id, slot) => {
+    if (typeof id === 'string' && (slot === null || (Number.isInteger(slot) && slot >= 1 && slot <= 9))) setSlot(id, slot)
     pushItems()
   })
   ipcMain.handle('items:delete', (_e, id) => {

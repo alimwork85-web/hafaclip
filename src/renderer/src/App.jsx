@@ -168,20 +168,23 @@ export default function App() {
     root.style.setProperty('--panel-gap', panelGap(settings.panelHeight, settings.handleLength))
   }, [settings.density, settings.font, settings.textSize, settings.panelWidth, settings.panelHeight, settings.handleLength])
 
-  // Keyboard: Esc closes, Alt+1…9 pastes the numbered card, and typing anywhere in a list goes to the search box.
+  // Keyboard: Esc closes, Alt+1…9 pastes the card given that number (in any tab, search or not), and typing anywhere in a list goes to the search box.
   const searchRef = useRef(null)
   const keys = useRef(null)
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') return setExpanded(false)
-      const { shown, paste, inList } = keys.current
-      if (!inList) return
+      const { items, paste, inList } = keys.current
       // e.code for real keys; e.key as a fallback for input that comes without a scan code.
       const n = e.altKey && !e.ctrlKey && Number(/^Digit([1-9])$/.exec(e.code)?.[1] ?? (/^[1-9]$/.test(e.key) && e.key))
       if (n) {
         e.preventDefault()
-        if (shown[n - 1]) paste(shown[n - 1])
-      } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        const item = items.find((i) => i.slot === n)
+        if (item) paste(item)
+        return
+      }
+      if (!inList) return
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         // ↓ from search goes to the first card; ↑ from the first card goes back to search. Enter on a card pastes it.
         const cards = [...document.querySelectorAll('.list .card')]
         const i = cards.indexOf(document.activeElement)
@@ -280,12 +283,13 @@ export default function App() {
 
   const q = normalize(query.trim())
   const visible = items.filter((i) => inCategory(i, tab) && (!q || matches(i, q)))
-  const pinned = visible.filter((i) => i.pinned)
+  // Numbered cards lead the pinned section in number order; the rest keep their order.
+  const pinned = visible.filter((i) => i.pinned).sort((a, b) => (a.slot ?? 10) - (b.slot ?? 10))
   const recent = visible.filter((i) => !i.pinned)
-  // Cards in the order they show, for the Alt+1…9 numbers.
-  const shown = [...(pinnedOpen ? pinned : []), ...recent]
   const inList = tab !== 'settings' && tab !== 'emoji' && !selected.length
-  keys.current = { shown, paste, inList }
+  keys.current = { items, paste, inList }
+  // Which card holds each Alt+N number, for the number menu on every card.
+  const slots = Object.fromEntries(items.filter((i) => i.slot).map((i) => [i.slot, i]))
   // Items per tab (pinned included); while searching, the open tab shows "matches of total".
   const counts = Object.fromEntries(
     CATEGORIES.filter((c) => c.id !== 'emoji').map((c) => {
@@ -305,7 +309,13 @@ export default function App() {
   const card = (item) => (
     <ItemCard
       key={item.id}
-      number={inList && shown.indexOf(item) < 9 ? shown.indexOf(item) + 1 : 0}
+      number={item.slot ?? 0}
+      slots={slots}
+      onSetSlot={(slot) => {
+        const holder = slot && slots[slot]
+        window.panel.setSlot(item.id, slot)
+        if (holder && holder.id !== item.id) setToast({ text: tr('slotMoved', slot), tone: 'ok' })
+      }}
       lang={lang}
       item={item}
       selected={selected.includes(item.id)}

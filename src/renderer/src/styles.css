@@ -381,7 +381,14 @@ kbd {
 .paste-menu button:disabled { color: var(--muted); opacity: 0.6; cursor: default; }
 .paste-menu button:focus-visible { outline: 2px solid var(--accent); }
 
-/* Alt+1…9 quick-paste number on the first cards. */
+/* Alt+1…9 number menu: nine numbers in a row; taken ones are marked with a dot, the card's own one is filled. */
+.slot-grid { display: grid; grid-template-columns: repeat(9, 1fr); gap: 2px; }
+.slot-menu .slot-grid button { text-align: center; padding: 6px 0; font-variant-numeric: tabular-nums; position: relative; }
+.slot-menu .slot-grid button.taken { color: var(--muted); }
+.slot-menu .slot-grid button.taken::after { content: ''; position: absolute; top: 3px; inset-inline-end: 3px; width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
+.slot-menu .slot-grid button.active { background: var(--accent); color: var(--on-accent); }
+
+/* Alt+1…9 number of a card, chosen from its number menu. */
 .card footer kbd.number { font-size: 10px; padding: 0 5px; color: var(--muted); font-variant-numeric: tabular-nums; }
 
 /* App name, version and developer at the bottom of the settings. */

@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld('panel', {
   copyItem: (id) => ipcRenderer.invoke('items:copy', id),
   pasteItem: (id) => ipcRenderer.invoke('items:paste', id),
   pinItem: (id, pinned) => ipcRenderer.invoke('items:pin', id, pinned),
+  setSlot: (id, slot) => ipcRenderer.invoke('items:slot', id, slot),
   pastePart: (id, partId) => ipcRenderer.invoke('items:paste-part', id, partId),
   renameGroup: (id, name) => ipcRenderer.invoke('items:rename', id, name),
   extractPart: (id, partId) => ipcRenderer.invoke('items:extract', id, partId),

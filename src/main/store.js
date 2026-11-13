@@ -3,7 +3,7 @@ import { app } from 'electron'
 import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
-import { addItem, clearUnpinned, extractPart, HISTORY_LIMIT, mergeItems, pruneItems, splitItem } from './history'
+import { addItem, assignSlot, clearUnpinned, extractPart, HISTORY_LIMIT, mergeItems, pinItem, pruneItems, splitItem } from './history'
 
 export const imagesDir = () => join(app.getPath('userData'), 'images')
 const indexFile = () => join(app.getPath('userData'), 'items.json')
@@ -79,7 +79,9 @@ export function touch(id) {
   return item ? update([{ ...item, createdAt: Date.now() }, ...items.filter((i) => i !== item)]) : items
 }
 
-export const setPinned = (id, pinned) => update(items.map((i) => (i.id === id ? { ...i, pinned } : i)))
+export const setPinned = (id, pinned) => update(pinItem(items, id, pinned))
+
+export const setSlot = (id, slot) => update(assignSlot(items, id, slot))
 
 export const remove = (id) => update(items.filter((i) => i.id !== id), items.filter((i) => i.id === id))
 
