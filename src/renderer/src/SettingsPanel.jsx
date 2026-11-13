@@ -5,6 +5,14 @@ import { pruneItems } from '../../main/history'
 import { version } from '../../../package.json'
 
 const DELAYS = { 0: 'instant', 300: 'short', 600: 'long' }
+// Theme circles: half the theme's background, half its accent (Light and Dark take the Windows accent, as in styles.css).
+const THEME_PREVIEW = {
+  light: ['rgb(248, 249, 252)', 'var(--win-accent-light, #0f766e)'],
+  dark: ['rgb(22, 24, 31)', 'var(--win-accent-dark, #2dd4bf)'],
+  ocean: ['rgb(12, 27, 42)', '#38bdf8'],
+  forest: ['rgb(14, 30, 24)', '#34d399'],
+  sand: ['rgb(250, 245, 236)', '#c2410c']
+}
 // The font names show in their own font, so the choice previews itself.
 export const FONTS = {
   system: "'Segoe UI Variable', 'Segoe UI', sans-serif",
@@ -112,7 +120,23 @@ export default function SettingsPanel({ lang, settings, items, onChange }) {
       {choice('openDelay', [0, 300, 600], { labelOf: (o) => t(lang, `opt.${DELAYS[o]}`) })}
 
       <div className="group">{t(lang, 'appearance')}</div>
-      {choice('theme', ['light', 'dark', 'ocean', 'forest', 'sand'])}
+      <div className="setting">
+        <span className="setting-label">{t(lang, 'theme')}</span>
+        <div className="swatches" role="radiogroup" aria-label={t(lang, 'theme')}>
+          {Object.entries(THEME_PREVIEW).map(([name, [bg, accent]]) => (
+            <button
+              key={name}
+              role="radio"
+              aria-checked={settings.theme === name}
+              aria-label={t(lang, `opt.${name}`)}
+              title={t(lang, `opt.${name}`)}
+              className={`swatch${settings.theme === name ? ' active' : ''}`}
+              style={{ background: `linear-gradient(135deg, ${bg} 50%, ${accent} 50%)` }}
+              onClick={() => onChange({ theme: name })}
+            />
+          ))}
+        </div>
+      </div>
       {choice('font', Object.keys(FONTS), { styleOf: (o) => ({ fontFamily: FONTS[o] }) })}
       {choice('textSize', ['small', 'medium', 'large'])}
       {choice('density', ['compact', 'comfortable'])}
