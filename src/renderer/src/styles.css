@@ -90,6 +90,7 @@ html, body { background: transparent; overflow: hidden; font-family: var(--font,
   opacity: 0.75; transition: opacity 200ms var(--ease), width 200ms var(--ease), height 200ms var(--ease);
 }
 .expanded .handle { opacity: 0; }
+.near .handle { width: calc(var(--handle-w, 5px) + 3px); }
 
 .panel {
   /* zoom is the text-size setting; dividing keeps the panel at its chosen on-screen width. */

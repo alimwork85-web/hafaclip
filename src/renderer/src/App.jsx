@@ -229,15 +229,21 @@ export default function App() {
 
   // Open once the cursor has stayed in the hot zone for the open delay (the main process covers a still cursor).
   const hoverSince = useRef(null)
+  // The handle widens a little while the cursor is near it (within 40px of the edge, level with it), before the panel opens.
+  const [near, setNear] = useState(false)
   useEffect(() => {
     const onMove = (e) => {
       const s = settingsRef.current
+      const fromEdge = s.edge === 'right' ? window.innerWidth - 1 - e.clientX : e.clientX
+      setNear(fromEdge <= 40 && isInHotZone(s.edge === 'right' ? window.innerWidth - 1 : 0, e.clientY, window.innerWidth, window.innerHeight, s.edge, s.handleLength, s.handleThickness))
       if (!isInHotZone(e.clientX, e.clientY, window.innerWidth, window.innerHeight, s.edge, s.handleLength, s.handleThickness)) return (hoverSince.current = null)
       hoverSince.current ??= Date.now()
       if (Date.now() - hoverSince.current >= (s.openDelay ?? 0)) setExpanded(true)
     }
+    const onLeave = () => setNear(false)
     document.addEventListener('mousemove', onMove)
-    return () => document.removeEventListener('mousemove', onMove)
+    document.documentElement.addEventListener('mouseleave', onLeave)
+    return () => (document.removeEventListener('mousemove', onMove), document.documentElement.removeEventListener('mouseleave', onLeave))
   }, [])
 
   useEffect(() => {
@@ -374,7 +380,7 @@ export default function App() {
   )
 
   return (
-    <div className={`app edge-${edge}${expanded ? ' expanded' : ''}`}>
+    <div className={`app edge-${edge}${expanded ? ' expanded' : near ? ' near' : ''}`}>
       <div
         className="handle"
         style={{
