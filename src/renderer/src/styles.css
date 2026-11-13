@@ -108,8 +108,8 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .mark { flex: none; }
 
 .empty { flex: 1; display: grid; place-content: center; text-align: center; gap: 6px; color: var(--muted); }
-.empty p { font-size: 14px; color: var(--text); }
-.empty small { font-size: 12px; }
+.empty p { font-size: 15px; color: var(--text); }
+.empty small { font-size: 13px; }
 
 @media (prefers-reduced-motion: reduce) { .panel, .handle { transition: none; } }
 
@@ -124,7 +124,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 
 .segmented { margin-inline-start: auto; display: flex; padding: 3px; gap: 2px; border-radius: 10px; background: var(--fill); }
 .segmented button {
-  border: none; background: transparent; color: var(--muted); font: inherit; font-size: 12px;
+  border: none; background: transparent; color: var(--muted); font: inherit; font-size: 13px;
   padding: 4px 10px; border-radius: 6px; cursor: pointer; transition: background 150ms var(--ease), color 150ms var(--ease), scale 120ms var(--ease);
 }
 .segmented button:hover { color: var(--text); }
@@ -161,7 +161,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .search:focus { border-color: var(--accent); }
 .search::placeholder { color: var(--muted); }
 .clear {
-  font: inherit; font-size: 12px; color: var(--muted); background: transparent; border: 1px solid var(--border);
+  font: inherit; font-size: 13px; color: var(--muted); background: transparent; border: 1px solid var(--border);
   border-radius: 10px; padding: 0 12px; cursor: pointer;
 }
 .clear:hover:not(:disabled) { color: var(--text); }
@@ -191,7 +191,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 
 .toast {
   position: absolute; left: 50%; bottom: 18px; translate: -50% 0; padding: 7px 14px; border-radius: 999px;
-  font-size: 12px; background: var(--toast-bg); border: 1px solid var(--border); box-shadow: 0 6px 20px var(--shadow);
+  font-size: 13px; background: var(--toast-bg); border: 1px solid var(--border); box-shadow: 0 6px 20px var(--shadow);
   animation: toast-in 180ms var(--ease);
 }
 .toast.ok::before { content: '✓ '; color: var(--ok); }
@@ -202,7 +202,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .panel.dropping { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent), 8px 0 32px var(--shadow); }
 .panel.dropping::after {
   content: attr(data-drop); position: absolute; inset: 0; display: grid; place-items: center;
-  font-size: 14px; font-weight: 600; color: var(--text); background: color-mix(in srgb, var(--accent) 18%, transparent); border-radius: inherit; pointer-events: none;
+  font-size: 15px; font-weight: 600; color: var(--text); background: color-mix(in srgb, var(--accent) 18%, transparent); border-radius: inherit; pointer-events: none;
 }
 .card[draggable='true']:active { cursor: grabbing; }
 
@@ -211,7 +211,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .selection-bar { align-items: center; font-size: 13px; }
 .selection-bar span { flex: 1; color: var(--text); }
 .selection-bar button {
-  font: inherit; font-size: 12px; padding: 6px 12px; border-radius: 10px; cursor: pointer;
+  font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 10px; cursor: pointer;
   border: 1px solid var(--border); background: transparent; color: var(--muted);
 }
 .selection-bar button:hover { color: var(--text); }
@@ -220,10 +220,10 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 
 .group-parts { display: flex; flex-direction: column; gap: 6px; }
 .group-parts .part { padding: 6px 8px; border-radius: 6px; background: var(--fill); border-inline-start: 2px solid var(--accent); }
-.group-parts .part .card-text { -webkit-line-clamp: 2; font-size: 12px; }
+.group-parts .part .card-text { -webkit-line-clamp: 2; font-size: 13px; }
 .group-parts .part .card-image { max-height: 60px; }
-.group-parts .part .card-files { font-size: 12px; }
-.group-parts .more { font-size: 12px; color: var(--muted); }
+.group-parts .part .card-files { font-size: 13px; }
+.group-parts .more { font-size: 11px; color: var(--muted); }
 /* The paste button keeps its own space beside the part, so it never covers text (Arabic ends on that side). */
 .group-parts .part { display: flex; align-items: flex-start; gap: 6px; }
 .group-parts .part > :first-child { flex: 1; min-width: 0; }
@@ -234,9 +234,9 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .part-actions { flex: none; display: flex; gap: 4px; }
 .part:hover .part-paste, .part-paste:focus-visible { visibility: visible; }
 .part-paste:hover { color: var(--accent); border-color: var(--accent); }
-.group-name { font-size: 14px; font-weight: 600; color: var(--accent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.group-name { font-size: 15px; font-weight: 600; color: var(--accent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .group-name-input {
-  font: inherit; font-size: 14px; font-weight: 600; color: var(--text); background: var(--fill);
+  font: inherit; font-size: 15px; font-weight: 600; color: var(--text); background: var(--fill);
   border: 1px solid var(--accent); border-radius: 6px; padding: 5px 9px; outline: none; user-select: text;
 }
 
@@ -325,7 +325,7 @@ header { position: relative; }
 .card.expanded > .card-text::-webkit-scrollbar-thumb { background: var(--scroll); border-radius: 3px; }
 .more-toggle {
   align-self: flex-start; display: flex; align-items: center; gap: 3px; margin-top: -4px; padding: 2px 6px 2px 0;
-  border: none; background: none; font: inherit; font-size: 12px; font-weight: 600; color: var(--accent); cursor: pointer;
+  border: none; background: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--accent); cursor: pointer;
 }
 .more-toggle:hover { text-decoration: underline; }
 .more-toggle:focus-visible { outline: 2px solid var(--accent); border-radius: 4px; }
@@ -335,7 +335,7 @@ header { position: relative; }
 .kind-text .card-text::selection { background: var(--accent); color: var(--on-accent); }
 .copy-selection {
   align-self: flex-start; display: flex; align-items: center; gap: 5px; padding: 4px 10px; margin-top: -2px;
-  border: none; border-radius: 999px; background: var(--accent); color: var(--on-accent); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+  border: none; border-radius: 999px; background: var(--accent); color: var(--on-accent); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
   animation: toast-in 150ms var(--ease);
 }
 .copy-selection:hover { filter: brightness(1.1); }
@@ -343,7 +343,7 @@ header { position: relative; }
 .grip { display: grid; place-items: center; margin-inline-start: -4px; color: var(--muted); cursor: grab; opacity: 0.6; }
 .grip:hover { opacity: 1; color: var(--text); }
 
-.keys { margin-inline-start: auto; display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: 12px; }
+.keys { margin-inline-start: auto; display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: 13px; }
 kbd {
   font: inherit; font-size: 11px; font-weight: 600; color: var(--text); padding: 2px 7px; border-radius: 6px;
   background: var(--fill-strong); border: 1px solid var(--border); border-bottom-width: 2px;
@@ -355,18 +355,18 @@ kbd {
 
 /* A row whose options do not fit beside the label moves them to their own line, kept whole. */
 .segmented { flex-wrap: nowrap; }
-.settings-note { font-size: 12px; color: var(--danger-text); margin-top: -4px; }
+.settings-note { font-size: 13px; color: var(--danger-text); margin-top: -4px; }
 .settings-note.info { color: var(--muted); }
 .update-bar span { color: var(--accent); font-weight: 600; }
 .app-chips { margin-inline-start: auto; display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
 .app-chips button {
-  font: inherit; font-size: 12px; padding: 4px 10px; border-radius: 999px; cursor: pointer;
+  font: inherit; font-size: 13px; padding: 4px 10px; border-radius: 999px; cursor: pointer;
   border: 1px solid var(--border); background: transparent; color: var(--muted);
 }
 .app-chips button.active { background: var(--danger-text); border-color: var(--danger-text); color: var(--bg); text-decoration: line-through; }
-.link-button { margin-inline-start: auto; font: inherit; font-size: 12px; color: var(--accent); background: none; border: none; cursor: pointer; padding: 2px 4px; }
+.link-button { margin-inline-start: auto; font: inherit; font-size: 13px; color: var(--accent); background: none; border: none; cursor: pointer; padding: 2px 4px; }
 .keys button {
-  font: inherit; font-size: 12px; color: var(--accent); background: none; border: none; cursor: pointer; padding: 2px 4px; margin-inline-start: 4px;
+  font: inherit; font-size: 13px; color: var(--accent); background: none; border: none; cursor: pointer; padding: 2px 4px; margin-inline-start: 4px;
 }
 .keys button:focus-visible { outline: 2px solid var(--accent); border-radius: 4px; }
 .keys-list { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
@@ -374,7 +374,7 @@ kbd {
 /* "Paste as" menu inside a text card. */
 .paste-menu { display: flex; flex-direction: column; gap: 2px; padding: 4px; margin-top: -4px; border-radius: 10px; background: var(--fill-strong); }
 .paste-menu button {
-  font: inherit; font-size: 12px; text-align: start; padding: 6px 8px; border: none; border-radius: 6px;
+  font: inherit; font-size: 13px; text-align: start; padding: 6px 8px; border: none; border-radius: 6px;
   background: transparent; color: var(--text); cursor: pointer;
 }
 .paste-menu button:hover:not(:disabled) { background: var(--fill-hover); }
