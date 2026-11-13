@@ -239,7 +239,9 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
   flex: none; display: grid; visibility: hidden; place-items: center; width: 24px; height: 24px; padding: 0;
   border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--muted); cursor: pointer;
 }
-.part-actions { flex: none; display: flex; gap: 4px; }
+/* The part buttons float over the part's end corner, so the hidden buttons reserve no space and the text lines up with the edge. */
+.group-parts .part { position: relative; }
+.part-actions { position: absolute; top: 4px; inset-inline-end: 4px; display: flex; gap: 4px; }
 .part:hover .part-paste, .part-paste:focus-visible { visibility: visible; }
 .part-paste:hover { color: var(--accent); border-color: var(--accent); }
 .group-name { font-size: 15px; font-weight: 600; color: var(--accent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
