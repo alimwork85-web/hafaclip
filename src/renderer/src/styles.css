@@ -177,6 +177,11 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .card:hover { background: var(--fill-hover); }
 .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .card.pinned { border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+.card.pinned { position: relative; }
+.pin-mark { position: absolute; top: 8px; inset-inline-end: 8px; color: var(--accent); }
+/* Keeps the first line clear of the pin. Physical sides, because card text sets its own direction (dir=auto). */
+[dir='ltr'] .pin-mark + * { margin-right: 14px; }
+[dir='rtl'] .pin-mark + * { margin-left: 14px; }
 .card footer { align-items: center; gap: 8px; min-height: 22px; }
 .card footer .time { margin-inline-start: auto; }
 .card footer .kind { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

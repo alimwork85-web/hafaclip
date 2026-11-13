@@ -193,6 +193,12 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
         else if (e.key === ' ') onClick(e)
       }}
     >
+      {/* Pinned cards also carry a small pin, so they are told apart without relying on colour. */}
+      {item.pinned && (
+        <svg className="pin-mark" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d={ICONS.pin} />
+        </svg>
+      )}
       {naming !== null ? (
         <input
           className="group-name-input"
