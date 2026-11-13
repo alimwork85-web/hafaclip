@@ -107,13 +107,13 @@ Can be turned off from the tray icon, and capturing can be paused on demand.
 
 ## Screenshots
 
-| History | Settings | Light mode |
-|:---:|:---:|:---:|
-| <img src="assets/screenshots/history.png" width="260" alt="History tab"> | <img src="assets/screenshots/settings.png" width="260" alt="Settings"> | <img src="assets/screenshots/light.png" width="260" alt="Light mode"> |
+| History | Settings | Light mode | Forest, in Arabic |
+|:---:|:---:|:---:|:---:|
+| <img src="assets/screenshots/history.png" width="200" alt="History tab"> | <img src="assets/screenshots/settings.png" width="200" alt="Settings"> | <img src="assets/screenshots/light.png" width="200" alt="Light mode"> | <img src="assets/screenshots/forest.png" width="200" alt="Forest theme with the Arabic interface"> |
 
 | Images | Files | Emoji |
 |:---:|:---:|:---:|
-| <img src="assets/screenshots/images.png" width="260" alt="Images tab"> | <img src="assets/screenshots/files.png" width="260" alt="Files tab"> | <img src="assets/screenshots/emoji.png" width="260" alt="Emoji picker"> |
+| <img src="assets/screenshots/images.png" width="200" alt="Images tab"> | <img src="assets/screenshots/files.png" width="200" alt="Files tab"> | <img src="assets/screenshots/emoji.png" width="200" alt="Emoji picker"> |
 
 ## Install
 
