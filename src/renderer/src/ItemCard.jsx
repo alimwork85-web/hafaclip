@@ -27,8 +27,19 @@ const ICONS = {
   more: 'M5 12h.01M12 12h.01M19 12h.01',
   rename: 'M4 20h4L19 9l-4-4L4 16zM13 7l4 4',
   extract: 'M14 4h6v6M20 4l-8 8M10 5H5v14h14v-5',
-  hash: 'M4 9h16M4 15h16M10 3L8 21M16 3l-2 18'
+  hash: 'M4 9h16M4 15h16M10 3L8 21M16 3l-2 18',
+  file: 'M14 3H6v18h12V7zM14 3v4h4',
+  doc: 'M14 3H6v18h12V7zM14 3v4h4M9 13h6M9 17h6',
+  audio: 'M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0a3 3 0 0 1 6 0M20 16a3 3 0 1 1-6 0a3 3 0 0 1 6 0',
+  video: 'M3 6h13v12H3zM16 10l5-3v10l-5-3'
 }
+
+const FILE_TYPES = {
+  audio: /\.(mp3|wav|flac|aac|m4a|ogg|opus|wma)$/i,
+  video: /\.(mp4|mkv|avi|mov|webm|wmv|m4v|flv)$/i,
+  doc: /\.(pdf|docx?|odt|rtf|txt|md|xlsx?|ods|csv|pptx?|odp)$/i
+}
+const fileIcon = (name) => ICONS[Object.keys(FILE_TYPES).find((k) => FILE_TYPES[k].test(name)) || 'file']
 
 /** Text of an item when it can be dragged as plain text (text, or a group made only of text). */
 const plainText = (item) =>
@@ -49,7 +60,7 @@ function Preview({ lang, item, expanded = false, onPastePart, onExtractPart }) {
     return (
       <ul className="card-files">
         {shown.map((f) => (
-          <li key={f} title={f} dir="auto">{baseName(f)}</li>
+          <li key={f} title={f} dir="auto"><Icon d={fileIcon(f)} /><span>{baseName(f)}</span></li>
         ))}
         {shown.length < item.files.length && <li className="more">{t(lang, 'moreN', item.files.length - shown.length)}</li>}
       </ul>
