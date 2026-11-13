@@ -202,6 +202,8 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .card footer { align-items: center; gap: 8px; min-height: 22px; }
 .card footer .time { margin-inline-start: auto; }
 .card footer .kind { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Equal-width digits, so the time and the character count do not shift as they update. */
+.card footer .time, .card footer .kind { font-variant-numeric: tabular-nums; }
 .actions { display: none; gap: 2px; margin-inline-start: auto; }
 .card:hover .actions, .card:focus-within .actions { display: flex; }
 .card:hover .time, .card:focus-within .time { display: none; }
