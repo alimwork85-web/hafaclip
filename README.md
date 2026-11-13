@@ -20,7 +20,7 @@
 **HafaClip** (حافة, Arabic for *edge*; previously named Edge Clipboard) is a free, open-source clipboard manager for Windows. It hides as a thin line on the edge of your screen; move the mouse there (or press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>E</kbd>) and your clipboard history slides out. Everything stays on your computer.
 
 <p align="center">
-  <img src="assets/demo.gif" alt="Hover the screen edge to open the panel and switch tabs" width="320">
+  <img src="assets/demo.gif" alt="Hover the screen edge to open the panel, copy an item and switch tabs; the handle lights up on a new copy" width="320">
 </p>
 
 ## Features
@@ -28,6 +28,8 @@
 <img src="assets/features/edge-en.svg" alt="Lives on the screen edge" height="44">
 
 Hover the handle to open, move away to close. Left or right edge, your choice.
+
+**New in 3.7.** The handle widens a little as the cursor nears it, and a band of light runs down it each time something new is copied while the panel is closed (Settings → Light up on copy).
 
 <img src="assets/features/height-en.svg" alt="A panel as tall as the handle" height="44">
 
@@ -40,6 +42,8 @@ Hover the handle to open, move away to close. Left or right edge, your choice.
 <img src="assets/features/capture-en.svg" alt="Captures everything" height="44">
 
 Text, images and files (every file of a multi-file copy). Each kind can be turned off.
+
+**New in 3.7.** Check an image before you copy it: the magnifier on an image card, or <kbd>Space</kbd> on it, shows it large beside the panel.
 
 <img src="assets/features/passwords-en.svg" alt="Respects password managers" height="44">
 
@@ -93,6 +97,8 @@ Follows Windows, or pick one, with right-to-left layout and Arabic-aware search 
 
 5 themes (Light, Dark, Ocean, Forest and Sand), 4 fonts (including Cairo, Tajawal and IBM Plex Sans Arabic), text size, density, panel width, open delay, and the handle's length, thickness and colour, with an optional second colour at its top and bottom.
 
+**New in 3.7.** A cleaner look (new icon, theme swatches, on/off switches, settings grouped in boxes, smoother motion) and an optional classic Naskh font for copied text (Settings → Copied text font).
+
 <img src="assets/features/startup-en.svg" alt="Starts with Windows" height="44">
 
 Can be turned off from the tray icon, and capturing can be paused on demand.
@@ -107,13 +113,13 @@ Can be turned off from the tray icon, and capturing can be paused on demand.
 
 ## Screenshots
 
-| History | Settings | Light mode |
-|:---:|:---:|:---:|
-| <img src="assets/screenshots/history.png" width="260" alt="History tab"> | <img src="assets/screenshots/settings.png" width="260" alt="Settings"> | <img src="assets/screenshots/light.png" width="260" alt="Light mode"> |
+| History | Settings | Light mode | Forest, in Arabic |
+|:---:|:---:|:---:|:---:|
+| <img src="assets/screenshots/history.png" width="200" alt="History tab"> | <img src="assets/screenshots/settings.png" width="200" alt="Settings"> | <img src="assets/screenshots/light.png" width="200" alt="Light mode"> | <img src="assets/screenshots/forest.png" width="200" alt="Forest theme with the Arabic interface"> |
 
 | Images | Files | Emoji |
 |:---:|:---:|:---:|
-| <img src="assets/screenshots/images.png" width="260" alt="Images tab"> | <img src="assets/screenshots/files.png" width="260" alt="Files tab"> | <img src="assets/screenshots/emoji.png" width="260" alt="Emoji picker"> |
+| <img src="assets/screenshots/images.png" width="200" alt="Images tab"> | <img src="assets/screenshots/files.png" width="200" alt="Files tab"> | <img src="assets/screenshots/emoji.png" width="200" alt="Emoji picker"> |
 
 ## Install
 
@@ -199,6 +205,8 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 
 مرّر الفأرة على المقبض ليفتح، وابتعد ليُغلق. الحافة اليسرى أو اليمنى، حسب اختيارك.
 
+**جديد في 3.7.** يتّسع المقبض قليلًا حين يقترب منه المؤشر، ويمرّ عليه شريط ضوء كلما نسخت شيئًا جديدًا واللوحة مغلقة (الإعدادات ← إضاءة عند النسخ).
+
 <img src="assets/features/height-ar.svg" alt="لوحة بطول المقبض" height="44">
 
 **جديد في 3.6.** تنفتح اللوحة افتراضيًا بطول المقبض نفسه وفي منتصفه (ولا تقل عن نصف الشاشة). أو اختر كبيرة أو متوسطة أو صغيرة من الإعدادات ← ارتفاع اللوحة.
@@ -210,6 +218,8 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 <img src="assets/features/capture-ar.svg" alt="يلتقط كل شيء" height="44">
 
 النصوص والصور والملفات (كل ملف عند نسخ عدة ملفات). ويمكن إيقاف أي نوع منها.
+
+**جديد في 3.7.** تأكّد من الصورة قبل نسخها: زر المكبّر في بطاقة الصورة، أو <kbd>Space</kbd> عليها، يعرضها كبيرة بجانب اللوحة.
 
 <img src="assets/features/passwords-ar.svg" alt="يحترم مديري كلمات المرور" height="44">
 
@@ -262,6 +272,8 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 <img src="assets/features/customize-ar.svg" alt="اجعله على ذوقك" height="44">
 
 5 سمات (فاتح، داكن، محيط، غابة، رملي)، و4 خطوط (منها القاهرة وتجوال وIBM Plex Sans Arabic)، وحجم النص، والكثافة، وعرض اللوحة، ومهلة الفتح، وطول المقبض وسماكته ولونه، مع لون ثانٍ اختياري لأعلاه وأسفله.
+
+**جديد في 3.7.** مظهر أنظف (أيقونة جديدة، ودوائر لاختيار السمة، ومفاتيح تشغيل وإيقاف، وإعدادات مجمّعة في صناديق، وحركة أنعم)، وخط نسخ كلاسيكي اختياري للنص المنسوخ (الإعدادات ← خط النص المنسوخ).
 
 <img src="assets/features/startup-ar.svg" alt="يعمل مع بدء Windows" height="44">
 

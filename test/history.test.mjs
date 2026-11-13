@@ -79,3 +79,21 @@ test('pruneItems keeps pinned items and drops unpinned ones past the limit or th
   assert.deepEqual(pruneItems(items, 1000, 30, now).evicted.map((i) => i.id), ['old'])
   assert.equal(pruneItems(items, 1000, 0, now).evicted.length, 0)
 })
+
+test('an Alt+N number belongs to one item, pins it, and is freed by unpin or merge', async () => {
+  const { assignSlot, pinItem, mergeItems } = await import('../src/main/history.js')
+  let items = [
+    { id: 'a', kind: 'text', text: 'a', createdAt: 1, pinned: false },
+    { id: 'b', kind: 'text', text: 'b', createdAt: 2, pinned: true, slot: 3 }
+  ]
+  items = assignSlot(items, 'a', 3)
+  assert.deepEqual(items.map((i) => [i.id, i.slot, i.pinned]), [['a', 3, true], ['b', undefined, true]])
+  items = assignSlot(items, 'a', null)
+  assert.equal(items[0].slot, undefined)
+  assert.equal(items[0].pinned, true)
+  items = assignSlot(items, 'b', 5)
+  assert.equal(pinItem(items, 'b', true)[1].slot, 5)
+  assert.equal(pinItem(items, 'b', false)[1].slot, undefined)
+  const group = mergeItems(items, ['a', 'b'], 'g')[0]
+  assert.ok(group.parts.every((p) => p.slot === undefined))
+})

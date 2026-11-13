@@ -38,7 +38,11 @@ export function clearUnpinned(items) {
 /** Merges the selected items into one group (oldest first). Groups inside the selection are flattened. */
 export function mergeItems(items, ids, id, now = Date.now()) {
   const selected = items.filter((i) => ids.includes(i.id))
-  const parts = selected.flatMap((i) => (i.kind === 'group' ? i.parts : [i])).sort((a, b) => a.createdAt - b.createdAt)
+  // A part inside a group has no Alt+N number of its own, so merging frees it.
+  const parts = selected
+    .flatMap((i) => (i.kind === 'group' ? i.parts : [i]))
+    .map(({ slot: _slot, ...p }) => p)
+    .sort((a, b) => a.createdAt - b.createdAt)
   if (parts.length < 2) return items
   // A pinned item stays protected inside the group.
   const group = { id, kind: 'group', parts, createdAt: now, pinned: selected.some((i) => i.pinned) }
@@ -66,4 +70,32 @@ export function splitItem(items, id) {
   const group = items.find((i) => i.id === id && i.kind === 'group')
   if (!group) return items
   return [...group.parts.map((p) => ({ ...p, pinned: group.pinned && p.pinned })), ...items.filter((i) => i !== group)]
+}
+
+/**
+ * Gives an item the Alt+`slot` number (1-9), or removes its number when `slot` is null.
+ * A number belongs to one item: whoever had it loses it. A numbered item is pinned, so it is never pruned.
+ */
+export function assignSlot(items, id, slot) {
+  return items.map((i) => {
+    if (i.id === id) {
+      const { slot: _old, ...rest } = i
+      return slot ? { ...rest, slot, pinned: true } : rest
+    }
+    if (slot && i.slot === slot) {
+      const { slot: _taken, ...rest } = i
+      return rest
+    }
+    return i
+  })
+}
+
+/** Pins or unpins an item; unpinning also frees its Alt+N number. */
+export function pinItem(items, id, pinned) {
+  return items.map((i) => {
+    if (i.id !== id) return i
+    if (pinned) return { ...i, pinned }
+    const { slot: _slot, ...rest } = i
+    return { ...rest, pinned }
+  })
 }

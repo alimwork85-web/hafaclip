@@ -7,6 +7,8 @@ export const HANDLE_THICKNESS = { thin: 3, medium: 5, thick: 9 }
 /** Handle gradients, top to bottom. */
 /** Panel widths in CSS px; the window is 20px wider to leave room for the shadow. */
 export const PANEL_WIDTHS = { narrow: 320, medium: 360, wide: 420 }
+// While an image preview is open the window grows by this much toward the screen centre, to hold it beside the panel.
+export const PREVIEW_SPACE = 500
 // Panel height: the space left above and below it, so medium (~70%) and small (~50%) stay centred on the handle.
 export const PANEL_GAPS = { large: '12px', medium: '15vh', small: '25vh' }
 
@@ -18,6 +20,7 @@ export function panelGap(height, handleLength) {
 }
 
 export const HANDLE_COLORS = {
+  theme: ['var(--accent)', 'color-mix(in srgb, var(--accent) 70%, black)'], // follows the theme's accent
   purple: ['#7c8cff', '#b07cff'],
   blue: ['#3b9eff', '#5b6cf0'],
   green: ['#34d399', '#10b981'],

@@ -2,6 +2,8 @@ import { contextBridge, ipcRenderer, webUtils } from 'electron'
 
 contextBridge.exposeInMainWorld('panel', {
   setInteractive: (on) => ipcRenderer.send('panel:interactive', !!on),
+  setPreview: (on) => ipcRenderer.send('panel:preview', !!on),
+  setStayOpen: (on) => ipcRenderer.send('panel:stay-open', !!on),
   getSettings: () => ipcRenderer.invoke('settings:get'),
   updateSettings: (patch) => ipcRenderer.invoke('settings:set', patch),
   setShortcut: (accelerator) => ipcRenderer.invoke('shortcut:set', accelerator),
@@ -23,6 +25,7 @@ contextBridge.exposeInMainWorld('panel', {
   copyItem: (id) => ipcRenderer.invoke('items:copy', id),
   pasteItem: (id) => ipcRenderer.invoke('items:paste', id),
   pinItem: (id, pinned) => ipcRenderer.invoke('items:pin', id, pinned),
+  setSlot: (id, slot) => ipcRenderer.invoke('items:slot', id, slot),
   pastePart: (id, partId) => ipcRenderer.invoke('items:paste-part', id, partId),
   renameGroup: (id, name) => ipcRenderer.invoke('items:rename', id, name),
   extractPart: (id, partId) => ipcRenderer.invoke('items:extract', id, partId),

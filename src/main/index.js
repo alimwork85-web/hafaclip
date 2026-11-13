@@ -1,14 +1,15 @@
-import { app, BrowserWindow, globalShortcut, ipcMain, nativeTheme, net, protocol, screen, shell } from 'electron'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { app, BrowserWindow, globalShortcut, ipcMain, nativeTheme, net, protocol, screen, shell, systemPreferences } from 'electron'
+import { accentShades } from './accent'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { randomUUID } from 'node:crypto'
 import { foregroundWindow, pasteInto, watchClipboard, windowAddress, writeItem } from './clipboard'
 import { cleanTemp, dragPayload, itemFromDroppedPaths } from './drag'
 import { createTray } from './tray'
-import { HANDLE_COLORS, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone, PANEL_WIDTHS } from '../renderer/src/hotZone'
+import { HANDLE_COLORS, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone, PANEL_WIDTHS, PREVIEW_SPACE } from '../renderer/src/hotZone'
 import { resolveLang } from '../renderer/src/i18n'
-import { add, clearHistory, extract, findItem, flush, getItems, imagesDir, loadItems, merge, prune, remove, renameGroup, setImageText, setPinned, split, touch } from './store'
+import { add, clearHistory, extract, findItem, flush, getItems, imagesDir, loadItems, merge, prune, remove, renameGroup, setImageText, setPinned, setSlot, split, touch } from './store'
 import { ocrLanguages, readImageText, stopOcr } from './ocr'
 import { isNewer } from './version'
 
@@ -21,8 +22,9 @@ const DEFAULT_SETTINGS = {
   launchAtLogin: true,
   handleLength: 'medium',
   handleThickness: 'medium',
-  handleColor: 'purple',
+  handleColor: 'theme', // existing users keep the colour saved in their settings.json
   handleEndsColor: 'same',
+  handleSweep: true,
   historyLimit: 1000,
   autoDeleteDays: 0,
   captureText: true,
@@ -34,6 +36,7 @@ const DEFAULT_SETTINGS = {
   shortcut: 'Control+Alt+E',
   openDelay: 0,
   font: 'system',
+  textFont: 'interface',
   textSize: 'medium',
   density: 'comfortable',
   panelWidth: 'medium',
@@ -46,6 +49,7 @@ const CHOICE_SETTINGS = {
   handleThickness: HANDLE_THICKNESS,
   handleColor: HANDLE_COLORS,
   handleEndsColor: { same: null, ...HANDLE_COLORS },
+  handleSweep: [true, false],
   language: ['system', 'en', 'ar'],
   historyLimit: [250, 500, 750, 1000],
   autoDeleteDays: [0, 30, 40],
@@ -57,6 +61,7 @@ const CHOICE_SETTINGS = {
   openDelay: [0, 300, 600],
   theme: ['light', 'dark', 'ocean', 'forest', 'sand'],
   font: ['system', 'plex', 'cairo', 'tajawal'],
+  textFont: ['interface', 'naskh'],
   textSize: ['small', 'medium', 'large'],
   density: ['compact', 'comfortable'],
   panelWidth: PANEL_WIDTHS,
@@ -76,6 +81,8 @@ function loadSettings() {
     settings = { ...DEFAULT_SETTINGS, ...JSON.parse(readFileSync(settingsFile(), 'utf8')) }
   } catch {
     settings = { ...DEFAULT_SETTINGS }
+    // No settings file but a history: a user from before "match theme" who never changed a setting keeps purple.
+    if (existsSync(join(app.getPath('userData'), 'items.json'))) settings.handleColor = 'purple'
   }
   // First run, or the old "system" theme (removed in 3.2): take light or dark from Windows once.
   if (!CHOICE_SETTINGS.theme.includes(settings.theme)) settings.theme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light'
@@ -107,9 +114,10 @@ function applyLaunchAtLogin(enabled) {
   })
 }
 
+let previewOpen = false
 function placeWindow(win, { edge, panelWidth }) {
   const { workArea } = screen.getPrimaryDisplay()
-  const width = (PANEL_WIDTHS[panelWidth] ?? PANEL_WIDTHS.medium) + 20
+  const width = (PANEL_WIDTHS[panelWidth] ?? PANEL_WIDTHS.medium) + 20 + (previewOpen ? PREVIEW_SPACE : 0)
   const x = edge === 'right' ? workArea.x + workArea.width - width : workArea.x
   win.setBounds({ x, y: workArea.y, width, height: workArea.height })
 }
@@ -161,6 +169,20 @@ function createWindow() {
     }
     win.setIgnoreMouseEvents(!on, { forward: true })
   })
+  // The pin button in the header keeps the panel open: no closing on mouse-away or blur, until it is unpinned.
+  let stayOpen = false
+  ipcMain.on('panel:stay-open', (_e, on) => (stayOpen = on === true))
+  // The image preview sits beside the panel inside this same window, so the cursor moving onto it never reads as leaving.
+  ipcMain.on('panel:preview', (_e, on) => {
+    previewOpen = on === true
+    placeWindow(win, settings)
+  })
+  // Paste clicks through to the previous window; a pinned panel takes its mouse back afterwards.
+  async function pasteBack() {
+    win.setIgnoreMouseEvents(true, { forward: true })
+    await pasteInto(previousWindow)
+    if (stayOpen) win.setIgnoreMouseEvents(false)
+  }
 
   function setEdge(edge) {
     if (edge !== 'left' && edge !== 'right') return
@@ -279,8 +301,7 @@ function createWindow() {
   ipcMain.handle('items:paste', async (_e, id) => {
     const result = await copyItem(id)
     if (result.ok) {
-      win.setIgnoreMouseEvents(true, { forward: true })
-      await pasteInto(previousWindow)
+      await pasteBack()
     }
     return result
   })
@@ -294,8 +315,7 @@ function createWindow() {
       return { ok: false, error: err.message }
     }
     watcher.skipCurrent()
-    win.setIgnoreMouseEvents(true, { forward: true })
-    await pasteInto(previousWindow)
+    await pasteBack()
     return { ok: true }
   })
   ipcMain.handle('items:extract', (_e, id, partId) => {
@@ -310,6 +330,11 @@ function createWindow() {
     if (typeof id === 'string') setPinned(id, pinned === true)
     pushItems()
   })
+  // slot is the Alt+N number 1-9, or null to remove it.
+  ipcMain.handle('items:slot', (_e, id, slot) => {
+    if (typeof id === 'string' && (slot === null || (Number.isInteger(slot) && slot >= 1 && slot <= 9))) setSlot(id, slot)
+    pushItems()
+  })
   ipcMain.handle('items:delete', (_e, id) => {
     if (typeof id === 'string') remove(id)
     pushItems()
@@ -319,8 +344,7 @@ function createWindow() {
     if (typeof text !== 'string' || !text || text.length > 64) return { ok: false, error: 'Invalid emoji' }
     await writeItem({ kind: 'text', text }, imagesDir())
     watcher.skipCurrent()
-    win.setIgnoreMouseEvents(true, { forward: true })
-    await pasteInto(previousWindow)
+    await pasteBack()
     return { ok: true }
   })
   // A converted copy of an item's text (digits, diacritics) is pasted once and kept out of the history.
@@ -328,8 +352,7 @@ function createWindow() {
     if (typeof text !== 'string' || !text) return { ok: false, error: 'Nothing to add' }
     await writeItem({ kind: 'text', text }, imagesDir())
     watcher.skipCurrent()
-    win.setIgnoreMouseEvents(true, { forward: true })
-    await pasteInto(previousWindow)
+    await pasteBack()
     return { ok: true }
   })
   ipcMain.handle('items:merge', (_e, ids) => {
@@ -376,7 +399,7 @@ function createWindow() {
     console.warn(`[shortcut] ${settings.shortcut} is taken by another program`)
   }
   app.on('will-quit', () => globalShortcut.unregisterAll())
-  win.on('blur', () => interactive && win.webContents.send('cursor:away'))
+  win.on('blur', () => interactive && !stayOpen && win.webContents.send('cursor:away'))
   // Windows sometimes drops skipTaskbar after focus/show, so the panel shows up on the taskbar; reassert it.
   win.on('focus', () => win.setSkipTaskbar(true))
   win.on('show', () => win.setSkipTaskbar(true))
@@ -408,8 +431,23 @@ function createWindow() {
       return
     }
     edgeSince = null
-    if (interactive && !inside && !openedByKey) win.webContents.send('cursor:away')
+    // While pinned the user works in other windows, so paste follows whichever one they used last.
+    if (interactive && stayOpen) {
+      const fg = foregroundWindow()
+      if (windowAddress(fg) !== ownWindow) previousWindow = fg
+    }
+    if (interactive && !inside && !openedByKey && !stayOpen) win.webContents.send('cursor:away')
   }, 150)
+
+  // Light and Dark take the Windows accent colour; without one, styles.css keeps its fixed teal.
+  let accentCss = null
+  const applyAccent = async () => {
+    const shades = accentShades(systemPreferences.getAccentColor?.())
+    if (accentCss) win.webContents.removeInsertedCSS(accentCss)
+    accentCss = shades && (await win.webContents.insertCSS(`:root { --win-accent-light: ${shades.light}; --win-accent-dark: ${shades.dark}; }`))
+  }
+  win.webContents.on('did-finish-load', applyAccent)
+  systemPreferences.on('accent-color-changed', applyAccent)
 
   if (process.env.ELECTRON_RENDERER_URL) win.loadURL(process.env.ELECTRON_RENDERER_URL)
   else win.loadFile(join(__dirname, '../renderer/index.html'))

@@ -26,6 +26,7 @@ test('handle is one colour, or two with the ends colour at top and bottom', () =
   assert.equal(handleBackground('blue', 'same'), 'linear-gradient(#3b9eff, #5b6cf0)')
   assert.equal(handleBackground('blue', 'orange'), 'linear-gradient(#fdba74, #3b9eff 35%, #5b6cf0 65%, #fdba74)')
   assert.equal(handleBackground('nope'), 'linear-gradient(#7c8cff, #b07cff)')
+  assert.equal(handleBackground('theme'), 'linear-gradient(var(--accent), color-mix(in srgb, var(--accent) 70%, black))')
 })
 
 test('"match" panel height follows the handle, never below half the screen', () => {

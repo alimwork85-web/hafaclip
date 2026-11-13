@@ -320,7 +320,7 @@ await step('copies from an ignored program are not captured', async () => {
   const copyText = (text) =>
     app.evaluate(({ clipboard, ClipboardItem }, t) => clipboard.write([new ClipboardItem({ 'text/plain': new Blob([t], { type: 'text/plain' }) })]), text)
   // The test copies from inside HafaClip itself, so that is the program to ignore.
-  await page.click('.gear')
+  await page.click('.gear:not(.keep-open)')
   await page.locator('.settings').evaluate((s) => (s.scrollTop = s.scrollHeight))
   await page.locator('.app-chips button', { hasText: /hafaclip/i }).click()
   await shot('10-settings-ignore-apps')
@@ -333,7 +333,7 @@ await step('copies from an ignored program are not captured', async () => {
   await copyText('allowed again')
   await page.waitForFunction((n) => window.panel.getItems().then((i) => i.length === n + 1), before)
   assert.ok(await page.getByRole('button', { name: /^(Open|فتح)$/ }).isVisible())
-  await page.click('.gear')
+  await page.click('.gear:not(.keep-open)')
 })
 
 await step('emoji search in English and Arabic', async () => {
@@ -348,7 +348,7 @@ await page.fill('.emoji-panel .search', '')
 await shot('08-emoji')
 
 await step('settings open; a limit above the item count applies at once', async () => {
-  await page.click('.gear')
+  await page.click('.gear:not(.keep-open)')
   await shot('09-settings-top')
   await page.getByRole('button', { name: '250', exact: true }).click()
   await wait(300)
@@ -373,10 +373,10 @@ for (const [name, patch] of variants) {
   await tab(0)
   await wait(400)
   await shot(`${name}-list`)
-  await page.click('.gear')
+  await page.click('.gear:not(.keep-open)')
   await wait(300)
   await shot(`${name}-settings`)
-  await page.click('.gear')
+  await page.click('.gear:not(.keep-open)')
 }
 await step('arabic layout is right to left', async () => {
   await setting({ language: 'ar' })
@@ -384,24 +384,24 @@ await step('arabic layout is right to left', async () => {
   assert.equal(await page.evaluate(() => document.documentElement.dir), 'rtl')
   await open()
   await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.send('update:available', '9.9.9'))
-  await page.click('.gear')
+  await page.click('.gear:not(.keep-open)')
   await page.locator('.settings').evaluate((s) => (s.scrollTop = s.scrollHeight - s.clientHeight - 260))
   await wait(300)
   await shot('11-arabic-settings-bottom')
-  await page.click('.gear')
+  await page.click('.gear:not(.keep-open)')
   await page.locator('.update-bar button').last().click()
 })
 
 await step('handle can be two colours: ends and middle', async () => {
   await open()
-  await page.click('.gear')
+  await page.click('.gear:not(.keep-open)')
   await page.locator('.settings').evaluate((s) => (s.scrollTop = s.scrollHeight))
   await page.getByRole('radiogroup', { name: 'الأعلى والأسفل' }).getByRole('radio', { name: 'برتقالي' }).click()
   await wait(300)
   assert.equal((await page.evaluate(() => window.panel.getSettings())).handleEndsColor, 'orange')
   assert.match(await page.locator('.handle').evaluate((h) => getComputedStyle(h).backgroundImage), /253, 186, 116/)
   await shot('16-handle-two-colours-settings')
-  await page.click('.gear')
+  await page.click('.gear:not(.keep-open)')
   // Collapsed, so the handle itself shows.
   await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.send('cursor:away'))
   await wait(500)

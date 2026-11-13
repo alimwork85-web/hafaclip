@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { handleBackground, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone, panelGap, PANEL_WIDTHS } from './hotZone'
 import ItemCard from './ItemCard'
 import EmojiPanel from './EmojiPanel'
-import SettingsPanel, { FONTS } from './SettingsPanel'
+import SettingsPanel, { FONTS, TEXT_FONTS } from './SettingsPanel'
 import TabStrip from './TabStrip'
 import { CATEGORIES, inCategory } from './categories'
 import { normalize } from './normalize'
@@ -19,14 +19,23 @@ const matches = (item, q) => {
 
 export default function App() {
   const [expanded, setExpanded] = useState(false)
-  const [settings, setSettings] = useState({ edge: 'left', handleLength: 'medium', handleThickness: 'medium', handleColor: 'purple' })
+  const [settings, setSettings] = useState({ edge: 'left', handleLength: 'medium', handleThickness: 'medium', handleColor: 'theme' })
   const edge = settings.edge
   // navigator.language is Electron's app locale, the same one the main process uses for the tray.
   const lang = resolveLang(settings.language, navigator.language)
   const tr = (key, ...args) => t(lang, key, ...args)
   const [items, setItems] = useState([])
+  // The image shown large beside the panel (magnifier button or Space); the window widens to hold it.
+  const [previewId, setPreviewId] = useState(null)
+  // Only a just-copied item plays the entry animation, not cards remounted by a tab switch or a search.
+  const [freshIds, setFreshIds] = useState(() => new Set())
+  const newestSeen = useRef(Infinity) // Infinity until the first load, so nothing animates on start
+  // A new copy sends one band of light down the handle while the panel is closed; the key restarts it on each copy.
+  const [sweep, setSweep] = useState(0)
+  const closedNow = useRef(true)
   const [query, setQuery] = useState('')
   const [toast, setToast] = useState(null)
+  const toastRef = useRef(null)
   const [update, setUpdate] = useState(null) // newer release found on GitHub; null after "Later"
   const [confirmClear, setConfirmClear] = useState(false)
   const [dropping, setDropping] = useState(false)
@@ -111,9 +120,21 @@ export default function App() {
 
   useEffect(() => {
     window.panel.getSettings().then(setSettings)
-    window.panel.getItems().then(setItems)
+    window.panel.getItems().then((list) => {
+      newestSeen.current = Math.max(0, ...list.map((i) => i.createdAt))
+      setItems(list)
+    })
     const offSettings = window.panel.onSettings(setSettings)
-    const offItems = window.panel.onItems(setItems)
+    const offItems = window.panel.onItems((next) => {
+      // A copy adds an item, or moves an existing one to the top with a newer createdAt.
+      const newer = next.filter((i) => i.createdAt > newestSeen.current)
+      if (newer.length) {
+        newestSeen.current = Math.max(...newer.map((i) => i.createdAt))
+        setFreshIds(new Set(newer.map((i) => i.id)))
+        if (closedNow.current && settingsRef.current.handleSweep !== false) setSweep((n) => n + 1)
+      }
+      setItems(next)
+    })
     window.panel.getUpdate().then(setUpdate)
     const offUpdate = window.panel.onUpdate(setUpdate)
     return () => {
@@ -123,7 +144,28 @@ export default function App() {
     }
   }, [])
 
+  // Leaving the panel for the preview (or back) keeps it open. A leave reported outside the window is a stale one
+  // Chromium sends when the window shrinks on the right edge; a real exit is caught by the main process's cursor check.
+  const leaveTo = (other) => (e) => e.relatedTarget?.closest?.(other) || e.clientX < 0 || e.clientX >= innerWidth || collapse()
+  const previewItem = expanded ? items.find((i) => i.id === previewId && i.kind === 'image') : undefined
   useEffect(() => window.panel.setInteractive(expanded), [expanded])
+  closedNow.current = !expanded
+  useEffect(() => {
+    if (!expanded) setPreviewId(null)
+    else setSweep(0)
+  }, [expanded])
+  useEffect(() => window.panel.setPreview(!!previewItem), [!!previewItem])
+
+  // Pinned: the panel stays open until the pin is clicked again; any real close (Esc, shortcut, edge change) unpins it.
+  // Not saved, so every start begins unpinned.
+  const [stayOpen, setStayOpen] = useState(false)
+  const stayOpenRef = useRef(false)
+  stayOpenRef.current = stayOpen
+  useEffect(() => window.panel.setStayOpen(stayOpen), [stayOpen])
+  useEffect(() => {
+    if (!expanded) setStayOpen(false)
+  }, [expanded])
+  const collapse = () => stayOpenRef.current || setExpanded(false)
 
   useEffect(() => {
     document.documentElement.lang = lang
@@ -138,25 +180,37 @@ export default function App() {
     const root = document.documentElement
     root.dataset.density = settings.density ?? 'comfortable'
     root.style.setProperty('--font', FONTS[settings.font] ?? FONTS.system)
+    root.style.setProperty('--text-font', TEXT_FONTS[settings.textFont] ?? 'inherit')
     root.style.setProperty('--zoom', { small: 0.9, large: 1.12 }[settings.textSize] ?? 1)
     root.style.setProperty('--panel-w', `${PANEL_WIDTHS[settings.panelWidth] ?? PANEL_WIDTHS.medium}px`)
     root.style.setProperty('--panel-gap', panelGap(settings.panelHeight, settings.handleLength))
-  }, [settings.density, settings.font, settings.textSize, settings.panelWidth, settings.panelHeight, settings.handleLength])
+  }, [settings.density, settings.font, settings.textFont, settings.textSize, settings.panelWidth, settings.panelHeight, settings.handleLength])
 
-  // Keyboard: Esc closes, Alt+1…9 pastes the numbered card, and typing anywhere in a list goes to the search box.
+  // Keyboard: Esc closes, Alt+1…9 pastes the card given that number (in any tab, search or not), and typing anywhere in a list goes to the search box.
   const searchRef = useRef(null)
   const keys = useRef(null)
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === 'Escape') return setExpanded(false)
-      const { shown, paste, inList } = keys.current
-      if (!inList) return
+      // Esc and Space close an open image preview first; Space on a focused image card opens it.
+      if (e.key === 'Escape') return keys.current.previewOpen ? setPreviewId(null) : setExpanded(false)
+      const { items, paste, inList } = keys.current
+      if (e.key === ' ' && !e.target.closest?.('input, textarea')) {
+        const card = document.activeElement?.closest?.('.card.kind-image')
+        if (keys.current.previewOpen || card) {
+          e.preventDefault()
+          return setPreviewId(keys.current.previewOpen ? null : card.dataset.id)
+        }
+      }
       // e.code for real keys; e.key as a fallback for input that comes without a scan code.
       const n = e.altKey && !e.ctrlKey && Number(/^Digit([1-9])$/.exec(e.code)?.[1] ?? (/^[1-9]$/.test(e.key) && e.key))
       if (n) {
         e.preventDefault()
-        if (shown[n - 1]) paste(shown[n - 1])
-      } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        const item = items.find((i) => i.slot === n)
+        if (item) paste(item)
+        return
+      }
+      if (!inList) return
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         // ↓ from search goes to the first card; ↑ from the first card goes back to search. Enter on a card pastes it.
         const cards = [...document.querySelectorAll('.list .card')]
         const i = cards.indexOf(document.activeElement)
@@ -182,21 +236,34 @@ export default function App() {
 
   // Open once the cursor has stayed in the hot zone for the open delay (the main process covers a still cursor).
   const hoverSince = useRef(null)
+  // The handle widens a little while the cursor is near it (within 40px of the edge, level with it), before the panel opens.
+  const [near, setNear] = useState(false)
   useEffect(() => {
     const onMove = (e) => {
       const s = settingsRef.current
+      const fromEdge = s.edge === 'right' ? window.innerWidth - 1 - e.clientX : e.clientX
+      setNear(fromEdge <= 40 && isInHotZone(s.edge === 'right' ? window.innerWidth - 1 : 0, e.clientY, window.innerWidth, window.innerHeight, s.edge, s.handleLength, s.handleThickness))
       if (!isInHotZone(e.clientX, e.clientY, window.innerWidth, window.innerHeight, s.edge, s.handleLength, s.handleThickness)) return (hoverSince.current = null)
       hoverSince.current ??= Date.now()
       if (Date.now() - hoverSince.current >= (s.openDelay ?? 0)) setExpanded(true)
     }
+    const onLeave = () => setNear(false)
     document.addEventListener('mousemove', onMove)
-    return () => document.removeEventListener('mousemove', onMove)
+    document.documentElement.addEventListener('mouseleave', onLeave)
+    return () => (document.removeEventListener('mousemove', onMove), document.documentElement.removeEventListener('mouseleave', onLeave))
   }, [])
 
   useEffect(() => {
     if (!toast) return
-    const t = setTimeout(() => setToast(null), 1600)
-    return () => clearTimeout(t)
+    // The toast fades out before it goes; a new toast during the fade cancels it.
+    let fade
+    const t = setTimeout(() => {
+      const el = toastRef.current
+      if (!el || matchMedia('(prefers-reduced-motion: reduce)').matches) return setToast(null)
+      fade = el.animate([{ opacity: 0, translate: '-50% 8px' }], { duration: 150, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', fill: 'forwards' })
+      fade.finished.then(() => setToast(null), () => {})
+    }, 1600)
+    return () => (clearTimeout(t), fade?.cancel())
   }, [toast])
 
   useEffect(() => {
@@ -217,7 +284,7 @@ export default function App() {
   }
 
   const paste = async (item) => {
-    setExpanded(false)
+    collapse()
     const r = await window.panel.pasteItem(item.id)
     if (!r.ok) {
       setExpanded(true)
@@ -232,7 +299,7 @@ export default function App() {
   }
 
   const pasteAs = async (item, convert) => {
-    setExpanded(false)
+    collapse()
     const r = await window.panel.pasteText(convert(item.text))
     if (!r.ok) {
       setExpanded(true)
@@ -241,7 +308,7 @@ export default function App() {
   }
 
   const pasteEmoji = async (emoji) => {
-    setExpanded(false)
+    collapse()
     const r = await window.panel.pasteEmoji(emoji)
     if (!r.ok) setToast({ text: tr(r.error), tone: 'error' })
   }
@@ -255,12 +322,13 @@ export default function App() {
 
   const q = normalize(query.trim())
   const visible = items.filter((i) => inCategory(i, tab) && (!q || matches(i, q)))
-  const pinned = visible.filter((i) => i.pinned)
+  // Numbered cards lead the pinned section in number order; the rest keep their order.
+  const pinned = visible.filter((i) => i.pinned).sort((a, b) => (a.slot ?? 10) - (b.slot ?? 10))
   const recent = visible.filter((i) => !i.pinned)
-  // Cards in the order they show, for the Alt+1…9 numbers.
-  const shown = [...(pinnedOpen ? pinned : []), ...recent]
   const inList = tab !== 'settings' && tab !== 'emoji' && !selected.length
-  keys.current = { shown, paste, inList }
+  keys.current = { items, paste, inList, previewOpen: !!previewItem }
+  // Which card holds each Alt+N number, for the number menu on every card.
+  const slots = Object.fromEntries(items.filter((i) => i.slot).map((i) => [i.slot, i]))
   // Items per tab (pinned included); while searching, the open tab shows "matches of total".
   const counts = Object.fromEntries(
     CATEGORIES.filter((c) => c.id !== 'emoji').map((c) => {
@@ -280,12 +348,19 @@ export default function App() {
   const card = (item) => (
     <ItemCard
       key={item.id}
-      number={inList && shown.indexOf(item) < 9 ? shown.indexOf(item) + 1 : 0}
+      number={item.slot ?? 0}
+      slots={slots}
+      onSetSlot={(slot) => {
+        const holder = slot && slots[slot]
+        window.panel.setSlot(item.id, slot)
+        if (holder && holder.id !== item.id) setToast({ text: tr('slotMoved', slot), tone: 'ok' })
+      }}
       lang={lang}
       item={item}
       selected={selected.includes(item.id)}
       dropTarget={dropTarget === item.id}
       expanded={expandedId === item.id}
+      fresh={freshIds.has(item.id)}
       onCopiedPart={() => setToast({ text: tr('copiedPart'), tone: 'ok' })}
       onToggleExpand={() => setExpandedId(expandedId === item.id ? null : item.id)}
       onClick={(e) => (groupsOn && (e.ctrlKey || selected.length) ? toggleSelect(item.id) : copy(item))}
@@ -293,9 +368,10 @@ export default function App() {
       onSplit={() => window.panel.splitItem(item.id)}
       onFixLayout={() => fixItemLayout(item)}
       onPasteAs={(convert) => pasteAs(item, convert)}
+      onPreview={() => setPreviewId(previewId === item.id ? null : item.id)}
       onPaste={() => paste(item)}
       onPastePart={async (partId) => {
-        setExpanded(false)
+        collapse()
         const r = await window.panel.pastePart(item.id, partId)
         if (!r.ok) {
           setExpanded(true)
@@ -311,7 +387,7 @@ export default function App() {
   )
 
   return (
-    <div className={`app edge-${edge}${expanded ? ' expanded' : ''}`}>
+    <div className={`app edge-${edge}${expanded ? ' expanded' : near ? ' near' : ''}`}>
       <div
         className="handle"
         style={{
@@ -319,11 +395,13 @@ export default function App() {
           '--handle-h': `${(HANDLE_LENGTHS[settings.handleLength] ?? 0.4) * 100}vh`,
           '--handle-w': `${HANDLE_THICKNESS[settings.handleThickness] ?? 5}px`
         }}
-      />
+      >
+        {sweep > 0 && !expanded && <span key={sweep} className="handle-sweep" onAnimationEnd={() => setSweep(0)} />}
+      </div>
       <aside
         className={`panel${dropping ? ' dropping' : ''}`}
         data-drop={tr('dropToAdd')}
-        onMouseLeave={() => setExpanded(false)}
+        onMouseLeave={leaveTo('.preview')}
         onDragOver={onDragOver}
         onDragLeave={() => (setDropping(false), setDropTarget(null))}
         onDrop={onDrop}
@@ -340,8 +418,26 @@ export default function App() {
         onMouseMove={() => draggedId.current && !draggingOut.current && ((draggedId.current = null), setDropTarget(null))}
       >
         <header>
-          <span className="dot" />
+          {/* The app icon (handle and card); at 16px it drops the card's lines, as the tray icon does. */}
+          <svg className="mark" viewBox="0 0 256 256" width="16" height="16" aria-hidden="true">
+            <rect width="256" height="256" rx="56" fill="#0F766E" />
+            <rect x="44" y="56" width="28" height="144" rx="14" fill="#fff" />
+            <rect x="92" y="68" width="120" height="120" rx="22" fill="#fff" />
+          </svg>
           <h1>{tr('clipboard')}</h1>
+          <button
+            className={`gear keep-open${stayOpen ? ' active' : ''}`}
+            title={tr(stayOpen ? 'keepOpenOn' : 'keepOpen')}
+            aria-label={tr('keepOpen')}
+            aria-pressed={stayOpen}
+            onClick={() => setStayOpen(!stayOpen)}
+          >
+            {/* Padlock: open while the panel hides on mouse-away, closed while it is kept open. */}
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="5" y="11" width="14" height="10" rx="2" />
+              <path d={stayOpen ? 'M8 11V7a4 4 0 0 1 8 0v4' : 'M8 11V7a4 4 0 0 1 7.75-1.4'} />
+            </svg>
+          </button>
           <button
             className={`gear${tab === 'settings' ? ' active' : ''}`}
             title={tr('settings')}
@@ -349,7 +445,7 @@ export default function App() {
             aria-pressed={tab === 'settings'}
             onClick={() => setTab(tab === 'settings' ? 'all' : 'settings')}
           >
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <circle cx="12" cy="12" r="3" />
               <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
             </svg>
@@ -399,12 +495,18 @@ export default function App() {
         </div>
         )}
         {visible.length ? (
-          <ul className="list">
+          <ul
+            className="list"
+            onAnimationEnd={(e) => {
+              const id = e.animationName === 'card-in' && e.target.dataset.id
+              if (id) setFreshIds((s) => new Set([...s].filter((x) => x !== id)))
+            }}
+          >
             {pinned.length > 0 && (
               <li className="group group-toggle">
                 <button aria-expanded={pinnedOpen} title={pinnedOpen ? tr('hidePinned') : tr('showPinned')} onClick={togglePinned}>
                   <span>{tr('pinned')} · {pinned.length}</span>
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M6 9l6 6 6-6" />
                   </svg>
                 </button>
@@ -416,14 +518,53 @@ export default function App() {
           </ul>
         ) : (
           <div className="empty">
+            {/* The edge handle and a card, as in the app icon; flipped when the handle is on the right edge. */}
+            <svg className="empty-art" viewBox="0 0 64 64" width="56" height="56" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" style={edge === 'right' ? { scale: '-1 1' } : undefined}>
+              <rect x="9" y="12" width="8" height="40" rx="4" />
+              <rect x="25" y="16" width="30" height="32" rx="6" />
+              <path d="M32 27h16M32 35h9" />
+            </svg>
             <p>{q ? tr('noMatches') : tab === 'all' ? tr('nothingYet') : tr('noneInTab', tr(`cat.${tab}`))}</p>
             <small>{q ? tr('tryAnother') : tr('willShow')}</small>
+            {!q && settings.shortcut && (
+              <small className="empty-keys">
+                {tr('openAnytime')}{' '}
+                <span className="keys-list" dir="ltr">
+                  {settings.shortcut.split('+').map((k, i) => (
+                    <span key={k}>
+                      {i > 0 && '+ '}
+                      <kbd>{{ Control: 'Ctrl', Super: 'Win' }[k] ?? k}</kbd>
+                    </span>
+                  ))}
+                </span>
+              </small>
+            )}
           </div>
         )}
         </>
         )}
-        {toast && <div className={`toast ${toast.tone}`} role="status">{toast.text}</div>}
+        {toast && <div ref={toastRef} className={`toast ${toast.tone}`} role="status">
+            {toast.tone === 'ok' && (
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5 12l5 5L20 7" />
+              </svg>
+            )}
+            {toast.text}
+          </div>}
       </aside>
+      {previewItem && (
+        // Clicking around the image closes it; leaving it for anywhere but the panel closes the panel too.
+        <div className="preview" onClick={() => setPreviewId(null)} onMouseLeave={leaveTo('.panel')}>
+          <figure className="preview-card" onClick={(e) => e.stopPropagation()}>
+            <img src={`clip://image/${previewItem.image}`} alt={tr('imageAlt', previewItem.width, previewItem.height)} title={tr('copy')} onClick={() => copy(previewItem)} />
+            <figcaption className="selection-bar preview-bar">
+              <span dir="ltr">{previewItem.width}×{previewItem.height}</span>
+              <button className="primary" onClick={() => copy(previewItem)}>{tr('copy')}</button>
+              <button onClick={() => setPreviewId(null)}>{tr('close')}</button>
+            </figcaption>
+          </figure>
+        </div>
+      )}
     </div>
   )
 }

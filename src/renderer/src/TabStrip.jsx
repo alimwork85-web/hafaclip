@@ -59,7 +59,7 @@ export default function TabStrip({ lang, tab, onPick, counts = {} }) {
           className={tab === c.id ? 'active' : ''}
           onClick={() => onPick(c.id)}
         >
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d={c.icon} />
           </svg>
           {/* Only the chosen tab shows its name; the others are icons with a tooltip. */}
