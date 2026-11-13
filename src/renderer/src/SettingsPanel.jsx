@@ -36,6 +36,16 @@ function Choice({ lang, label, value, options, onPick, labelOf = (o) => t(lang, 
   )
 }
 
+/** An on/off setting as a switch; a missing value counts as on, as the settings default to true. */
+function Toggle({ label, on, onFlip }) {
+  return (
+    <div className="setting">
+      <span className="setting-label">{label}</span>
+      <button className="switch" role="switch" aria-checked={on} aria-label={label} onClick={() => onFlip(!on)} />
+    </div>
+  )
+}
+
 /** "Control+Alt+E" from a key press, or null for keys a shortcut cannot use (or a lone modifier). */
 function acceleratorOf(e) {
   const key = /^Key[A-Z]$/.test(e.code) ? e.code.slice(3) : /^Digit\d$/.test(e.code) ? e.code.slice(5) : /^F\d{1,2}$/.test(e.code) || e.code === 'Space' ? e.code : null
@@ -114,7 +124,7 @@ export default function SettingsPanel({ lang, settings, items, onChange }) {
     <div className="settings">
       <div className="group">{t(lang, 'panel')}</div>
       {choice('language', ['system', 'en', 'ar'])}
-      {choice('checkUpdates', [true, false], { labelOf: (o) => t(lang, o ? 'on' : 'off') })}
+      <Toggle label={t(lang, 'checkUpdates')} on={settings.checkUpdates !== false} onFlip={(v) => onChange({ checkUpdates: v })} />
       <Choice lang={lang} label={t(lang, 'screenEdge')} value={settings.edge} options={['left', 'right']} onPick={(edge) => onChange({ edge })} />
       {settings.shortcut && <ShortcutSetting lang={lang} shortcut={settings.shortcut} />}
       {choice('openDelay', [0, 300, 600], { labelOf: (o) => t(lang, `opt.${DELAYS[o]}`) })}
@@ -164,8 +174,8 @@ export default function SettingsPanel({ lang, settings, items, onChange }) {
           ))}
         </div>
       </div>
-      {choice('searchImageText', [true, false], { labelOf: (o) => t(lang, o ? 'on' : 'off') })}
-      {choice('groups', [true, false], { labelOf: (o) => t(lang, o ? 'on' : 'off') })}
+      <Toggle label={t(lang, 'searchImageText')} on={settings.searchImageText !== false} onFlip={(v) => onChange({ searchImageText: v })} />
+      <Toggle label={t(lang, 'groups')} on={settings.groups !== false} onFlip={(v) => onChange({ groups: v })} />
       {settings.groups === false && <p className="settings-note info">{t(lang, 'groupsOffHint')}</p>}
       {settings.searchImageText !== false && ocrLanguages && !ocrLanguages.some((l) => l.startsWith('ar')) && <p className="settings-note info">{t(lang, 'ocrNoArabic')}</p>}
       <div className="setting">
