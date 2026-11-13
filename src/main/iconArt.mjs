@@ -1,6 +1,7 @@
 /**
  * The app's icon, drawn in code so the tray icon and the EXE icon share one design:
- * a purple rounded square holding a white clipboard. Pure (no Electron), so build scripts can use it too.
+ * a white handle (the screen edge) and a white card on a flat teal rounded square.
+ * Pure (no Electron), so build scripts can use it too.
  */
 const inRoundRect = (x, y, x0, y0, x1, y1, r) => {
   if (x < x0 || x > x1 || y < y0 || y > y1) return false
@@ -8,30 +9,32 @@ const inRoundRect = (x, y, x0, y0, x1, y1, r) => {
   const cy = Math.min(Math.max(y, y0 + r), y1 - r)
   return (x - cx) ** 2 + (y - cy) ** 2 <= r * r
 }
+// x, y, width, height, corner radius on the 256-unit grid.
+const box = (x, y, [x0, y0, w, h, r]) => inRoundRect(x, y, x0, y0, x0 + w, y0 + h, r)
 
-// Shapes on a 64-unit grid; `paused` greys the background out.
-function colorAt(x, y, paused) {
-  if (!inRoundRect(x, y, 2, 2, 62, 62, 14)) return null
+// Shapes on a 256-unit grid; `paused` greys the background out; at 16px the card's two lines are dropped.
+function colorAt(x, y, paused, lines) {
+  if (!box(x, y, [0, 0, 256, 256, 56])) return null
   const white = [255, 255, 255]
-  const accent = paused ? [120, 124, 138] : [124 + (52 * (x + y)) / 128, 140 - (16 * (x + y)) / 128, 255]
-  if (inRoundRect(x, y, 25, 10, 39, 20, 3)) return white // clip
-  if (inRoundRect(x, y, 16, 15, 48, 54, 5)) {
-    const line = (y0, w) => y >= y0 && y <= y0 + 3 && x >= 22 && x <= 22 + w
-    return line(26, 20) || line(34, 16) || line(42, 18) ? accent : white
+  const bg = paused ? [120, 124, 138] : [0x0f, 0x76, 0x6e]
+  if (box(x, y, [44, 56, 28, 144, 14])) return white // handle
+  if (box(x, y, [92, 68, 120, 120, 22])) {
+    if (lines && (box(x, y, [114, 100, 76, 14, 7]) || box(x, y, [114, 126, 52, 14, 7]))) return bg
+    return white // card
   }
-  return accent
+  return bg
 }
 
 /** Premultiplied BGRA pixels (what Windows and nativeImage.createFromBitmap expect), 4x4 supersampled. */
 export function drawIcon(size, paused = false) {
   const bgra = Buffer.alloc(size * size * 4)
-  const step = 64 / size
+  const step = 256 / size
   for (let py = 0; py < size; py++) {
     for (let px = 0; px < size; px++) {
       let r = 0, g = 0, b = 0, a = 0
       for (let sy = 0; sy < 4; sy++) {
         for (let sx = 0; sx < 4; sx++) {
-          const c = colorAt((px + (sx + 0.5) / 4) * step, (py + (sy + 0.5) / 4) * step, paused)
+          const c = colorAt((px + (sx + 0.5) / 4) * step, (py + (sy + 0.5) / 4) * step, paused, size > 16)
           if (c) [r, g, b, a] = [r + c[0], g + c[1], b + c[2], a + 1]
         }
       }
