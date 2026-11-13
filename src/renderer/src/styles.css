@@ -132,6 +132,12 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .segmented button:hover { color: var(--text); }
 .segmented button.active { background: var(--accent); color: var(--on-accent); }
 .segmented button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.segmented.sliding { position: relative; }
+.segmented.sliding button { position: relative; }
+.segmented.sliding button.active { background: transparent; }
+.seg-pill { position: absolute; top: 3px; bottom: 3px; left: 0; border-radius: 6px; background: var(--accent); }
+.seg-pill.ready { transition: translate 200ms var(--ease), width 200ms var(--ease); }
+@media (prefers-reduced-motion: reduce) { .seg-pill.ready { transition: none; } }
 
 .list { list-style: none; padding: 12px; margin: 0; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px; }
 .list::-webkit-scrollbar, .settings::-webkit-scrollbar { width: 6px; }

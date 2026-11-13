@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { HANDLE_COLORS, handleBackground, PANEL_WIDTHS } from './hotZone'
 import { t } from './i18n'
 import { pruneItems } from '../../main/history'
@@ -22,10 +22,24 @@ export const FONTS = {
 }
 
 function Choice({ lang, label, value, options, onPick, labelOf = (o) => t(lang, `opt.${o}`), styleOf }) {
+  const box = useRef(null)
+  const [pill, setPill] = useState(null)
+  // The accent pill slides to the picked option; re-measured when fonts or the language change the widths.
+  useLayoutEffect(() => {
+    const measure = () => {
+      const b = box.current?.querySelector('button.active')
+      setPill((p) => (b ? { x: b.offsetLeft, w: b.offsetWidth, ready: p !== null } : null))
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(box.current)
+    return () => ro.disconnect()
+  }, [value, lang])
   return (
     <div className="setting">
       <span className="setting-label">{label}</span>
-      <div className="segmented" role="group" aria-label={label}>
+      <div ref={box} className={`segmented${pill ? ' sliding' : ''}`} role="group" aria-label={label}>
+        {pill && <span className={`seg-pill${pill.ready ? ' ready' : ''}`} style={{ width: pill.w, translate: `${pill.x}px 0` }} aria-hidden="true" />}
         {options.map((o) => (
           <button key={o} className={o === value ? 'active' : ''} aria-pressed={o === value} style={styleOf?.(o)} onClick={() => onPick(o)}>
             {labelOf(o)}
