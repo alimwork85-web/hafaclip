@@ -20,7 +20,7 @@
 **HafaClip** (حافة, Arabic for *edge*; previously named Edge Clipboard) is a free, open-source clipboard manager for Windows. It hides as a thin line on the edge of your screen; move the mouse there (or press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>E</kbd>) and your clipboard history slides out. Everything stays on your computer.
 
 <p align="center">
-  <img src="assets/demo.gif" alt="Hover the screen edge to open the panel and switch tabs" width="320">
+  <img src="assets/demo.gif" alt="Hover the screen edge to open the panel, copy an item and switch tabs; the handle lights up on a new copy" width="320">
 </p>
 
 ## Features
