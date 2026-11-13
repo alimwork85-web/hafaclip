@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { handleBackground, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone, panelGap, PANEL_WIDTHS } from './hotZone'
 import ItemCard from './ItemCard'
 import EmojiPanel from './EmojiPanel'
-import SettingsPanel, { FONTS } from './SettingsPanel'
+import SettingsPanel, { FONTS, TEXT_FONTS } from './SettingsPanel'
 import TabStrip from './TabStrip'
 import { CATEGORIES, inCategory } from './categories'
 import { normalize } from './normalize'
@@ -180,10 +180,11 @@ export default function App() {
     const root = document.documentElement
     root.dataset.density = settings.density ?? 'comfortable'
     root.style.setProperty('--font', FONTS[settings.font] ?? FONTS.system)
+    root.style.setProperty('--text-font', TEXT_FONTS[settings.textFont] ?? 'inherit')
     root.style.setProperty('--zoom', { small: 0.9, large: 1.12 }[settings.textSize] ?? 1)
     root.style.setProperty('--panel-w', `${PANEL_WIDTHS[settings.panelWidth] ?? PANEL_WIDTHS.medium}px`)
     root.style.setProperty('--panel-gap', panelGap(settings.panelHeight, settings.handleLength))
-  }, [settings.density, settings.font, settings.textSize, settings.panelWidth, settings.panelHeight, settings.handleLength])
+  }, [settings.density, settings.font, settings.textFont, settings.textSize, settings.panelWidth, settings.panelHeight, settings.handleLength])
 
   // Keyboard: Esc closes, Alt+1…9 pastes the card given that number (in any tab, search or not), and typing anywhere in a list goes to the search box.
   const searchRef = useRef(null)

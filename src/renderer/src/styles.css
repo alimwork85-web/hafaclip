@@ -160,7 +160,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .card.fresh { animation: card-in 220ms var(--ease); }
 @keyframes card-in { from { opacity: 0; transform: translateY(-6px); } }
 .card-text {
-  font-size: 13px; line-height: 1.45; white-space: pre-wrap; word-break: break-word;
+  font-family: var(--text-font, inherit); font-size: 13px; line-height: 1.45; white-space: pre-wrap; word-break: break-word;
   display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
 }
 .card-image { max-width: 100%; max-height: 110px; object-fit: contain; border-radius: 6px; align-self: flex-start; background: var(--fill); }

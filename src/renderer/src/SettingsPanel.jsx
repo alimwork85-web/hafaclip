@@ -14,6 +14,8 @@ const THEME_PREVIEW = {
   sand: ['rgb(250, 245, 236)', '#c2410c']
 }
 // The font names show in their own font, so the choice previews itself.
+// The font of copied text in cards; 'interface' follows the Font setting.
+export const TEXT_FONTS = { naskh: "'Noto Naskh Arabic', var(--font)" }
 export const FONTS = {
   system: "'Segoe UI Variable', 'Segoe UI', sans-serif",
   plex: "'IBM Plex Sans Arabic', 'Segoe UI', sans-serif",
@@ -165,6 +167,7 @@ export default function SettingsPanel({ lang, settings, items, onChange }) {
           </div>
         </div>
         {choice('font', Object.keys(FONTS), { styleOf: (o) => ({ fontFamily: FONTS[o] }) })}
+        {choice('textFont', ['interface', 'naskh'], { styleOf: (o) => (o === 'naskh' ? { fontFamily: TEXT_FONTS.naskh } : undefined) })}
         {choice('textSize', ['small', 'medium', 'large'])}
         {choice('density', ['compact', 'comfortable'])}
         {choice('panelWidth', Object.keys(PANEL_WIDTHS))}
