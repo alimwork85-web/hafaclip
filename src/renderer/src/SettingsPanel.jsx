@@ -175,6 +175,7 @@ export default function SettingsPanel({ lang, settings, items, onChange }) {
       <section className="settings-box">
         <Choice lang={lang} label={t(lang, 'length')} value={settings.handleLength} options={['short', 'medium', 'long']} onPick={(handleLength) => onChange({ handleLength })} />
         <Choice lang={lang} label={t(lang, 'thickness')} value={settings.handleThickness} options={['thin', 'medium', 'thick']} onPick={(handleThickness) => onChange({ handleThickness })} />
+        <Toggle label={t(lang, 'handleSweep')} on={settings.handleSweep !== false} onFlip={(v) => onChange({ handleSweep: v })} />
         <div className="setting">
           <span className="setting-label">{t(lang, 'color')}</span>
           <div className="swatches" role="radiogroup" aria-label={t(lang, 'handleColor')}>

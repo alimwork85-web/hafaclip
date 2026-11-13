@@ -24,6 +24,7 @@ const DEFAULT_SETTINGS = {
   handleThickness: 'medium',
   handleColor: 'theme', // existing users keep the colour saved in their settings.json
   handleEndsColor: 'same',
+  handleSweep: true,
   historyLimit: 1000,
   autoDeleteDays: 0,
   captureText: true,
@@ -47,6 +48,7 @@ const CHOICE_SETTINGS = {
   handleThickness: HANDLE_THICKNESS,
   handleColor: HANDLE_COLORS,
   handleEndsColor: { same: null, ...HANDLE_COLORS },
+  handleSweep: [true, false],
   language: ['system', 'en', 'ar'],
   historyLimit: [250, 500, 750, 1000],
   autoDeleteDays: [0, 30, 40],

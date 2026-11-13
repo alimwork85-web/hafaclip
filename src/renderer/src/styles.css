@@ -90,6 +90,16 @@ html, body { background: transparent; overflow: hidden; font-family: var(--font,
   opacity: 0.75; transition: opacity 200ms var(--ease), width 200ms var(--ease), height 200ms var(--ease);
 }
 .expanded .handle { opacity: 0; }
+/* Light on copy: a soft band runs once from the top of the handle to the bottom; the handle is fully opaque meanwhile. */
+.handle { overflow: hidden; }
+@media (prefers-reduced-motion: no-preference) { .handle:has(.handle-sweep) { opacity: 1; } }
+.handle-sweep {
+  position: absolute; inset-inline: 0; top: 0; height: 40%;
+  background: linear-gradient(transparent, rgba(255, 255, 255, 0.9), transparent);
+  translate: 0 -100%; animation: handle-sweep 700ms var(--ease) forwards;
+}
+@keyframes handle-sweep { to { translate: 0 250%; } }
+@media (prefers-reduced-motion: reduce) { .handle-sweep { display: none; } }
 .near .handle { width: calc(var(--handle-w, 5px) + 3px); }
 
 .panel {

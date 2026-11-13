@@ -30,6 +30,9 @@ export default function App() {
   // Only a just-copied item plays the entry animation, not cards remounted by a tab switch or a search.
   const [freshIds, setFreshIds] = useState(() => new Set())
   const newestSeen = useRef(Infinity) // Infinity until the first load, so nothing animates on start
+  // A new copy sends one band of light down the handle while the panel is closed; the key restarts it on each copy.
+  const [sweep, setSweep] = useState(0)
+  const closedNow = useRef(true)
   const [query, setQuery] = useState('')
   const [toast, setToast] = useState(null)
   const toastRef = useRef(null)
@@ -128,6 +131,7 @@ export default function App() {
       if (newer.length) {
         newestSeen.current = Math.max(...newer.map((i) => i.createdAt))
         setFreshIds(new Set(newer.map((i) => i.id)))
+        if (closedNow.current && settingsRef.current.handleSweep !== false) setSweep((n) => n + 1)
       }
       setItems(next)
     })
@@ -145,8 +149,10 @@ export default function App() {
   const leaveTo = (other) => (e) => e.relatedTarget?.closest?.(other) || e.clientX < 0 || e.clientX >= innerWidth || collapse()
   const previewItem = expanded ? items.find((i) => i.id === previewId && i.kind === 'image') : undefined
   useEffect(() => window.panel.setInteractive(expanded), [expanded])
+  closedNow.current = !expanded
   useEffect(() => {
     if (!expanded) setPreviewId(null)
+    else setSweep(0)
   }, [expanded])
   useEffect(() => window.panel.setPreview(!!previewItem), [!!previewItem])
 
@@ -388,7 +394,9 @@ export default function App() {
           '--handle-h': `${(HANDLE_LENGTHS[settings.handleLength] ?? 0.4) * 100}vh`,
           '--handle-w': `${HANDLE_THICKNESS[settings.handleThickness] ?? 5}px`
         }}
-      />
+      >
+        {sweep > 0 && !expanded && <span key={sweep} className="handle-sweep" onAnimationEnd={() => setSweep(0)} />}
+      </div>
       <aside
         className={`panel${dropping ? ' dropping' : ''}`}
         data-drop={tr('dropToAdd')}
