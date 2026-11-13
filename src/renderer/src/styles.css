@@ -135,7 +135,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .list::-webkit-scrollbar, .settings::-webkit-scrollbar { width: 6px; }
 .list::-webkit-scrollbar-thumb, .settings::-webkit-scrollbar-thumb { background: var(--scroll); border-radius: 3px; }
 .card {
-  background: var(--fill); border: 1px solid var(--fill-hover); border-radius: 12px;
+  background: var(--fill); border: 1px solid transparent; border-radius: 12px; /* only pinned and selected cards show a border */
   padding: 10px 12px; display: flex; flex-direction: column; gap: 8px;
 }
 .card.fresh { animation: card-in 220ms var(--ease); }
