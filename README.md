@@ -65,6 +65,8 @@ All, Files, Images, Videos, Audio, Docs, Text, Links and Emoji, each with its co
 
 Keep 250, 500, 750 or 1000 items, optionally auto-delete after 30 or 40 days. **Pinned items are kept forever.**
 
+**New in 3.8.** A long history is easier to move through: a round button in the middle of the bottom edge appears while you scroll down and takes you back to the top, and scrollbars show only while scrolling, with the content centred.
+
 <img src="assets/features/paste-en.svg" alt="Paste where you were" height="44">
 
 Paste straight into the app you were using, or just copy with a click.
@@ -240,6 +242,8 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 <img src="assets/features/history-ar.svg" alt="سجل تتحكّم فيه" height="44">
 
 احتفظ بـ 250 أو 500 أو 750 أو 1000 عنصر، مع حذف تلقائي اختياري بعد 30 أو 40 يومًا. **العناصر المثبّتة تبقى دائمًا.**
+
+**جديد في 3.8.** التنقل في السجل الطويل أسهل: زر دائري في منتصف الأسفل يظهر حين تمرّر إلى أسفل ويعيدك إلى الأعلى، وأشرطة التمرير لا تظهر إلا أثناء التمرير، والمحتوى في المنتصف تمامًا.
 
 <img src="assets/features/paste-ar.svg" alt="الصق حيث كنت" height="44">
 

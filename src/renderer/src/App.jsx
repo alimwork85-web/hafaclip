@@ -41,6 +41,25 @@ export default function App() {
   const [dropping, setDropping] = useState(false)
   const [selected, setSelected] = useState([])
   const [tab, setTab] = useState('all')
+  // Back to top: a round button that shows while the list scrolls down past 300px and hides 1.2s after scrolling
+  // stops (not while the cursor is on it).
+  const listRef = useRef(null)
+  const [toTop, setToTop] = useState(false)
+  const toTopTimer = useRef(null)
+  const lastTop = useRef(0)
+  const overToTop = useRef(false)
+  const hideToTopSoon = () => {
+    clearTimeout(toTopTimer.current)
+    toTopTimer.current = setTimeout(() => overToTop.current || setToTop(false), 1200)
+  }
+  const onListScroll = (e) => {
+    const y = e.currentTarget.scrollTop
+    if (y > lastTop.current && y > 300) setToTop(true)
+    else if (y < 50) setToTop(false)
+    lastTop.current = y
+    hideToTopSoon()
+  }
+  useEffect(() => setToTop(false), [tab])
   // Only one card is opened with "More" at a time; opening another closes it.
   const [expandedId, setExpandedId] = useState(null)
   // Collapsing pinned items is a per-device view preference; storage may be unavailable, so default to open.
@@ -149,6 +168,19 @@ export default function App() {
   const leaveTo = (other) => (e) => e.relatedTarget?.closest?.(other) || e.clientX < 0 || e.clientX >= innerWidth || collapse()
   const previewItem = expanded ? items.find((i) => i.id === previewId && i.kind === 'image') : undefined
   useEffect(() => window.panel.setInteractive(expanded), [expanded])
+  // Any box that scrolls gets .scrolling until 800ms after its last scroll, which is when its scrollbar shows.
+  useEffect(() => {
+    const timers = new WeakMap()
+    const onScroll = (e) => {
+      const el = e.target
+      if (!(el instanceof Element)) return
+      el.classList.add('scrolling')
+      clearTimeout(timers.get(el))
+      timers.set(el, setTimeout(() => el.classList.remove('scrolling'), 800))
+    }
+    document.addEventListener('scroll', onScroll, true)
+    return () => document.removeEventListener('scroll', onScroll, true)
+  }, [])
   closedNow.current = !expanded
   useEffect(() => {
     if (!expanded) setPreviewId(null)
@@ -496,7 +528,9 @@ export default function App() {
         )}
         {visible.length ? (
           <ul
+            ref={listRef}
             className="list"
+            onScroll={onListScroll}
             onAnimationEnd={(e) => {
               const id = e.animationName === 'card-in' && e.target.dataset.id
               if (id) setFreshIds((s) => new Set([...s].filter((x) => x !== id)))
@@ -543,6 +577,22 @@ export default function App() {
         )}
         </>
         )}
+        <button
+          className={`to-top${toTop && expanded && !toast ? ' show' : ''}`}
+          title={tr('backToTop')}
+          aria-label={tr('backToTop')}
+          tabIndex={toTop ? 0 : -1}
+          onMouseEnter={() => (overToTop.current = true)}
+          onMouseLeave={() => ((overToTop.current = false), hideToTopSoon())}
+          onClick={() => {
+            listRef.current?.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
+            setToTop(false)
+          }}
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 19V5M6 11l6-6 6 6" />
+          </svg>
+        </button>
         {toast && <div ref={toastRef} className={`toast ${toast.tone}`} role="status">
             {toast.tone === 'ok' && (
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
