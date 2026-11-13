@@ -19,7 +19,7 @@ const matches = (item, q) => {
 
 export default function App() {
   const [expanded, setExpanded] = useState(false)
-  const [settings, setSettings] = useState({ edge: 'left', handleLength: 'medium', handleThickness: 'medium', handleColor: 'purple' })
+  const [settings, setSettings] = useState({ edge: 'left', handleLength: 'medium', handleThickness: 'medium', handleColor: 'theme' })
   const edge = settings.edge
   // navigator.language is Electron's app locale, the same one the main process uses for the tray.
   const lang = resolveLang(settings.language, navigator.language)

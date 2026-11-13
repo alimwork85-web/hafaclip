@@ -1,6 +1,6 @@
 import { app, BrowserWindow, globalShortcut, ipcMain, nativeTheme, net, protocol, screen, shell, systemPreferences } from 'electron'
 import { accentShades } from './accent'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { randomUUID } from 'node:crypto'
@@ -22,7 +22,7 @@ const DEFAULT_SETTINGS = {
   launchAtLogin: true,
   handleLength: 'medium',
   handleThickness: 'medium',
-  handleColor: 'purple',
+  handleColor: 'theme', // existing users keep the colour saved in their settings.json
   handleEndsColor: 'same',
   historyLimit: 1000,
   autoDeleteDays: 0,
@@ -77,6 +77,8 @@ function loadSettings() {
     settings = { ...DEFAULT_SETTINGS, ...JSON.parse(readFileSync(settingsFile(), 'utf8')) }
   } catch {
     settings = { ...DEFAULT_SETTINGS }
+    // No settings file but a history: a user from before "match theme" who never changed a setting keeps purple.
+    if (existsSync(join(app.getPath('userData'), 'items.json'))) settings.handleColor = 'purple'
   }
   // First run, or the old "system" theme (removed in 3.2): take light or dark from Windows once.
   if (!CHOICE_SETTINGS.theme.includes(settings.theme)) settings.theme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light'

@@ -18,6 +18,7 @@ export function panelGap(height, handleLength) {
 }
 
 export const HANDLE_COLORS = {
+  theme: ['var(--accent)', 'color-mix(in srgb, var(--accent) 70%, black)'], // follows the theme's accent
   purple: ['#7c8cff', '#b07cff'],
   blue: ['#3b9eff', '#5b6cf0'],
   green: ['#34d399', '#10b981'],
