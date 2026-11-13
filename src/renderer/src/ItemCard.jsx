@@ -95,6 +95,22 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
   // Text gets "More" only when it is actually cut off at 3 lines, so measure the rendered paragraph.
   const ref = useRef(null)
   const [clipped, setClipped] = useState(false)
+
+  // Delete: the card fades and collapses in 150ms, so the cards below slide up into its place.
+  const remove = () => {
+    const el = ref.current
+    if (!el || matchMedia('(prefers-reduced-motion: reduce)').matches) return onDelete()
+    el.style.overflow = 'hidden'
+    el.style.pointerEvents = 'none'
+    const gap = getComputedStyle(el.parentElement).rowGap
+    el.animate(
+      [
+        { height: `${el.offsetHeight}px`, opacity: 1 },
+        { height: '0px', opacity: 0, paddingBlock: '0px', borderWidth: '0px', marginBlockEnd: `-${gap}` }
+      ],
+      { duration: 150, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', fill: 'forwards' }
+    ).finished.then(onDelete)
+  }
   useLayoutEffect(() => {
     const p = ref.current?.querySelector(':scope > .card-text')
     // A few px of slack: the text-size zoom rounds heights, which must not read as cut-off text.
@@ -232,7 +248,7 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
             <button title={t(lang, 'splitTitle')} aria-label={t(lang, 'split')} onClick={action(onSplit)}><Icon d={ICONS.split} /></button>
           )}
           <button title={t(lang, item.pinned ? 'unpin' : 'pinTitle')} aria-label={t(lang, item.pinned ? 'unpin' : 'pin')} aria-pressed={item.pinned} className={item.pinned ? 'on' : ''} onClick={action(onPin)}><Icon d={ICONS.pin} /></button>
-          <button title={t(lang, 'delete')} aria-label={t(lang, 'delete')} className="danger" onClick={action(onDelete)}><Icon d={ICONS.trash} /></button>
+          <button title={t(lang, 'delete')} aria-label={t(lang, 'delete')} className="danger" onClick={action(remove)}><Icon d={ICONS.trash} /></button>
         </div>
       </footer>
       {menuOpen && (
