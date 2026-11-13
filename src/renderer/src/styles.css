@@ -290,6 +290,8 @@ header { position: relative; }
 
 .settings { flex: 1; overflow-y: auto; padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
 .settings .group { padding: 12px 2px 0; }
+/* Each category's rows sit in one light box under its title. */
+.settings-box { display: flex; flex-direction: column; gap: 10px; margin-top: -4px; padding: 10px 12px; border-radius: 10px; background: var(--fill); }
 /* Rows keep their full height in the scrolling list; a flex column would otherwise squeeze wrapped rows. */
 .settings > * { flex-shrink: 0; }
 .setting { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; min-height: 34px; font-size: 13px; }

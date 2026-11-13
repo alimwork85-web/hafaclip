@@ -123,119 +123,127 @@ export default function SettingsPanel({ lang, settings, items, onChange }) {
   return (
     <div className="settings">
       <div className="group">{t(lang, 'panel')}</div>
-      {choice('language', ['system', 'en', 'ar'])}
-      <Toggle label={t(lang, 'checkUpdates')} on={settings.checkUpdates !== false} onFlip={(v) => onChange({ checkUpdates: v })} />
-      <Choice lang={lang} label={t(lang, 'screenEdge')} value={settings.edge} options={['left', 'right']} onPick={(edge) => onChange({ edge })} />
-      {settings.shortcut && <ShortcutSetting lang={lang} shortcut={settings.shortcut} />}
-      {choice('openDelay', [0, 300, 600], { labelOf: (o) => t(lang, `opt.${DELAYS[o]}`) })}
+      <section className="settings-box">
+        {choice('language', ['system', 'en', 'ar'])}
+        <Toggle label={t(lang, 'checkUpdates')} on={settings.checkUpdates !== false} onFlip={(v) => onChange({ checkUpdates: v })} />
+        <Choice lang={lang} label={t(lang, 'screenEdge')} value={settings.edge} options={['left', 'right']} onPick={(edge) => onChange({ edge })} />
+        {settings.shortcut && <ShortcutSetting lang={lang} shortcut={settings.shortcut} />}
+        {choice('openDelay', [0, 300, 600], { labelOf: (o) => t(lang, `opt.${DELAYS[o]}`) })}
+      </section>
 
       <div className="group">{t(lang, 'appearance')}</div>
-      <div className="setting">
-        <span className="setting-label">{t(lang, 'theme')}</span>
-        <div className="swatches" role="radiogroup" aria-label={t(lang, 'theme')}>
-          {Object.entries(THEME_PREVIEW).map(([name, [bg, accent]]) => (
-            <button
-              key={name}
-              role="radio"
-              aria-checked={settings.theme === name}
-              aria-label={t(lang, `opt.${name}`)}
-              title={t(lang, `opt.${name}`)}
-              className={`swatch${settings.theme === name ? ' active' : ''}`}
-              style={{ background: `linear-gradient(135deg, ${bg} 50%, ${accent} 50%)` }}
-              onClick={() => onChange({ theme: name })}
-            />
-          ))}
-        </div>
-      </div>
-      {choice('font', Object.keys(FONTS), { styleOf: (o) => ({ fontFamily: FONTS[o] }) })}
-      {choice('textSize', ['small', 'medium', 'large'])}
-      {choice('density', ['compact', 'comfortable'])}
-      {choice('panelWidth', Object.keys(PANEL_WIDTHS))}
-      {choice('panelHeight', ['match', 'large', 'medium', 'small'], { labelOf: (o) => t(lang, `height.${o}`) })}
-
-      <div className="group">{t(lang, 'history')}</div>
-      <Choice lang={lang} label={t(lang, 'historyLimit')} value={settings.historyLimit} options={[250, 500, 750, 1000]} labelOf={String} onPick={(v) => pickHistoryRule('historyLimit', v)} />
-      <Choice
-        lang={lang}
-        label={t(lang, 'autoDelete')}
-        value={settings.autoDeleteDays}
-        options={[0, 30, 40]}
-        labelOf={(o) => (o ? t(lang, 'nDays', o) : t(lang, 'off'))}
-        onPick={(v) => pickHistoryRule('autoDeleteDays', v)}
-      />
-      {pending && <p className="settings-note" role="alert">{t(lang, 'removeWarn', pending.count)}</p>}
-      <div className="setting">
-        <span className="setting-label">{t(lang, 'capture')}</span>
-        <div className="segmented" role="group" aria-label={t(lang, 'capture')}>
-          {Object.entries(capture).map(([key, label]) => (
-            <button key={key} className={settings[key] !== false ? 'active' : ''} aria-pressed={settings[key] !== false} onClick={() => onChange({ [key]: settings[key] === false })}>
-              {t(lang, label)}
-            </button>
-          ))}
-        </div>
-      </div>
-      <Toggle label={t(lang, 'searchImageText')} on={settings.searchImageText !== false} onFlip={(v) => onChange({ searchImageText: v })} />
-      <Toggle label={t(lang, 'groups')} on={settings.groups !== false} onFlip={(v) => onChange({ groups: v })} />
-      {settings.groups === false && <p className="settings-note info">{t(lang, 'groupsOffHint')}</p>}
-      {settings.searchImageText !== false && ocrLanguages && !ocrLanguages.some((l) => l.startsWith('ar')) && <p className="settings-note info">{t(lang, 'ocrNoArabic')}</p>}
-      <div className="setting">
-        <span className="setting-label">{t(lang, 'ignoreApps')}</span>
-        <div className="app-chips" role="group" aria-label={t(lang, 'ignoreApps')}>
-          {knownApps.map((a) => (
-            <button key={a} dir="ltr" className={ignored.includes(a) ? 'active' : ''} aria-pressed={ignored.includes(a)} onClick={() => toggleApp(a)}>
-              {a.replace(/\.exe$/, '')}
-            </button>
-          ))}
-        </div>
-      </div>
-      <p className="settings-note info">{t(lang, knownApps.length ? 'ignoreAppsHint' : 'ignoreAppsEmpty')}</p>
-      <div className="setting">
-        <span className="setting-label">{t(lang, 'dataFolder')}</span>
-        <button className="link-button" onClick={() => window.panel.openDataFolder()}>{t(lang, 'openFolder')}</button>
-      </div>
-      <p className="settings-note info">{t(lang, 'dataFolderHint')}</p>
-
-      <div className="group">{t(lang, 'edgeHandle')}</div>
-      <Choice lang={lang} label={t(lang, 'length')} value={settings.handleLength} options={['short', 'medium', 'long']} onPick={(handleLength) => onChange({ handleLength })} />
-      <Choice lang={lang} label={t(lang, 'thickness')} value={settings.handleThickness} options={['thin', 'medium', 'thick']} onPick={(handleThickness) => onChange({ handleThickness })} />
-      <div className="setting">
-        <span className="setting-label">{t(lang, 'color')}</span>
-        <div className="swatches" role="radiogroup" aria-label={t(lang, 'handleColor')}>
-          {Object.entries(HANDLE_COLORS).map(([name, [a, b]]) => (
-            <button
-              key={name}
-              role="radio"
-              aria-checked={settings.handleColor === name}
-              aria-label={t(lang, `color.${name}`)}
-              title={t(lang, `color.${name}`)}
-              className={`swatch${settings.handleColor === name ? ' active' : ''}`}
-              style={{ background: `linear-gradient(135deg, ${a}, ${b})` }}
-              onClick={() => onChange({ handleColor: name })}
-            />
-          ))}
-        </div>
-      </div>
-      {/* A second colour for the top and bottom of the handle; "same" keeps it one colour. */}
-      <div className="setting">
-        <span className="setting-label">{t(lang, 'handleEnds')}</span>
-        <div className="swatches" role="radiogroup" aria-label={t(lang, 'handleEnds')}>
-          {['same', ...Object.keys(HANDLE_COLORS)].map((name) => {
-            const on = (settings.handleEndsColor ?? 'same') === name
-            return (
+      <section className="settings-box">
+        <div className="setting">
+          <span className="setting-label">{t(lang, 'theme')}</span>
+          <div className="swatches" role="radiogroup" aria-label={t(lang, 'theme')}>
+            {Object.entries(THEME_PREVIEW).map(([name, [bg, accent]]) => (
               <button
                 key={name}
                 role="radio"
-                aria-checked={on}
-                aria-label={t(lang, name === 'same' ? 'sameColor' : `color.${name}`)}
-                title={t(lang, name === 'same' ? 'sameColor' : `color.${name}`)}
-                className={`swatch${name === 'same' ? ' same' : ''}${on ? ' active' : ''}`}
-                style={{ background: handleBackground(name === 'same' ? settings.handleColor : name).replace('linear-gradient(', 'linear-gradient(135deg, ') }}
-                onClick={() => onChange({ handleEndsColor: name })}
+                aria-checked={settings.theme === name}
+                aria-label={t(lang, `opt.${name}`)}
+                title={t(lang, `opt.${name}`)}
+                className={`swatch${settings.theme === name ? ' active' : ''}`}
+                style={{ background: `linear-gradient(135deg, ${bg} 50%, ${accent} 50%)` }}
+                onClick={() => onChange({ theme: name })}
               />
-            )
-          })}
+            ))}
+          </div>
         </div>
-      </div>
+        {choice('font', Object.keys(FONTS), { styleOf: (o) => ({ fontFamily: FONTS[o] }) })}
+        {choice('textSize', ['small', 'medium', 'large'])}
+        {choice('density', ['compact', 'comfortable'])}
+        {choice('panelWidth', Object.keys(PANEL_WIDTHS))}
+        {choice('panelHeight', ['match', 'large', 'medium', 'small'], { labelOf: (o) => t(lang, `height.${o}`) })}
+      </section>
+
+      <div className="group">{t(lang, 'edgeHandle')}</div>
+      <section className="settings-box">
+        <Choice lang={lang} label={t(lang, 'length')} value={settings.handleLength} options={['short', 'medium', 'long']} onPick={(handleLength) => onChange({ handleLength })} />
+        <Choice lang={lang} label={t(lang, 'thickness')} value={settings.handleThickness} options={['thin', 'medium', 'thick']} onPick={(handleThickness) => onChange({ handleThickness })} />
+        <div className="setting">
+          <span className="setting-label">{t(lang, 'color')}</span>
+          <div className="swatches" role="radiogroup" aria-label={t(lang, 'handleColor')}>
+            {Object.entries(HANDLE_COLORS).map(([name, [a, b]]) => (
+              <button
+                key={name}
+                role="radio"
+                aria-checked={settings.handleColor === name}
+                aria-label={t(lang, `color.${name}`)}
+                title={t(lang, `color.${name}`)}
+                className={`swatch${settings.handleColor === name ? ' active' : ''}`}
+                style={{ background: `linear-gradient(135deg, ${a}, ${b})` }}
+                onClick={() => onChange({ handleColor: name })}
+              />
+            ))}
+          </div>
+        </div>
+        {/* A second colour for the top and bottom of the handle; "same" keeps it one colour. */}
+        <div className="setting">
+          <span className="setting-label">{t(lang, 'handleEnds')}</span>
+          <div className="swatches" role="radiogroup" aria-label={t(lang, 'handleEnds')}>
+            {['same', ...Object.keys(HANDLE_COLORS)].map((name) => {
+              const on = (settings.handleEndsColor ?? 'same') === name
+              return (
+                <button
+                  key={name}
+                  role="radio"
+                  aria-checked={on}
+                  aria-label={t(lang, name === 'same' ? 'sameColor' : `color.${name}`)}
+                  title={t(lang, name === 'same' ? 'sameColor' : `color.${name}`)}
+                  className={`swatch${name === 'same' ? ' same' : ''}${on ? ' active' : ''}`}
+                  style={{ background: handleBackground(name === 'same' ? settings.handleColor : name).replace('linear-gradient(', 'linear-gradient(135deg, ') }}
+                  onClick={() => onChange({ handleEndsColor: name })}
+                />
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      <div className="group">{t(lang, 'history')}</div>
+      <section className="settings-box">
+        <Choice lang={lang} label={t(lang, 'historyLimit')} value={settings.historyLimit} options={[250, 500, 750, 1000]} labelOf={String} onPick={(v) => pickHistoryRule('historyLimit', v)} />
+        <Choice
+          lang={lang}
+          label={t(lang, 'autoDelete')}
+          value={settings.autoDeleteDays}
+          options={[0, 30, 40]}
+          labelOf={(o) => (o ? t(lang, 'nDays', o) : t(lang, 'off'))}
+          onPick={(v) => pickHistoryRule('autoDeleteDays', v)}
+        />
+        {pending && <p className="settings-note" role="alert">{t(lang, 'removeWarn', pending.count)}</p>}
+        <div className="setting">
+          <span className="setting-label">{t(lang, 'capture')}</span>
+          <div className="segmented" role="group" aria-label={t(lang, 'capture')}>
+            {Object.entries(capture).map(([key, label]) => (
+              <button key={key} className={settings[key] !== false ? 'active' : ''} aria-pressed={settings[key] !== false} onClick={() => onChange({ [key]: settings[key] === false })}>
+                {t(lang, label)}
+              </button>
+            ))}
+          </div>
+        </div>
+        <Toggle label={t(lang, 'searchImageText')} on={settings.searchImageText !== false} onFlip={(v) => onChange({ searchImageText: v })} />
+        <Toggle label={t(lang, 'groups')} on={settings.groups !== false} onFlip={(v) => onChange({ groups: v })} />
+        {settings.groups === false && <p className="settings-note info">{t(lang, 'groupsOffHint')}</p>}
+        {settings.searchImageText !== false && ocrLanguages && !ocrLanguages.some((l) => l.startsWith('ar')) && <p className="settings-note info">{t(lang, 'ocrNoArabic')}</p>}
+        <div className="setting">
+          <span className="setting-label">{t(lang, 'ignoreApps')}</span>
+          <div className="app-chips" role="group" aria-label={t(lang, 'ignoreApps')}>
+            {knownApps.map((a) => (
+              <button key={a} dir="ltr" className={ignored.includes(a) ? 'active' : ''} aria-pressed={ignored.includes(a)} onClick={() => toggleApp(a)}>
+                {a.replace(/\.exe$/, '')}
+              </button>
+            ))}
+          </div>
+        </div>
+        <p className="settings-note info">{t(lang, knownApps.length ? 'ignoreAppsHint' : 'ignoreAppsEmpty')}</p>
+        <div className="setting">
+          <span className="setting-label">{t(lang, 'dataFolder')}</span>
+          <button className="link-button" onClick={() => window.panel.openDataFolder()}>{t(lang, 'openFolder')}</button>
+        </div>
+        <p className="settings-note info">{t(lang, 'dataFolderHint')}</p>
+      </section>
 
       <p className="about" dir="ltr">HafaClip {version} · Ali Alhumedi</p>
     </div>
