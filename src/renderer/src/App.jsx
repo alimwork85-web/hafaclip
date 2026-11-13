@@ -25,6 +25,8 @@ export default function App() {
   const lang = resolveLang(settings.language, navigator.language)
   const tr = (key, ...args) => t(lang, key, ...args)
   const [items, setItems] = useState([])
+  // The image shown large beside the panel (magnifier button or Space); the window widens to hold it.
+  const [previewId, setPreviewId] = useState(null)
   // Only a just-copied item plays the entry animation, not cards remounted by a tab switch or a search.
   const [freshIds, setFreshIds] = useState(() => new Set())
   const newestSeen = useRef(Infinity) // Infinity until the first load, so nothing animates on start
@@ -138,7 +140,15 @@ export default function App() {
     }
   }, [])
 
+  // Leaving the panel for the preview (or back) keeps it open. A leave reported outside the window is a stale one
+  // Chromium sends when the window shrinks on the right edge; a real exit is caught by the main process's cursor check.
+  const leaveTo = (other) => (e) => e.relatedTarget?.closest?.(other) || e.clientX < 0 || e.clientX >= innerWidth || collapse()
+  const previewItem = expanded ? items.find((i) => i.id === previewId && i.kind === 'image') : undefined
   useEffect(() => window.panel.setInteractive(expanded), [expanded])
+  useEffect(() => {
+    if (!expanded) setPreviewId(null)
+  }, [expanded])
+  useEffect(() => window.panel.setPreview(!!previewItem), [!!previewItem])
 
   // Pinned: the panel stays open until the pin is clicked again; any real close (Esc, shortcut, edge change) unpins it.
   // Not saved, so every start begins unpinned.
@@ -174,8 +184,16 @@ export default function App() {
   const keys = useRef(null)
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === 'Escape') return setExpanded(false)
+      // Esc and Space close an open image preview first; Space on a focused image card opens it.
+      if (e.key === 'Escape') return keys.current.previewOpen ? setPreviewId(null) : setExpanded(false)
       const { items, paste, inList } = keys.current
+      if (e.key === ' ' && !e.target.closest?.('input, textarea')) {
+        const card = document.activeElement?.closest?.('.card.kind-image')
+        if (keys.current.previewOpen || card) {
+          e.preventDefault()
+          return setPreviewId(keys.current.previewOpen ? null : card.dataset.id)
+        }
+      }
       // e.code for real keys; e.key as a fallback for input that comes without a scan code.
       const n = e.altKey && !e.ctrlKey && Number(/^Digit([1-9])$/.exec(e.code)?.[1] ?? (/^[1-9]$/.test(e.key) && e.key))
       if (n) {
@@ -295,7 +313,7 @@ export default function App() {
   const pinned = visible.filter((i) => i.pinned).sort((a, b) => (a.slot ?? 10) - (b.slot ?? 10))
   const recent = visible.filter((i) => !i.pinned)
   const inList = tab !== 'settings' && tab !== 'emoji' && !selected.length
-  keys.current = { items, paste, inList }
+  keys.current = { items, paste, inList, previewOpen: !!previewItem }
   // Which card holds each Alt+N number, for the number menu on every card.
   const slots = Object.fromEntries(items.filter((i) => i.slot).map((i) => [i.slot, i]))
   // Items per tab (pinned included); while searching, the open tab shows "matches of total".
@@ -337,6 +355,7 @@ export default function App() {
       onSplit={() => window.panel.splitItem(item.id)}
       onFixLayout={() => fixItemLayout(item)}
       onPasteAs={(convert) => pasteAs(item, convert)}
+      onPreview={() => setPreviewId(previewId === item.id ? null : item.id)}
       onPaste={() => paste(item)}
       onPastePart={async (partId) => {
         collapse()
@@ -367,7 +386,7 @@ export default function App() {
       <aside
         className={`panel${dropping ? ' dropping' : ''}`}
         data-drop={tr('dropToAdd')}
-        onMouseLeave={collapse}
+        onMouseLeave={leaveTo('.preview')}
         onDragOver={onDragOver}
         onDragLeave={() => (setDropping(false), setDropTarget(null))}
         onDrop={onDrop}
@@ -518,6 +537,19 @@ export default function App() {
             {toast.text}
           </div>}
       </aside>
+      {previewItem && (
+        // Clicking around the image closes it; leaving it for anywhere but the panel closes the panel too.
+        <div className="preview" onClick={() => setPreviewId(null)} onMouseLeave={leaveTo('.panel')}>
+          <figure className="preview-card" onClick={(e) => e.stopPropagation()}>
+            <img src={`clip://image/${previewItem.image}`} alt={tr('imageAlt', previewItem.width, previewItem.height)} title={tr('copy')} onClick={() => copy(previewItem)} />
+            <figcaption className="selection-bar preview-bar">
+              <span dir="ltr">{previewItem.width}×{previewItem.height}</span>
+              <button className="primary" onClick={() => copy(previewItem)}>{tr('copy')}</button>
+              <button onClick={() => setPreviewId(null)}>{tr('close')}</button>
+            </figcaption>
+          </figure>
+        </div>
+      )}
     </div>
   )
 }

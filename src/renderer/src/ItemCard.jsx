@@ -20,6 +20,7 @@ const Icon = ({ d }) => (
 const ICONS = {
   paste: 'M9 14l-4-4 4-4M5 10h11a4 4 0 0 1 4 4v4',
   pin: 'M12 17v5M9 3h6l-1 7 4 3v2H6v-2l4-3z',
+  zoom: 'M11 4a7 7 0 1 0 0 14a7 7 0 1 0 0-14M20 20l-4-4M11 8v6M8 11h6',
   trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
   split: 'M4 6h16M4 12h10M4 18h16M18 9l3 3-3 3',
   copy: 'M9 9h10v12H9zM5 15V3h10',
@@ -98,7 +99,7 @@ const label = (lang, item) =>
         ? `⁦${item.width}×${item.height}⁩` // left-to-right isolate: width stays first in the Arabic interface
         : t(lang, 'charsLabel', item.text.length)
 
-export default function ItemCard({ lang, number, item, selected, dropTarget, expanded, fresh, onToggleExpand, onCopiedPart, onClick, onPaste, onPastePart, onExtractPart, onRename, groupsOn = true, slots = {}, onSetSlot, onPin, onDelete, onSplit, onDragOut, onFixLayout, onPasteAs }) {
+export default function ItemCard({ lang, number, item, selected, dropTarget, expanded, fresh, onToggleExpand, onCopiedPart, onClick, onPaste, onPastePart, onExtractPart, onRename, groupsOn = true, slots = {}, onSetSlot, onPin, onDelete, onSplit, onDragOut, onFixLayout, onPasteAs, onPreview }) {
   // Buttons inside the card must not also trigger the card's own click action.
   const action = (fn) => (e) => {
     e.stopPropagation()
@@ -220,7 +221,8 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
       onDragStart={isText ? undefined : startDrag}
       onKeyDown={(e) => {
         if (e.key === 'Enter') onPaste()
-        else if (e.key === ' ') onClick(e)
+        // Space on an image card opens its preview instead (App's key handler does that).
+        else if (e.key === ' ' && item.kind !== 'image') onClick(e)
       }}
     >
       {/* Pinned cards also carry a small pin, so they are told apart without relying on colour. */}
@@ -286,6 +288,9 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
         <span className="time">{timeAgo(lang, item.createdAt)}</span>
         <div className="actions">
           <button title={t(lang, 'pasteTitle')} aria-label={t(lang, 'paste')} onClick={action(onPaste)}><Icon d={ICONS.paste} /></button>
+          {item.kind === 'image' && onPreview && (
+            <button title={t(lang, 'preview')} aria-label={t(lang, 'preview')} onClick={action(onPreview)}><Icon d={ICONS.zoom} /></button>
+          )}
           {isText && (
             <button title={t(lang, 'pasteAs')} aria-label={t(lang, 'pasteAs')} aria-haspopup="menu" aria-expanded={menuOpen} onClick={action(() => (closeSlotMenu(), menuOpen ? closeMenu() : setMenuOpen(true)))}><Icon d={ICONS.more} /></button>
           )}

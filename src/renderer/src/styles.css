@@ -433,3 +433,22 @@ kbd {
 /* Press feedback: a small shrink while held, so clicks feel physical. Uses `scale`, not `transform`, so it stacks with hover effects. */
 button { transition: scale 120ms var(--ease); }
 button:active, .card:active { scale: 0.97; }
+
+/* Image preview beside the panel, on the side away from the screen edge; the window widens to hold it. */
+.preview { position: fixed; top: var(--panel-gap, 12px); bottom: var(--panel-gap, 12px); left: var(--panel-w, 360px); right: 0; padding: 0 12px; display: grid; align-content: center; }
+.edge-right .preview { left: 0; right: var(--panel-w, 360px); }
+.preview-card {
+  margin: 0; display: grid; gap: 10px; padding: 12px; box-sizing: border-box; max-height: 100%;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 8px 32px var(--shadow);
+  animation: preview-in 200ms var(--ease);
+}
+.edge-right .preview-card { animation-name: preview-in-right; }
+.preview-card img {
+  justify-self: center; max-width: 100%; max-height: calc(100vh - 2 * var(--panel-gap, 12px) - 80px);
+  object-fit: contain; border-radius: 10px; background: var(--fill); cursor: pointer;
+}
+.preview-bar { display: flex; gap: 8px; }
+.preview-bar span { color: var(--muted); }
+@keyframes preview-in { from { opacity: 0; translate: -8px 0; } }
+@keyframes preview-in-right { from { opacity: 0; translate: 8px 0; } }
+@media (prefers-reduced-motion: reduce) { .preview-card { animation: none; } }

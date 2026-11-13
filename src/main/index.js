@@ -7,7 +7,7 @@ import { randomUUID } from 'node:crypto'
 import { foregroundWindow, pasteInto, watchClipboard, windowAddress, writeItem } from './clipboard'
 import { cleanTemp, dragPayload, itemFromDroppedPaths } from './drag'
 import { createTray } from './tray'
-import { HANDLE_COLORS, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone, PANEL_WIDTHS } from '../renderer/src/hotZone'
+import { HANDLE_COLORS, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone, PANEL_WIDTHS, PREVIEW_SPACE } from '../renderer/src/hotZone'
 import { resolveLang } from '../renderer/src/i18n'
 import { add, clearHistory, extract, findItem, flush, getItems, imagesDir, loadItems, merge, prune, remove, renameGroup, setImageText, setPinned, setSlot, split, touch } from './store'
 import { ocrLanguages, readImageText, stopOcr } from './ocr'
@@ -110,9 +110,10 @@ function applyLaunchAtLogin(enabled) {
   })
 }
 
+let previewOpen = false
 function placeWindow(win, { edge, panelWidth }) {
   const { workArea } = screen.getPrimaryDisplay()
-  const width = (PANEL_WIDTHS[panelWidth] ?? PANEL_WIDTHS.medium) + 20
+  const width = (PANEL_WIDTHS[panelWidth] ?? PANEL_WIDTHS.medium) + 20 + (previewOpen ? PREVIEW_SPACE : 0)
   const x = edge === 'right' ? workArea.x + workArea.width - width : workArea.x
   win.setBounds({ x, y: workArea.y, width, height: workArea.height })
 }
@@ -167,6 +168,11 @@ function createWindow() {
   // The pin button in the header keeps the panel open: no closing on mouse-away or blur, until it is unpinned.
   let stayOpen = false
   ipcMain.on('panel:stay-open', (_e, on) => (stayOpen = on === true))
+  // The image preview sits beside the panel inside this same window, so the cursor moving onto it never reads as leaving.
+  ipcMain.on('panel:preview', (_e, on) => {
+    previewOpen = on === true
+    placeWindow(win, settings)
+  })
   // Paste clicks through to the previous window; a pinned panel takes its mouse back afterwards.
   async function pasteBack() {
     win.setIgnoreMouseEvents(true, { forward: true })
