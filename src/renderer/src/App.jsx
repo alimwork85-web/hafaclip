@@ -476,8 +476,27 @@ export default function App() {
           </ul>
         ) : (
           <div className="empty">
+            {/* The edge handle and a card, as in the app icon; flipped when the handle is on the right edge. */}
+            <svg className="empty-art" viewBox="0 0 64 64" width="56" height="56" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" style={edge === 'right' ? { scale: '-1 1' } : undefined}>
+              <rect x="9" y="12" width="8" height="40" rx="4" />
+              <rect x="25" y="16" width="30" height="32" rx="6" />
+              <path d="M32 27h16M32 35h9" />
+            </svg>
             <p>{q ? tr('noMatches') : tab === 'all' ? tr('nothingYet') : tr('noneInTab', tr(`cat.${tab}`))}</p>
             <small>{q ? tr('tryAnother') : tr('willShow')}</small>
+            {!q && settings.shortcut && (
+              <small className="empty-keys">
+                {tr('openAnytime')}{' '}
+                <span className="keys-list" dir="ltr">
+                  {settings.shortcut.split('+').map((k, i) => (
+                    <span key={k}>
+                      {i > 0 && '+ '}
+                      <kbd>{{ Control: 'Ctrl', Super: 'Win' }[k] ?? k}</kbd>
+                    </span>
+                  ))}
+                </span>
+              </small>
+            )}
           </div>
         )}
         </>
