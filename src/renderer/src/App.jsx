@@ -25,6 +25,9 @@ export default function App() {
   const lang = resolveLang(settings.language, navigator.language)
   const tr = (key, ...args) => t(lang, key, ...args)
   const [items, setItems] = useState([])
+  // Only a just-copied item plays the entry animation, not cards remounted by a tab switch or a search.
+  const [freshIds, setFreshIds] = useState(() => new Set())
+  const newestSeen = useRef(Infinity) // Infinity until the first load, so nothing animates on start
   const [query, setQuery] = useState('')
   const [toast, setToast] = useState(null)
   const [update, setUpdate] = useState(null) // newer release found on GitHub; null after "Later"
@@ -111,9 +114,20 @@ export default function App() {
 
   useEffect(() => {
     window.panel.getSettings().then(setSettings)
-    window.panel.getItems().then(setItems)
+    window.panel.getItems().then((list) => {
+      newestSeen.current = Math.max(0, ...list.map((i) => i.createdAt))
+      setItems(list)
+    })
     const offSettings = window.panel.onSettings(setSettings)
-    const offItems = window.panel.onItems(setItems)
+    const offItems = window.panel.onItems((next) => {
+      // A copy adds an item, or moves an existing one to the top with a newer createdAt.
+      const newer = next.filter((i) => i.createdAt > newestSeen.current)
+      if (newer.length) {
+        newestSeen.current = Math.max(...newer.map((i) => i.createdAt))
+        setFreshIds(new Set(newer.map((i) => i.id)))
+      }
+      setItems(next)
+    })
     window.panel.getUpdate().then(setUpdate)
     const offUpdate = window.panel.onUpdate(setUpdate)
     return () => {
@@ -286,6 +300,7 @@ export default function App() {
       selected={selected.includes(item.id)}
       dropTarget={dropTarget === item.id}
       expanded={expandedId === item.id}
+      fresh={freshIds.has(item.id)}
       onCopiedPart={() => setToast({ text: tr('copiedPart'), tone: 'ok' })}
       onToggleExpand={() => setExpandedId(expandedId === item.id ? null : item.id)}
       onClick={(e) => (groupsOn && (e.ctrlKey || selected.length) ? toggleSelect(item.id) : copy(item))}
@@ -399,7 +414,13 @@ export default function App() {
         </div>
         )}
         {visible.length ? (
-          <ul className="list">
+          <ul
+            className="list"
+            onAnimationEnd={(e) => {
+              const id = e.animationName === 'card-in' && e.target.dataset.id
+              if (id) setFreshIds((s) => new Set([...s].filter((x) => x !== id)))
+            }}
+          >
             {pinned.length > 0 && (
               <li className="group group-toggle">
                 <button aria-expanded={pinnedOpen} title={pinnedOpen ? tr('hidePinned') : tr('showPinned')} onClick={togglePinned}>

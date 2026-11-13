@@ -137,8 +137,8 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .card {
   background: var(--fill); border: 1px solid var(--fill-hover); border-radius: 12px;
   padding: 10px 12px; display: flex; flex-direction: column; gap: 8px;
-  animation: card-in 220ms var(--ease);
 }
+.card.fresh { animation: card-in 220ms var(--ease); }
 @keyframes card-in { from { opacity: 0; transform: translateY(-6px); } }
 .card-text {
   font-size: 13px; line-height: 1.45; white-space: pre-wrap; word-break: break-word;
@@ -151,7 +151,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .card-files .more { color: var(--muted); }
 .card-files .more::before { content: ''; }
 .card footer { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
-@media (prefers-reduced-motion: reduce) { .card { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .card.fresh { animation: none; } }
 
 .toolbar { display: flex; gap: 8px; padding: 12px 12px 0; }
 .search {

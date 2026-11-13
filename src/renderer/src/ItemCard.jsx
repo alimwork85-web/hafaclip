@@ -86,7 +86,7 @@ const label = (lang, item) =>
         ? `⁦${item.width}×${item.height}⁩` // left-to-right isolate: width stays first in the Arabic interface
         : t(lang, 'charsLabel', item.text.length)
 
-export default function ItemCard({ lang, number, item, selected, dropTarget, expanded, onToggleExpand, onCopiedPart, onClick, onPaste, onPastePart, onExtractPart, onRename, groupsOn = true, onPin, onDelete, onSplit, onDragOut, onFixLayout, onPasteAs }) {
+export default function ItemCard({ lang, number, item, selected, dropTarget, expanded, fresh, onToggleExpand, onCopiedPart, onClick, onPaste, onPastePart, onExtractPart, onRename, groupsOn = true, onPin, onDelete, onSplit, onDragOut, onFixLayout, onPasteAs }) {
   // Buttons inside the card must not also trigger the card's own click action.
   const action = (fn) => (e) => {
     e.stopPropagation()
@@ -155,7 +155,7 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
     <li
       ref={ref}
       data-id={item.id}
-      className={`card kind-${item.kind}${item.pinned ? ' pinned' : ''}${selected ? ' selected' : ''}${dropTarget ? ' drop-target' : ''}${expanded ? ' expanded' : ''}`}
+      className={`card kind-${item.kind}${item.pinned ? ' pinned' : ''}${selected ? ' selected' : ''}${dropTarget ? ' drop-target' : ''}${expanded ? ' expanded' : ''}${fresh ? ' fresh' : ''}`}
       role="button"
       tabIndex={0}
       aria-pressed={selected}
