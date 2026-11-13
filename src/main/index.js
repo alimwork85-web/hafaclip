@@ -1,4 +1,5 @@
-import { app, BrowserWindow, globalShortcut, ipcMain, nativeTheme, net, protocol, screen, shell } from 'electron'
+import { app, BrowserWindow, globalShortcut, ipcMain, nativeTheme, net, protocol, screen, shell, systemPreferences } from 'electron'
+import { accentShades } from './accent'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -410,6 +411,16 @@ function createWindow() {
     edgeSince = null
     if (interactive && !inside && !openedByKey) win.webContents.send('cursor:away')
   }, 150)
+
+  // Light and Dark take the Windows accent colour; without one, styles.css keeps its fixed teal.
+  let accentCss = null
+  const applyAccent = async () => {
+    const shades = accentShades(systemPreferences.getAccentColor?.())
+    if (accentCss) win.webContents.removeInsertedCSS(accentCss)
+    accentCss = shades && (await win.webContents.insertCSS(`:root { --win-accent-light: ${shades.light}; --win-accent-dark: ${shades.dark}; }`))
+  }
+  win.webContents.on('did-finish-load', applyAccent)
+  systemPreferences.on('accent-color-changed', applyAccent)
 
   if (process.env.ELECTRON_RENDERER_URL) win.loadURL(process.env.ELECTRON_RENDERER_URL)
   else win.loadFile(join(__dirname, '../renderer/index.html'))

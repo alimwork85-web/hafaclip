@@ -3,7 +3,7 @@
   --border: rgba(255, 255, 255, 0.08);
   --text: #eceef4;
   --muted: #8b90a0;
-  --accent: #7c8cff;
+  --accent: var(--win-accent-dark, #2dd4bf); /* Windows accent (set by main), else a fixed teal */
   --on-accent: #16181f; /* text on accent fills; dark where white falls under 4.5:1 */
   --fill: rgba(255, 255, 255, 0.06);
   --fill-strong: rgba(255, 255, 255, 0.08);
@@ -22,7 +22,7 @@
   --border: rgba(20, 24, 40, 0.1);
   --text: #1d2130;
   --muted: #6b7083;
-  --accent: #5566ec; /* lightest shade of the old #5b6cf0 that gives white text 4.5:1 */
+  --accent: var(--win-accent-light, #0f766e); /* Windows accent darkened for white text, else the icon's teal */
   --on-accent: #ffffff;
   --fill: rgba(20, 24, 40, 0.04);
   --fill-strong: rgba(20, 24, 40, 0.07);
