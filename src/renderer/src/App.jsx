@@ -355,7 +355,12 @@ export default function App() {
         onMouseMove={() => draggedId.current && !draggingOut.current && ((draggedId.current = null), setDropTarget(null))}
       >
         <header>
-          <span className="dot" />
+          {/* The app icon (handle and card); at 16px it drops the card's lines, as the tray icon does. */}
+          <svg className="mark" viewBox="0 0 256 256" width="16" height="16" aria-hidden="true">
+            <rect width="256" height="256" rx="56" fill="#0F766E" />
+            <rect x="44" y="56" width="28" height="144" rx="14" fill="#fff" />
+            <rect x="92" y="68" width="120" height="120" rx="22" fill="#fff" />
+          </svg>
           <h1>{tr('clipboard')}</h1>
           <button
             className={`gear${tab === 'settings' ? ' active' : ''}`}
