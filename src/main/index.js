@@ -164,6 +164,15 @@ function createWindow() {
     }
     win.setIgnoreMouseEvents(!on, { forward: true })
   })
+  // The pin button in the header keeps the panel open: no closing on mouse-away or blur, until it is unpinned.
+  let stayOpen = false
+  ipcMain.on('panel:stay-open', (_e, on) => (stayOpen = on === true))
+  // Paste clicks through to the previous window; a pinned panel takes its mouse back afterwards.
+  async function pasteBack() {
+    win.setIgnoreMouseEvents(true, { forward: true })
+    await pasteInto(previousWindow)
+    if (stayOpen) win.setIgnoreMouseEvents(false)
+  }
 
   function setEdge(edge) {
     if (edge !== 'left' && edge !== 'right') return
@@ -282,8 +291,7 @@ function createWindow() {
   ipcMain.handle('items:paste', async (_e, id) => {
     const result = await copyItem(id)
     if (result.ok) {
-      win.setIgnoreMouseEvents(true, { forward: true })
-      await pasteInto(previousWindow)
+      await pasteBack()
     }
     return result
   })
@@ -297,8 +305,7 @@ function createWindow() {
       return { ok: false, error: err.message }
     }
     watcher.skipCurrent()
-    win.setIgnoreMouseEvents(true, { forward: true })
-    await pasteInto(previousWindow)
+    await pasteBack()
     return { ok: true }
   })
   ipcMain.handle('items:extract', (_e, id, partId) => {
@@ -322,8 +329,7 @@ function createWindow() {
     if (typeof text !== 'string' || !text || text.length > 64) return { ok: false, error: 'Invalid emoji' }
     await writeItem({ kind: 'text', text }, imagesDir())
     watcher.skipCurrent()
-    win.setIgnoreMouseEvents(true, { forward: true })
-    await pasteInto(previousWindow)
+    await pasteBack()
     return { ok: true }
   })
   // A converted copy of an item's text (digits, diacritics) is pasted once and kept out of the history.
@@ -331,8 +337,7 @@ function createWindow() {
     if (typeof text !== 'string' || !text) return { ok: false, error: 'Nothing to add' }
     await writeItem({ kind: 'text', text }, imagesDir())
     watcher.skipCurrent()
-    win.setIgnoreMouseEvents(true, { forward: true })
-    await pasteInto(previousWindow)
+    await pasteBack()
     return { ok: true }
   })
   ipcMain.handle('items:merge', (_e, ids) => {
@@ -379,7 +384,7 @@ function createWindow() {
     console.warn(`[shortcut] ${settings.shortcut} is taken by another program`)
   }
   app.on('will-quit', () => globalShortcut.unregisterAll())
-  win.on('blur', () => interactive && win.webContents.send('cursor:away'))
+  win.on('blur', () => interactive && !stayOpen && win.webContents.send('cursor:away'))
   // Windows sometimes drops skipTaskbar after focus/show, so the panel shows up on the taskbar; reassert it.
   win.on('focus', () => win.setSkipTaskbar(true))
   win.on('show', () => win.setSkipTaskbar(true))
@@ -411,7 +416,12 @@ function createWindow() {
       return
     }
     edgeSince = null
-    if (interactive && !inside && !openedByKey) win.webContents.send('cursor:away')
+    // While pinned the user works in other windows, so paste follows whichever one they used last.
+    if (interactive && stayOpen) {
+      const fg = foregroundWindow()
+      if (windowAddress(fg) !== ownWindow) previousWindow = fg
+    }
+    if (interactive && !inside && !openedByKey && !stayOpen) win.webContents.send('cursor:away')
   }, 150)
 
   // Light and Dark take the Windows accent colour; without one, styles.css keeps its fixed teal.

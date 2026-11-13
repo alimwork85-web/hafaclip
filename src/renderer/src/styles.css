@@ -281,6 +281,11 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 }
 .gear:hover { color: var(--text); background: var(--fill); }
 .gear.active { color: var(--accent); background: var(--fill-strong); rotate: 60deg; }
+/* Keep-open button: same look as the gear, centred in the header. */
+header { position: relative; }
+.gear.keep-open { position: absolute; inset-inline-start: 50%; translate: -50% 0; margin: 0; }
+[dir='rtl'] .gear.keep-open { translate: 50% 0; }
+.gear.keep-open.active { rotate: none; }
 .gear:focus-visible { outline: 2px solid var(--accent); }
 
 .settings { flex: 1; overflow-y: auto; padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 10px; }

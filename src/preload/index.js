@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer, webUtils } from 'electron'
 
 contextBridge.exposeInMainWorld('panel', {
   setInteractive: (on) => ipcRenderer.send('panel:interactive', !!on),
+  setStayOpen: (on) => ipcRenderer.send('panel:stay-open', !!on),
   getSettings: () => ipcRenderer.invoke('settings:get'),
   updateSettings: (patch) => ipcRenderer.invoke('settings:set', patch),
   setShortcut: (accelerator) => ipcRenderer.invoke('shortcut:set', accelerator),

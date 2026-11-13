@@ -139,6 +139,17 @@ export default function App() {
 
   useEffect(() => window.panel.setInteractive(expanded), [expanded])
 
+  // Pinned: the panel stays open until the pin is clicked again; any real close (Esc, shortcut, edge change) unpins it.
+  // Not saved, so every start begins unpinned.
+  const [stayOpen, setStayOpen] = useState(false)
+  const stayOpenRef = useRef(false)
+  stayOpenRef.current = stayOpen
+  useEffect(() => window.panel.setStayOpen(stayOpen), [stayOpen])
+  useEffect(() => {
+    if (!expanded) setStayOpen(false)
+  }, [expanded])
+  const collapse = () => stayOpenRef.current || setExpanded(false)
+
   useEffect(() => {
     document.documentElement.lang = lang
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'
@@ -231,7 +242,7 @@ export default function App() {
   }
 
   const paste = async (item) => {
-    setExpanded(false)
+    collapse()
     const r = await window.panel.pasteItem(item.id)
     if (!r.ok) {
       setExpanded(true)
@@ -246,7 +257,7 @@ export default function App() {
   }
 
   const pasteAs = async (item, convert) => {
-    setExpanded(false)
+    collapse()
     const r = await window.panel.pasteText(convert(item.text))
     if (!r.ok) {
       setExpanded(true)
@@ -255,7 +266,7 @@ export default function App() {
   }
 
   const pasteEmoji = async (emoji) => {
-    setExpanded(false)
+    collapse()
     const r = await window.panel.pasteEmoji(emoji)
     if (!r.ok) setToast({ text: tr(r.error), tone: 'error' })
   }
@@ -310,7 +321,7 @@ export default function App() {
       onPasteAs={(convert) => pasteAs(item, convert)}
       onPaste={() => paste(item)}
       onPastePart={async (partId) => {
-        setExpanded(false)
+        collapse()
         const r = await window.panel.pastePart(item.id, partId)
         if (!r.ok) {
           setExpanded(true)
@@ -338,7 +349,7 @@ export default function App() {
       <aside
         className={`panel${dropping ? ' dropping' : ''}`}
         data-drop={tr('dropToAdd')}
-        onMouseLeave={() => setExpanded(false)}
+        onMouseLeave={collapse}
         onDragOver={onDragOver}
         onDragLeave={() => (setDropping(false), setDropTarget(null))}
         onDrop={onDrop}
@@ -362,6 +373,19 @@ export default function App() {
             <rect x="92" y="68" width="120" height="120" rx="22" fill="#fff" />
           </svg>
           <h1>{tr('clipboard')}</h1>
+          <button
+            className={`gear keep-open${stayOpen ? ' active' : ''}`}
+            title={tr(stayOpen ? 'keepOpenOn' : 'keepOpen')}
+            aria-label={tr('keepOpen')}
+            aria-pressed={stayOpen}
+            onClick={() => setStayOpen(!stayOpen)}
+          >
+            {/* Padlock: open while the panel hides on mouse-away, closed while it is kept open. */}
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="5" y="11" width="14" height="10" rx="2" />
+              <path d={stayOpen ? 'M8 11V7a4 4 0 0 1 8 0v4' : 'M8 11V7a4 4 0 0 1 7.75-1.4'} />
+            </svg>
+          </button>
           <button
             className={`gear${tab === 'settings' ? ' active' : ''}`}
             title={tr('settings')}
