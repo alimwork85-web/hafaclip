@@ -149,6 +149,19 @@ export default function App() {
   const leaveTo = (other) => (e) => e.relatedTarget?.closest?.(other) || e.clientX < 0 || e.clientX >= innerWidth || collapse()
   const previewItem = expanded ? items.find((i) => i.id === previewId && i.kind === 'image') : undefined
   useEffect(() => window.panel.setInteractive(expanded), [expanded])
+  // Any box that scrolls gets .scrolling until 800ms after its last scroll, which is when its scrollbar shows.
+  useEffect(() => {
+    const timers = new WeakMap()
+    const onScroll = (e) => {
+      const el = e.target
+      if (!(el instanceof Element)) return
+      el.classList.add('scrolling')
+      clearTimeout(timers.get(el))
+      timers.set(el, setTimeout(() => el.classList.remove('scrolling'), 800))
+    }
+    document.addEventListener('scroll', onScroll, true)
+    return () => document.removeEventListener('scroll', onScroll, true)
+  }, [])
   closedNow.current = !expanded
   useEffect(() => {
     if (!expanded) setPreviewId(null)
