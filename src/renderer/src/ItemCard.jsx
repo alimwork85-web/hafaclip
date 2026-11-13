@@ -13,7 +13,7 @@ const timeAgo = (lang, ms) => {
 const baseName = (p) => p.split(/[\\/]/).pop()
 
 const Icon = ({ d }) => (
-  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d={d} />
   </svg>
 )
@@ -236,7 +236,7 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
       {expandable && (
         <button className="more-toggle" aria-expanded={expanded} onClick={action(onToggleExpand)}>
           {t(lang, expanded ? 'less' : 'more')}
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d={expanded ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'} />
           </svg>
         </button>
