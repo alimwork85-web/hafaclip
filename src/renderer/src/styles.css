@@ -125,7 +125,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .segmented { margin-inline-start: auto; display: flex; padding: 3px; gap: 2px; border-radius: 10px; background: var(--fill); }
 .segmented button {
   border: none; background: transparent; color: var(--muted); font: inherit; font-size: 12px;
-  padding: 4px 10px; border-radius: 7px; cursor: pointer; transition: background 150ms var(--ease), color 150ms var(--ease);
+  padding: 4px 10px; border-radius: 7px; cursor: pointer; transition: background 150ms var(--ease), color 150ms var(--ease), scale 120ms var(--ease);
 }
 .segmented button:hover { color: var(--text); }
 .segmented button.active { background: var(--accent); color: var(--on-accent); }
@@ -171,7 +171,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .group { list-style: none; font-size: 11px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); padding: 4px 2px 0; }
 /* Letter spacing breaks joined Arabic letters apart. */
 [dir='rtl'] header h1, [dir='rtl'] .group { letter-spacing: 0; }
-.card { cursor: pointer; transition: background 150ms var(--ease), border-color 150ms var(--ease); }
+.card { cursor: pointer; transition: background 150ms var(--ease), border-color 150ms var(--ease), scale 120ms var(--ease); }
 .card:hover { background: var(--fill-hover); }
 .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .card.pinned { border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
@@ -246,7 +246,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .tabs button {
   flex: none; display: flex; align-items: center; gap: 6px; white-space: nowrap; font: inherit; font-size: 13px;
   padding: 5px; border: none; border-radius: 9px; cursor: pointer;
-  background: transparent; color: var(--muted); transition: background 150ms var(--ease), color 150ms var(--ease);
+  background: transparent; color: var(--muted); transition: background 150ms var(--ease), color 150ms var(--ease), scale 120ms var(--ease);
 }
 .tabs button:hover { color: var(--text); background: var(--fill); }
 .tabs button.active { background: var(--fill-strong); color: var(--accent); padding-inline-end: 10px; }
@@ -269,7 +269,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .emoji-grid { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 2px; }
 .emoji {
   font-family: 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif; font-size: 24px; line-height: 1;
-  aspect-ratio: 1; padding: 0; border: none; border-radius: 8px; background: transparent; cursor: pointer; transition: transform 120ms var(--ease), background 120ms;
+  aspect-ratio: 1; padding: 0; border: none; border-radius: 8px; background: transparent; cursor: pointer; transition: transform 120ms var(--ease), background 120ms, scale 120ms var(--ease);
 }
 .emoji:hover { background: var(--fill-hover); transform: scale(1.15); }
 .emoji:focus-visible { outline: 2px solid var(--accent); }
@@ -277,7 +277,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 
 .gear {
   margin-inline-start: auto; display: grid; place-items: center; width: 30px; height: 30px; border: none; border-radius: 9px;
-  background: transparent; color: var(--muted); cursor: pointer; transition: background 150ms var(--ease), color 150ms var(--ease), rotate 300ms var(--ease);
+  background: transparent; color: var(--muted); cursor: pointer; transition: background 150ms var(--ease), color 150ms var(--ease), rotate 300ms var(--ease), scale 120ms var(--ease);
 }
 .gear:hover { color: var(--text); background: var(--fill); }
 .gear.active { color: var(--accent); background: var(--fill-strong); rotate: 60deg; }
@@ -292,7 +292,7 @@ header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .swatches { margin-inline-start: auto; display: grid; grid-template-columns: repeat(5, 22px); gap: 8px; }
 .swatch {
   width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; padding: 0;
-  box-shadow: 0 0 0 1px var(--border); transition: transform 120ms var(--ease);
+  box-shadow: 0 0 0 1px var(--border); transition: transform 120ms var(--ease), scale 120ms var(--ease);
 }
 .swatch:hover { transform: scale(1.12); }
 .swatch.active { border-color: var(--bg); box-shadow: 0 0 0 2px var(--text); }
@@ -381,3 +381,7 @@ kbd {
 
 /* App name, version and developer at the bottom of the settings. */
 .settings .about { margin-top: auto; padding-top: 16px; text-align: center; font-size: 11px; color: var(--muted); }
+
+/* Press feedback: a small shrink while held, so clicks feel physical. Uses `scale`, not `transform`, so it stacks with hover effects. */
+button { transition: scale 120ms var(--ease); }
+button:active:not(:disabled), .card:active:not(:has(button:active)) { scale: 0.97; }
