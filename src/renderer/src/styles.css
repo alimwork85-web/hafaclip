@@ -103,7 +103,7 @@ html, body { background: transparent; overflow: hidden; font-family: var(--font,
 }
 .expanded .panel { transform: translateX(0); }
 
-header { display: flex; align-items: center; gap: 10px; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+header { display: flex; align-items: center; gap: 10px; height: 40px; box-sizing: border-box; padding: 0 20px; border-bottom: 1px solid var(--border); }
 header h1 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
 .mark { flex: none; }
 
