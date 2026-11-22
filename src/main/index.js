@@ -4,7 +4,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { randomUUID } from 'node:crypto'
-import { foregroundWindow, pasteInto, watchClipboard, windowAddress, writeItem } from './clipboard'
+import { allowFocus, foregroundWindow, pasteInto, watchClipboard, windowAddress, writeItem } from './clipboard'
 import { cleanTemp, dragPayload, itemFromDroppedPaths } from './drag'
 import { createTray } from './tray'
 import { HANDLE_COLORS, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone, PANEL_WIDTHS, PREVIEW_SPACE } from '../renderer/src/hotZone'
@@ -168,6 +168,11 @@ function createWindow() {
       if (windowAddress(fg) !== ownWindow) previousWindow = fg
     }
     win.setIgnoreMouseEvents(!on, { forward: true })
+    // A panel opened by hover needs focus too, or Alt+1…9 and typing go to the window underneath.
+    if (on && !win.isFocused()) {
+      allowFocus()
+      win.focus()
+    }
   })
   // The pin button in the header keeps the panel open: no closing on mouse-away or blur, until it is unpinned.
   let stayOpen = false

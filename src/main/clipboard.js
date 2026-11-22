@@ -174,18 +174,21 @@ export async function writeItem(item, imagesDir) {
 export const foregroundWindow = () => GetForegroundWindow()
 export const windowAddress = (hwnd) => (hwnd ? koffi.address(hwnd) : 0n)
 
+const KEYUP = 0x2
+/** Windows only lets a process take focus right after it sent input. F24 satisfies that and, unlike Alt, opens no menus. */
+export function allowFocus() {
+  keybd_event(0x87, 0, 0, 0) // VK_F24
+  keybd_event(0x87, 0, KEYUP, 0)
+}
+
 /** Gives focus back to the window the user was in and sends Ctrl+V to it. */
 export async function pasteInto(hwnd) {
   // Tests check the clipboard instead; a real Ctrl+V would land in whatever window is in front.
   if (process.env.HAFACLIP_NO_PASTE) return
   const VK_CONTROL = 0x11
-  const VK_F24 = 0x87
   const VK_V = 0x56
-  const KEYUP = 0x2
   if (hwnd) {
-    // Windows only lets a process take focus right after it sent input. F24 satisfies that and, unlike Alt, opens no menus.
-    keybd_event(VK_F24, 0, 0, 0)
-    keybd_event(VK_F24, 0, KEYUP, 0)
+    allowFocus()
     SetForegroundWindow(hwnd)
   }
   await new Promise((r) => setTimeout(r, 80))

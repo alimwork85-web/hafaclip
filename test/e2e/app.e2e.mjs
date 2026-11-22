@@ -76,6 +76,9 @@ const open = async () => {
 const tab = (i) => page.locator('.tabs button').nth(i).click()
 
 await step('hovering the screen edge opens the panel', open)
+await step('a panel opened by hover has keyboard focus, so Alt+1…9 reach it', async () => {
+  assert.ok(await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].isFocused()))
+})
 await step('with no saved theme, light or dark is taken from Windows', async () => {
   const { theme } = await page.evaluate(() => window.panel.getSettings())
   assert.ok(['light', 'dark'].includes(theme), `theme is ${theme}`)
