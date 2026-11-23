@@ -17,6 +17,11 @@ contextBridge.exposeInMainWorld('panel', {
   getUpdate: () => ipcRenderer.invoke('update:get'),
   openReleases: () => ipcRenderer.invoke('update:open'),
   openDataFolder: () => ipcRenderer.invoke('data:open'),
+  onSlot: (cb) => {
+    const listener = (_e, n) => cb(n)
+    ipcRenderer.on('slot:paste', listener)
+    return () => ipcRenderer.removeListener('slot:paste', listener)
+  },
   onUpdate: (cb) => {
     const listener = (_e, version) => cb(version)
     ipcRenderer.on('update:available', listener)

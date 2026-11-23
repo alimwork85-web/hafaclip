@@ -159,6 +159,7 @@ function createWindow() {
   // The window the user was working in when the panel opened; paste sends Ctrl+V back to it.
   let previousWindow = null
   let interactive = false
+  let holdClosed = false
   const ownWindow = win.getNativeWindowHandle().readBigUInt64LE()
   ipcMain.on('panel:interactive', (_e, on) => {
     interactive = on
@@ -168,10 +169,17 @@ function createWindow() {
       if (windowAddress(fg) !== ownWindow) previousWindow = fg
     }
     win.setIgnoreMouseEvents(!on, { forward: true })
-    // A panel opened by hover needs focus too, or Alt+1…9 and typing go to the window underneath.
+    // A panel opened by hover needs focus too, or typing goes to the window underneath.
     if (on && !win.isFocused()) {
       allowFocus()
       win.focus()
+    }
+    // Windows may still refuse focus, so Alt+1…9 are system-wide while the panel is open and freed when it closes.
+    for (let n = 1; n <= 9; n++) {
+      const key = `Alt+${n}`
+      if (key === settings.shortcut) continue
+      if (!on) globalShortcut.unregister(key)
+      else if (!globalShortcut.isRegistered(key)) globalShortcut.register(key, () => win.webContents.send('slot:paste', n))
     }
   })
   // The pin button in the header keeps the panel open: no closing on mouse-away or blur, until it is unpinned.
@@ -184,6 +192,7 @@ function createWindow() {
   })
   // Paste clicks through to the previous window; a pinned panel takes its mouse back afterwards.
   async function pasteBack() {
+    holdClosed = true
     win.setIgnoreMouseEvents(true, { forward: true })
     await pasteInto(previousWindow)
     if (stayOpen) win.setIgnoreMouseEvents(false)
@@ -431,11 +440,14 @@ function createWindow() {
     const inside = x >= b.x && x < b.x + b.width && y >= b.y && y < b.y + b.height
     if (inside) openedByKey = false
     if (isInHotZone(x - b.x, y - b.y, b.width, b.height, settings.edge, settings.handleLength, settings.handleThickness)) {
+      // A cursor still resting on the handle after a paste must not reopen the panel and pull focus from the paste target.
+      if (holdClosed) return
       edgeSince ??= Date.now()
       if (Date.now() - edgeSince >= settings.openDelay) win.webContents.send('cursor:edge')
       return
     }
     edgeSince = null
+    holdClosed = false
     // While pinned the user works in other windows, so paste follows whichever one they used last.
     if (interactive && stayOpen) {
       const fg = foregroundWindow()

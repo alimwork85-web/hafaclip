@@ -256,7 +256,15 @@ export default function App() {
       }
     }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    // Alt+1…9 pressed while another window kept focus arrive from the main process.
+    const offSlot = window.panel.onSlot((n) => {
+      const item = keys.current.items.find((i) => i.slot === n)
+      if (item) keys.current.paste(item)
+    })
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      offSlot()
+    }
   }, [])
   // Opening (by shortcut or hover) puts the cursor in the search box; an old query is selected so typing replaces it.
   useEffect(() => {

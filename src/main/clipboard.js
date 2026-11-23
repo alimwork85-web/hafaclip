@@ -25,6 +25,7 @@ const RtlMoveMemory = kernel32.func('void __stdcall RtlMoveMemory(void *dst, voi
 const GetForegroundWindow = user32.func('void * __stdcall GetForegroundWindow()')
 const SetForegroundWindow = user32.func('bool __stdcall SetForegroundWindow(void *hWnd)')
 const keybd_event = user32.func('void __stdcall keybd_event(uint8 vk, uint8 scan, uint32 flags, uintptr_t extra)')
+const GetAsyncKeyState = user32.func('int16 __stdcall GetAsyncKeyState(int vKey)')
 const RegisterClipboardFormatW = user32.func('uint32 __stdcall RegisterClipboardFormatW(str16 name)')
 const GetClipboardOwner = user32.func('void * __stdcall GetClipboardOwner()')
 const GetWindowThreadProcessId = user32.func('uint32 __stdcall GetWindowThreadProcessId(void *hWnd, _Out_ uint32 *pid)')
@@ -187,11 +188,14 @@ export async function pasteInto(hwnd) {
   if (process.env.HAFACLIP_NO_PASTE) return
   const VK_CONTROL = 0x11
   const VK_V = 0x56
+  const VK_MENU = 0x12
   if (hwnd) {
     allowFocus()
     SetForegroundWindow(hwnd)
   }
   await new Promise((r) => setTimeout(r, 80))
+  // Alt from Alt+1…9 is often still held, which would turn Ctrl+V into Ctrl+Alt+V. F24 above keeps its release from opening a menu.
+  if (GetAsyncKeyState(VK_MENU) & 0x8000) keybd_event(VK_MENU, 0, KEYUP, 0)
   keybd_event(VK_CONTROL, 0, 0, 0)
   keybd_event(VK_V, 0, 0, 0)
   keybd_event(VK_V, 0, KEYUP, 0)

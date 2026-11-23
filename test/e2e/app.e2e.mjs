@@ -79,6 +79,15 @@ await step('hovering the screen edge opens the panel', open)
 await step('a panel opened by hover has keyboard focus, so Alt+1…9 reach it', async () => {
   assert.ok(await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].isFocused()))
 })
+await step('Alt+1…9 are held system-wide only while the panel is open', async () => {
+  const held = () => app.evaluate(({ globalShortcut }) => [1, 9].map((n) => globalShortcut.isRegistered(`Alt+${n}`)))
+  assert.deepEqual(await held(), [true, true])
+  await page.keyboard.press('Escape')
+  await page.waitForSelector('.app:not(.expanded)', { state: 'attached' })
+  await wait(200)
+  assert.deepEqual(await held(), [false, false])
+  await open()
+})
 await step('with no saved theme, light or dark is taken from Windows', async () => {
   const { theme } = await page.evaluate(() => window.panel.getSettings())
   assert.ok(['light', 'dark'].includes(theme), `theme is ${theme}`)
