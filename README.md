@@ -39,6 +39,8 @@ Hover the handle to open, move away to close. Left or right edge, your choice.
 
 <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>E</kbd> (or your own shortcut) opens the panel with the cursor in search; type to filter, <kbd>↑</kbd> <kbd>↓</kbd> to move between cards, <kbd>Enter</kbd> to paste, <kbd>Alt</kbd>+<kbd>1</kbd>…<kbd>9</kbd> to paste a numbered card, <kbd>Esc</kbd> to close.
 
+**New in 3.8.2.** <kbd>Alt</kbd>+<kbd>1</kbd>…<kbd>9</kbd> paste reliably when the panel is opened by hovering the edge, not only with the shortcut. They belong to HafaClip only while the panel is open, so other programs keep their own <kbd>Alt</kbd>+<kbd>1</kbd>…<kbd>9</kbd> the rest of the time.
+
 <img src="assets/features/capture-en.svg" alt="Captures everything" height="44">
 
 Text, images and files (every file of a multi-file copy). Each kind can be turned off.
@@ -126,7 +128,7 @@ Can be turned off from the tray icon, and capturing can be paused on demand.
 ## Install
 
 1. Download **`HafaClip Setup x.y.z.exe`** from the [latest release](https://github.com/alimwork85-web/hafaclip/releases/latest).
-2. Run it. It installs for your user only (no admin rights) and adds **HafaClip** to the Start menu. Installing it over Edge Clipboard keeps your history and settings.
+2. Run it. It installs for your user only (no admin rights) and adds **HafaClip** to the desktop and the Start menu. Installing it over Edge Clipboard keeps your history and settings.
 3. The handle appears on the left edge of the screen; the app also starts with Windows from now on.
 
 > The installer is not code-signed, so Windows SmartScreen may warn the first time. Choose **More info → Run anyway**.
@@ -217,6 +219,8 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 
 <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>E</kbd> (أو اختصارك الخاص) يفتح اللوحة والمؤشر في البحث؛ اكتب للتصفية، و<kbd>↑</kbd> <kbd>↓</kbd> للتنقّل بين البطاقات، و<kbd>Enter</kbd> للصق، و<kbd>Alt</kbd>+<kbd>1</kbd>…<kbd>9</kbd> للصق البطاقة المرقّمة، و<kbd>Esc</kbd> للإغلاق.
 
+**جديد في 3.8.2.** صار <kbd>Alt</kbd>+<kbd>1</kbd>…<kbd>9</kbd> يلصق بثبات حين تفتح اللوحة بالمرور على الحافة، لا بالاختصار وحده. وهي محجوزة لتطبيق حافة فقط واللوحة مفتوحة، فتبقى <kbd>Alt</kbd>+<kbd>1</kbd>…<kbd>9</kbd> لبرامجك الأخرى في بقية الوقت.
+
 <img src="assets/features/capture-ar.svg" alt="يلتقط كل شيء" height="44">
 
 النصوص والصور والملفات (كل ملف عند نسخ عدة ملفات). ويمكن إيقاف أي نوع منها.
@@ -294,7 +298,7 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 ### التثبيت
 
 1. نزّل **`HafaClip Setup x.y.z.exe`** من [آخر إصدار](https://github.com/alimwork85-web/hafaclip/releases/latest).
-2. شغّله. يُثبَّت لحسابك فقط (بلا صلاحيات مدير) ويضيف **HafaClip** إلى قائمة ابدأ. تثبيته فوق Edge Clipboard يحافظ على سجلك وإعداداتك.
+2. شغّله. يُثبَّت لحسابك فقط (بلا صلاحيات مدير) ويضيف **HafaClip** إلى سطح المكتب وقائمة ابدأ. تثبيته فوق Edge Clipboard يحافظ على سجلك وإعداداتك.
 3. يظهر المقبض على الحافة اليسرى من الشاشة، ويعمل التطبيق مع بدء Windows من الآن.
 
 > المثبّت غير موقّع رقميًا، لذلك قد يحذّرك Windows SmartScreen في المرة الأولى. اختر **مزيد من المعلومات ← التشغيل على أي حال**.
