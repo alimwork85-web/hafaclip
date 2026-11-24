@@ -17,6 +17,7 @@ contextBridge.exposeInMainWorld('panel', {
   getUpdate: () => ipcRenderer.invoke('update:get'),
   openReleases: () => ipcRenderer.invoke('update:open'),
   openDataFolder: () => ipcRenderer.invoke('data:open'),
+  copyDiagnostics: () => ipcRenderer.invoke('app:diagnostics'),
   onSlot: (cb) => {
     const listener = (_e, n) => cb(n)
     ipcRenderer.on('slot:paste', listener)
@@ -39,8 +40,10 @@ contextBridge.exposeInMainWorld('panel', {
   mergeItems: (ids) => ipcRenderer.invoke('items:merge', ids),
   pasteEmoji: (text) => ipcRenderer.invoke('emoji:paste', text),
   pasteText: (text) => ipcRenderer.invoke('text:paste', text),
+  pasteConverted: (id, mode) => ipcRenderer.invoke('items:paste-converted', id, mode),
+  fileAction: (id, action) => ipcRenderer.invoke('files:action', id, action),
   splitItem: (id) => ipcRenderer.invoke('items:split', id),
-  startDrag: (id) => ipcRenderer.send('items:drag', id),
+  startDrag: (id, asFile) => ipcRenderer.send('items:drag', id, asFile === true),
   drop: (files, text) => ipcRenderer.invoke('items:drop', { paths: [...files].map((f) => webUtils.getPathForFile(f)), text }),
   onCursor: (cb) => {
     const edge = () => cb('edge')

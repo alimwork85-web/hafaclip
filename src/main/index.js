@@ -1,11 +1,12 @@
-import { app, BrowserWindow, globalShortcut, ipcMain, nativeTheme, net, protocol, screen, shell, systemPreferences } from 'electron'
+import { app, BrowserWindow, clipboard, globalShortcut, ipcMain, nativeTheme, net, protocol, screen, shell, systemPreferences } from 'electron'
 import { accentShades } from './accent'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { spawn } from 'node:child_process'
 import { pathToFileURL } from 'node:url'
 import { randomUUID } from 'node:crypto'
 import { allowFocus, foregroundWindow, pasteInto, watchClipboard, windowAddress, writeItem } from './clipboard'
-import { cleanTemp, dragPayload, itemFromDroppedPaths } from './drag'
+import { cleanTemp, convertedFiles, dragPayload, itemFromDroppedPaths, textFilePayload } from './drag'
 import { createTray } from './tray'
 import { HANDLE_COLORS, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone, PANEL_WIDTHS, PREVIEW_SPACE } from '../renderer/src/hotZone'
 import { resolveLang } from '../renderer/src/i18n'
@@ -262,6 +263,24 @@ function createWindow() {
   ipcMain.handle('update:get', () => update)
   ipcMain.handle('update:open', () => shell.openExternal(RELEASES_URL))
   ipcMain.handle('data:open', () => shell.openPath(app.getPath('userData')))
+  // Details for a bug report. Program names from the ignore list and history content are left out; the user name in paths is hidden.
+  ipcMain.handle('app:diagnostics', () => {
+    const counts = {}
+    for (const i of getItems()) counts[i.kind] = (counts[i.kind] ?? 0) + 1
+    const { ignoredApps, ...shown } = settings
+    clipboard.writeText(
+      [
+        `HafaClip ${app.getVersion()}`,
+        `Windows ${process.getSystemVersion()} (${process.arch})`,
+        `Electron ${process.versions.electron}, Chrome ${process.versions.chrome}`,
+        `Screens: ${screen.getAllDisplays().map((d) => `${d.size.width}x${d.size.height}@${Math.round(d.scaleFactor * 100)}%`).join(', ')}`,
+        `Data folder: ${app.getPath('userData').replace(app.getPath('home'), '%USERPROFILE%')}`,
+        `History: ${JSON.stringify(counts)}, ignored programs: ${ignoredApps?.length ?? 0}`,
+        `Settings: ${JSON.stringify(shown)}`
+      ].join('\r\n')
+    )
+    return { ok: true }
+  })
   prune(historyRules(settings))
   // Auto-delete runs on start and then every hour, so items go soon after they pass the age.
   const pruneTimer = setInterval(() => prune() && pushItems(), 3600000)
@@ -369,6 +388,35 @@ function createWindow() {
     await pasteBack()
     return { ok: true }
   })
+  // A converted copy of an image (PNG, JPG, or without metadata) is pasted as a file and kept out of the history.
+  ipcMain.handle('items:paste-converted', async (_e, id, mode) => {
+    const item = typeof id === 'string' && findItem(id)
+    if (!item) return { ok: false, error: 'Item not found' }
+    try {
+      await writeItem({ kind: 'files', files: await convertedFiles(item, mode, imagesDir()) }, imagesDir())
+    } catch (err) {
+      return { ok: false, error: err.message }
+    }
+    watcher.skipCurrent()
+    await pasteBack()
+    return { ok: true }
+  })
+  // Actions on a files card: copy the paths, show the first file in Explorer, or open a terminal in its folder.
+  ipcMain.handle('files:action', (_e, id, action) => {
+    const item = typeof id === 'string' && findItem(id)
+    const files = item?.kind === 'files' ? item.files.filter((f) => existsSync(f)) : []
+    if (!files.length) return { ok: false, error: 'These files no longer exist' }
+    if (action === 'path') clipboard.writeText(files.join('\r\n'))
+    else if (action === 'folder') shell.showItemInFolder(files[0])
+    else if (action === 'terminal') {
+      const dir = dirname(files[0])
+      // Windows Terminal when installed, otherwise a plain Command Prompt window.
+      const wt = spawn('wt.exe', ['-d', dir], { detached: true, stdio: 'ignore' })
+      wt.on('error', () => spawn('cmd.exe', [], { cwd: dir, detached: true, stdio: 'ignore' }).unref())
+      wt.unref()
+    } else return { ok: false, error: 'Nothing to add' }
+    return { ok: true }
+  })
   ipcMain.handle('items:merge', (_e, ids) => {
     // With groups turned off no new group is made; existing ones stay as they are.
     if (settings.groups !== false && Array.isArray(ids) && ids.every((id) => typeof id === 'string')) merge(ids)
@@ -384,9 +432,9 @@ function createWindow() {
   })
   app.on('before-quit', flush)
 
-  ipcMain.on('items:drag', (e, id) => {
+  ipcMain.on('items:drag', (e, id, asFile) => {
     const item = typeof id === 'string' && findItem(id)
-    const payload = item && dragPayload(item, imagesDir())
+    const payload = item && (asFile === true ? textFilePayload(item) : dragPayload(item, imagesDir()))
     if (payload) e.sender.startDrag(payload)
   })
   ipcMain.handle('items:drop', (_e, { paths, text } = {}) => {

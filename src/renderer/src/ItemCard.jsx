@@ -50,6 +50,13 @@ const FILES_SHOWN = 3
 
 // "Paste as" choices for text cards; each pastes a converted copy and leaves the item itself unchanged.
 const PASTE_AS = { pasteWesternDigits: westernDigits, pasteNoDiacritics: removeDiacritics }
+// "Paste as" choices for images and image files; each pastes a converted file copy (label key -> mode).
+const IMAGE_AS = { pastePngFile: 'png', pasteJpgFile: 'jpg' }
+const FILES_AS = { pasteNoMetadata: 'clean' }
+const GROUP_AS = { pastePdfFile: 'pdf' }
+// Actions on a files card that are not pastes (label key -> action).
+const FILE_ACTIONS = { copyPath: 'path', showInFolder: 'folder', openTerminal: 'terminal' }
+const cleanable = (f) => /\.(jpe?g|png)$/i.test(f)
 
 function Preview({ lang, item, expanded = false, onPastePart, onExtractPart }) {
   // dir="auto" takes the direction from the first strong letter, so Arabic and mixed text read correctly.
@@ -99,7 +106,7 @@ const label = (lang, item) =>
         ? `⁦${item.width}×${item.height}⁩` // left-to-right isolate: width stays first in the Arabic interface
         : t(lang, 'charsLabel', item.text.length)
 
-export default function ItemCard({ lang, number, item, selected, dropTarget, expanded, fresh, onToggleExpand, onCopiedPart, onClick, onPaste, onPastePart, onExtractPart, onRename, groupsOn = true, slots = {}, onSetSlot, onPin, onDelete, onSplit, onDragOut, onFixLayout, onPasteAs, onPreview }) {
+export default function ItemCard({ lang, number, item, selected, dropTarget, expanded, fresh, onToggleExpand, onCopiedPart, onClick, onPaste, onPastePart, onExtractPart, onRename, groupsOn = true, slots = {}, onSetSlot, onPin, onDelete, onSplit, onDragOut, onFixLayout, onPasteAs, onPasteConverted, onFileAction, onPreview }) {
   // Buttons inside the card must not also trigger the card's own click action.
   const action = (fn) => (e) => {
     e.stopPropagation()
@@ -144,6 +151,17 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
 
   // Text cards are selectable, so a press-and-drag selects text; the grip in the footer drags the card instead.
   const isText = item.kind === 'text'
+  // Menu entries for non-text cards: [label key, what it does].
+  const conv = (map) => Object.entries(map).map(([key, mode]) => [key, () => onPasteConverted(mode)])
+  const menuEntries =
+    item.kind === 'image'
+      ? conv(IMAGE_AS)
+      : item.kind === 'files'
+        ? [...(item.files.some(cleanable) ? conv(FILES_AS) : []), ...Object.entries(FILE_ACTIONS).map(([key, a]) => [key, () => onFileAction(a)])]
+        : item.kind === 'group' && item.parts.some((p) => p.kind === 'image' || (p.kind === 'files' && p.files.some(cleanable)))
+          ? conv(GROUP_AS)
+          : []
+  const convertAs = menuEntries.length > 0
   const [menuOpen, setMenuOpen] = useState(false)
   const [slotMenu, setSlotMenu] = useState(false)
   const slotMenuRef = useRef(null)
@@ -195,13 +213,14 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
 
   const startDrag = (e) => {
     const text = plainText(item)
-    if (text !== null) {
+    // Shift held when the drag starts: text goes out as a .txt file instead.
+    if (text !== null && !e.shiftKey) {
       e.dataTransfer.setData('text/plain', text)
       e.dataTransfer.effectAllowed = 'copy'
     } else {
       // Images and files need a native OS drag with real files.
       e.preventDefault()
-      onDragOut()
+      onDragOut(text !== null)
     }
   }
 
@@ -291,8 +310,8 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
           {item.kind === 'image' && onPreview && (
             <button title={t(lang, 'preview')} aria-label={t(lang, 'preview')} onClick={action(onPreview)}><Icon d={ICONS.zoom} /></button>
           )}
-          {isText && (
-            <button title={t(lang, 'pasteAs')} aria-label={t(lang, 'pasteAs')} aria-haspopup="menu" aria-expanded={menuOpen} onClick={action(() => (closeSlotMenu(), menuOpen ? closeMenu() : setMenuOpen(true)))}><Icon d={ICONS.more} /></button>
+          {(isText || convertAs) && (
+            <button title={t(lang, item.kind === 'files' ? 'moreActions' : 'pasteAs')} aria-label={t(lang, item.kind === 'files' ? 'moreActions' : 'pasteAs')} aria-haspopup="menu" aria-expanded={menuOpen} onClick={action(() => (closeSlotMenu(), menuOpen ? closeMenu() : setMenuOpen(true)))}><Icon d={ICONS.more} /></button>
           )}
           {isText && (
             <button title={t(lang, 'fixLayoutTitle')} aria-label={t(lang, 'fixLayout')} onClick={action(onFixLayout)}><Icon d={ICONS.swap} /></button>
@@ -337,12 +356,18 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
       )}
       {menuOpen && (
         <div ref={menuRef} className="paste-menu" role="menu">
-          {Object.entries(PASTE_AS).map(([key, fn]) => (
-            // Greyed out when the conversion would change nothing in this text.
-            <button key={key} role="menuitem" disabled={fn(item.text) === item.text} onClick={action(() => (closeMenu(), onPasteAs(fn)))}>
-              {t(lang, key)}
-            </button>
-          ))}
+          {isText
+            ? Object.entries(PASTE_AS).map(([key, fn]) => (
+                // Greyed out when the conversion would change nothing in this text.
+                <button key={key} role="menuitem" disabled={fn(item.text) === item.text} onClick={action(() => (closeMenu(), onPasteAs(fn)))}>
+                  {t(lang, key)}
+                </button>
+              ))
+            : menuEntries.map(([key, run]) => (
+                <button key={key} role="menuitem" onClick={action(() => (closeMenu(), run()))}>
+                  {t(lang, key)}
+                </button>
+              ))}
         </div>
       )}
     </li>

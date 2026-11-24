@@ -347,6 +347,21 @@ export default function App() {
     }
   }
 
+  const pasteConverted = async (item, mode) => {
+    collapse()
+    const r = await window.panel.pasteConverted(item.id, mode)
+    if (!r.ok) {
+      setExpanded(true)
+      setToast({ text: tr(r.error), tone: 'error' })
+    }
+  }
+
+  const fileAction = async (item, action) => {
+    const r = await window.panel.fileAction(item.id, action)
+    if (!r.ok) setToast({ text: tr(r.error), tone: 'error' })
+    else if (action === 'path') setToast({ text: tr('pathCopied'), tone: 'ok' })
+  }
+
   const pasteEmoji = async (emoji) => {
     collapse()
     const r = await window.panel.pasteEmoji(emoji)
@@ -408,6 +423,8 @@ export default function App() {
       onSplit={() => window.panel.splitItem(item.id)}
       onFixLayout={() => fixItemLayout(item)}
       onPasteAs={(convert) => pasteAs(item, convert)}
+      onPasteConverted={(mode) => pasteConverted(item, mode)}
+      onFileAction={(a) => fileAction(item, a)}
       onPreview={() => setPreviewId(previewId === item.id ? null : item.id)}
       onPaste={() => paste(item)}
       onPastePart={async (partId) => {
@@ -422,7 +439,7 @@ export default function App() {
       onExtractPart={(partId) => window.panel.extractPart(item.id, partId)}
       onPin={() => window.panel.pinItem(item.id, !item.pinned)}
       onDelete={() => window.panel.deleteItem(item.id)}
-      onDragOut={() => window.panel.startDrag(item.id)}
+      onDragOut={(asFile) => window.panel.startDrag(item.id, asFile)}
     />
   )
 
