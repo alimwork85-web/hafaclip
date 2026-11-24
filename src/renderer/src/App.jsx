@@ -356,6 +356,12 @@ export default function App() {
     }
   }
 
+  const fileAction = async (item, action) => {
+    const r = await window.panel.fileAction(item.id, action)
+    if (!r.ok) setToast({ text: tr(r.error), tone: 'error' })
+    else if (action === 'path') setToast({ text: tr('pathCopied'), tone: 'ok' })
+  }
+
   const pasteEmoji = async (emoji) => {
     collapse()
     const r = await window.panel.pasteEmoji(emoji)
@@ -418,6 +424,7 @@ export default function App() {
       onFixLayout={() => fixItemLayout(item)}
       onPasteAs={(convert) => pasteAs(item, convert)}
       onPasteConverted={(mode) => pasteConverted(item, mode)}
+      onFileAction={(a) => fileAction(item, a)}
       onPreview={() => setPreviewId(previewId === item.id ? null : item.id)}
       onPaste={() => paste(item)}
       onPastePart={async (partId) => {

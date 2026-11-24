@@ -53,6 +53,9 @@ const PASTE_AS = { pasteWesternDigits: westernDigits, pasteNoDiacritics: removeD
 // "Paste as" choices for images and image files; each pastes a converted file copy (label key -> mode).
 const IMAGE_AS = { pastePngFile: 'png', pasteJpgFile: 'jpg' }
 const FILES_AS = { pasteNoMetadata: 'clean' }
+const GROUP_AS = { pastePdfFile: 'pdf' }
+// Actions on a files card that are not pastes (label key -> action).
+const FILE_ACTIONS = { copyPath: 'path', showInFolder: 'folder', openTerminal: 'terminal' }
 const cleanable = (f) => /\.(jpe?g|png)$/i.test(f)
 
 function Preview({ lang, item, expanded = false, onPastePart, onExtractPart }) {
@@ -103,7 +106,7 @@ const label = (lang, item) =>
         ? `⁦${item.width}×${item.height}⁩` // left-to-right isolate: width stays first in the Arabic interface
         : t(lang, 'charsLabel', item.text.length)
 
-export default function ItemCard({ lang, number, item, selected, dropTarget, expanded, fresh, onToggleExpand, onCopiedPart, onClick, onPaste, onPastePart, onExtractPart, onRename, groupsOn = true, slots = {}, onSetSlot, onPin, onDelete, onSplit, onDragOut, onFixLayout, onPasteAs, onPasteConverted, onPreview }) {
+export default function ItemCard({ lang, number, item, selected, dropTarget, expanded, fresh, onToggleExpand, onCopiedPart, onClick, onPaste, onPastePart, onExtractPart, onRename, groupsOn = true, slots = {}, onSetSlot, onPin, onDelete, onSplit, onDragOut, onFixLayout, onPasteAs, onPasteConverted, onFileAction, onPreview }) {
   // Buttons inside the card must not also trigger the card's own click action.
   const action = (fn) => (e) => {
     e.stopPropagation()
@@ -148,7 +151,17 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
 
   // Text cards are selectable, so a press-and-drag selects text; the grip in the footer drags the card instead.
   const isText = item.kind === 'text'
-  const convertAs = item.kind === 'image' ? IMAGE_AS : item.kind === 'files' && item.files.some(cleanable) ? FILES_AS : null
+  // Menu entries for non-text cards: [label key, what it does].
+  const conv = (map) => Object.entries(map).map(([key, mode]) => [key, () => onPasteConverted(mode)])
+  const menuEntries =
+    item.kind === 'image'
+      ? conv(IMAGE_AS)
+      : item.kind === 'files'
+        ? [...(item.files.some(cleanable) ? conv(FILES_AS) : []), ...Object.entries(FILE_ACTIONS).map(([key, a]) => [key, () => onFileAction(a)])]
+        : item.kind === 'group' && item.parts.some((p) => p.kind === 'image' || (p.kind === 'files' && p.files.some(cleanable)))
+          ? conv(GROUP_AS)
+          : []
+  const convertAs = menuEntries.length > 0
   const [menuOpen, setMenuOpen] = useState(false)
   const [slotMenu, setSlotMenu] = useState(false)
   const slotMenuRef = useRef(null)
@@ -297,7 +310,7 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
             <button title={t(lang, 'preview')} aria-label={t(lang, 'preview')} onClick={action(onPreview)}><Icon d={ICONS.zoom} /></button>
           )}
           {(isText || convertAs) && (
-            <button title={t(lang, 'pasteAs')} aria-label={t(lang, 'pasteAs')} aria-haspopup="menu" aria-expanded={menuOpen} onClick={action(() => (closeSlotMenu(), menuOpen ? closeMenu() : setMenuOpen(true)))}><Icon d={ICONS.more} /></button>
+            <button title={t(lang, item.kind === 'files' ? 'moreActions' : 'pasteAs')} aria-label={t(lang, item.kind === 'files' ? 'moreActions' : 'pasteAs')} aria-haspopup="menu" aria-expanded={menuOpen} onClick={action(() => (closeSlotMenu(), menuOpen ? closeMenu() : setMenuOpen(true)))}><Icon d={ICONS.more} /></button>
           )}
           {isText && (
             <button title={t(lang, 'fixLayoutTitle')} aria-label={t(lang, 'fixLayout')} onClick={action(onFixLayout)}><Icon d={ICONS.swap} /></button>
@@ -349,8 +362,8 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
                   {t(lang, key)}
                 </button>
               ))
-            : Object.entries(convertAs).map(([key, mode]) => (
-                <button key={key} role="menuitem" onClick={action(() => (closeMenu(), onPasteConverted(mode)))}>
+            : menuEntries.map(([key, run]) => (
+                <button key={key} role="menuitem" onClick={action(() => (closeMenu(), run()))}>
                   {t(lang, key)}
                 </button>
               ))}

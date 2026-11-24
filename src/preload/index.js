@@ -40,6 +40,7 @@ contextBridge.exposeInMainWorld('panel', {
   pasteEmoji: (text) => ipcRenderer.invoke('emoji:paste', text),
   pasteText: (text) => ipcRenderer.invoke('text:paste', text),
   pasteConverted: (id, mode) => ipcRenderer.invoke('items:paste-converted', id, mode),
+  fileAction: (id, action) => ipcRenderer.invoke('files:action', id, action),
   splitItem: (id) => ipcRenderer.invoke('items:split', id),
   startDrag: (id) => ipcRenderer.send('items:drag', id),
   drop: (files, text) => ipcRenderer.invoke('items:drop', { paths: [...files].map((f) => webUtils.getPathForFile(f)), text }),

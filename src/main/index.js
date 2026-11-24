@@ -1,7 +1,8 @@
-import { app, BrowserWindow, globalShortcut, ipcMain, nativeTheme, net, protocol, screen, shell, systemPreferences } from 'electron'
+import { app, BrowserWindow, clipboard, globalShortcut, ipcMain, nativeTheme, net, protocol, screen, shell, systemPreferences } from 'electron'
 import { accentShades } from './accent'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { spawn } from 'node:child_process'
 import { pathToFileURL } from 'node:url'
 import { randomUUID } from 'node:crypto'
 import { allowFocus, foregroundWindow, pasteInto, watchClipboard, windowAddress, writeItem } from './clipboard'
@@ -374,12 +375,28 @@ function createWindow() {
     const item = typeof id === 'string' && findItem(id)
     if (!item) return { ok: false, error: 'Item not found' }
     try {
-      await writeItem({ kind: 'files', files: convertedFiles(item, mode, imagesDir()) }, imagesDir())
+      await writeItem({ kind: 'files', files: await convertedFiles(item, mode, imagesDir()) }, imagesDir())
     } catch (err) {
       return { ok: false, error: err.message }
     }
     watcher.skipCurrent()
     await pasteBack()
+    return { ok: true }
+  })
+  // Actions on a files card: copy the paths, show the first file in Explorer, or open a terminal in its folder.
+  ipcMain.handle('files:action', (_e, id, action) => {
+    const item = typeof id === 'string' && findItem(id)
+    const files = item?.kind === 'files' ? item.files.filter((f) => existsSync(f)) : []
+    if (!files.length) return { ok: false, error: 'These files no longer exist' }
+    if (action === 'path') clipboard.writeText(files.join('\r\n'))
+    else if (action === 'folder') shell.showItemInFolder(files[0])
+    else if (action === 'terminal') {
+      const dir = dirname(files[0])
+      // Windows Terminal when installed, otherwise a plain Command Prompt window.
+      const wt = spawn('wt.exe', ['-d', dir], { detached: true, stdio: 'ignore' })
+      wt.on('error', () => spawn('cmd.exe', [], { cwd: dir, detached: true, stdio: 'ignore' }).unref())
+      wt.unref()
+    } else return { ok: false, error: 'Nothing to add' }
     return { ok: true }
   })
   ipcMain.handle('items:merge', (_e, ids) => {

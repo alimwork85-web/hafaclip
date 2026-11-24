@@ -1,5 +1,5 @@
 /** Native drag-out of history items, plus turning dropped files into history items. */
-import { app, nativeImage } from 'electron'
+import { app, BrowserWindow, nativeImage } from 'electron'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { isCleanable, stripMetadata } from './imageMeta'
@@ -21,6 +21,33 @@ function imageCopyName(item, ext) {
   return join(tempDir(), `Clipboard image ${stamp}.${ext}`)
 }
 
+/** Picture files of a group, in order: its images and any JPG/PNG files it holds. */
+export const groupImages = (item, imagesDir) =>
+  item.parts.flatMap((p) => (p.kind === 'image' ? [join(imagesDir, p.image)] : p.kind === 'files' ? p.files.filter(isCleanable) : [])).filter((f) => existsSync(f))
+
+/** One A4 page per picture, each scaled to fit, printed by a hidden window into a PDF in tempDir. */
+async function groupPdf(item, imagesDir) {
+  const files = groupImages(item, imagesDir)
+  if (!files.length) throw new Error('These files no longer exist')
+  const pages = files
+    .map((f) => `<div class="p"><img src="data:image/${/\.png$/i.test(f) ? 'png' : 'jpeg'};base64,${readFileSync(f).toString('base64')}"></div>`)
+    .join('')
+  const html = `<!doctype html><style>@page{size:A4;margin:0}body{margin:0}.p{height:100vh;display:flex;align-items:center;justify-content:center;break-after:page}img{max-width:100%;max-height:100%;image-orientation:from-image}</style>${pages}`
+  const win = new BrowserWindow({ show: false, webPreferences: { javascript: false } })
+  try {
+    // A temp HTML file instead of a data: URL, which has a size limit that a few photos exceed.
+    const page = join(tempDir(), `${randomUUID()}.html`)
+    writeFileSync(page, html)
+    await win.loadFile(page)
+    rmSync(page, { force: true })
+    const dest = join(tempDir(), `${(item.name || 'Images').replace(/[\\/:*?"<>|]/g, '_')}.pdf`)
+    writeFileSync(dest, await win.webContents.printToPDF({ pageSize: 'A4', margins: { marginType: 'none' }, printBackground: true }))
+    return dest
+  } finally {
+    win.destroy()
+  }
+}
+
 /** JPG has no transparency; see-through pixels go on white instead of turning black. */
 function toJpeg(img) {
   const size = img.getSize()
@@ -34,10 +61,12 @@ function toJpeg(img) {
 }
 
 /**
- * Converted copies to paste as files: an image as PNG or JPG ('png' | 'jpg'), or image files without metadata ('clean').
+ * Converted copies to paste as files: an image as PNG or JPG ('png' | 'jpg'), image files without metadata ('clean'),
+ * or a group's pictures as one PDF ('pdf').
  * The copies live in tempDir; the item and the original files are never changed.
  */
-export function convertedFiles(item, mode, imagesDir) {
+export async function convertedFiles(item, mode, imagesDir) {
+  if (item.kind === 'group' && mode === 'pdf') return [await groupPdf(item, imagesDir)]
   if (item.kind === 'image' && (mode === 'png' || mode === 'jpg')) {
     const src = join(imagesDir, item.image)
     if (!existsSync(src)) throw new Error('These files no longer exist')
