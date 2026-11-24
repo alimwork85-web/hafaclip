@@ -116,6 +116,7 @@ function ShortcutSetting({ lang, shortcut }) {
 export default function SettingsPanel({ lang, settings, items, onChange }) {
   // Lowering the history limit or turning on auto-delete removes items, so it takes a second click.
   const [pending, setPending] = useState(null)
+  const [diagCopied, setDiagCopied] = useState(false)
   const pickHistoryRule = (key, value) => {
     const next = { historyLimit: settings.historyLimit, autoDeleteDays: settings.autoDeleteDays, [key]: value }
     const count = pruneItems(items, next.historyLimit, next.autoDeleteDays).evicted.length
@@ -261,6 +262,11 @@ export default function SettingsPanel({ lang, settings, items, onChange }) {
           <button className="link-button" onClick={() => window.panel.openDataFolder()}>{t(lang, 'openFolder')}</button>
         </div>
         <p className="settings-note info">{t(lang, 'dataFolderHint')}</p>
+        <div className="setting">
+          <span className="setting-label">{t(lang, 'reportProblem')}</span>
+          <button className="link-button" onClick={() => window.panel.copyDiagnostics().then(() => setDiagCopied(true))}>{t(lang, diagCopied ? 'copied' : 'copyDiagnostics')}</button>
+        </div>
+        <p className="settings-note info">{t(lang, 'diagnosticsHint')}</p>
       </section>
 
       <p className="about" dir="ltr">HafaClip {version} · Ali Alhumedi</p>

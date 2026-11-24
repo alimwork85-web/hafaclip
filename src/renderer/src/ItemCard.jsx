@@ -213,13 +213,14 @@ export default function ItemCard({ lang, number, item, selected, dropTarget, exp
 
   const startDrag = (e) => {
     const text = plainText(item)
-    if (text !== null) {
+    // Shift held when the drag starts: text goes out as a .txt file instead.
+    if (text !== null && !e.shiftKey) {
       e.dataTransfer.setData('text/plain', text)
       e.dataTransfer.effectAllowed = 'copy'
     } else {
       // Images and files need a native OS drag with real files.
       e.preventDefault()
-      onDragOut()
+      onDragOut(text !== null)
     }
   }
 

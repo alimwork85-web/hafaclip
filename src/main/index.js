@@ -6,7 +6,7 @@ import { spawn } from 'node:child_process'
 import { pathToFileURL } from 'node:url'
 import { randomUUID } from 'node:crypto'
 import { allowFocus, foregroundWindow, pasteInto, watchClipboard, windowAddress, writeItem } from './clipboard'
-import { cleanTemp, convertedFiles, dragPayload, itemFromDroppedPaths } from './drag'
+import { cleanTemp, convertedFiles, dragPayload, itemFromDroppedPaths, textFilePayload } from './drag'
 import { createTray } from './tray'
 import { HANDLE_COLORS, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone, PANEL_WIDTHS, PREVIEW_SPACE } from '../renderer/src/hotZone'
 import { resolveLang } from '../renderer/src/i18n'
@@ -263,6 +263,24 @@ function createWindow() {
   ipcMain.handle('update:get', () => update)
   ipcMain.handle('update:open', () => shell.openExternal(RELEASES_URL))
   ipcMain.handle('data:open', () => shell.openPath(app.getPath('userData')))
+  // Details for a bug report. Program names from the ignore list and history content are left out; the user name in paths is hidden.
+  ipcMain.handle('app:diagnostics', () => {
+    const counts = {}
+    for (const i of getItems()) counts[i.kind] = (counts[i.kind] ?? 0) + 1
+    const { ignoredApps, ...shown } = settings
+    clipboard.writeText(
+      [
+        `HafaClip ${app.getVersion()}`,
+        `Windows ${process.getSystemVersion()} (${process.arch})`,
+        `Electron ${process.versions.electron}, Chrome ${process.versions.chrome}`,
+        `Screens: ${screen.getAllDisplays().map((d) => `${d.size.width}x${d.size.height}@${Math.round(d.scaleFactor * 100)}%`).join(', ')}`,
+        `Data folder: ${app.getPath('userData').replace(app.getPath('home'), '%USERPROFILE%')}`,
+        `History: ${JSON.stringify(counts)}, ignored programs: ${ignoredApps?.length ?? 0}`,
+        `Settings: ${JSON.stringify(shown)}`
+      ].join('\r\n')
+    )
+    return { ok: true }
+  })
   prune(historyRules(settings))
   // Auto-delete runs on start and then every hour, so items go soon after they pass the age.
   const pruneTimer = setInterval(() => prune() && pushItems(), 3600000)
@@ -414,9 +432,9 @@ function createWindow() {
   })
   app.on('before-quit', flush)
 
-  ipcMain.on('items:drag', (e, id) => {
+  ipcMain.on('items:drag', (e, id, asFile) => {
     const item = typeof id === 'string' && findItem(id)
-    const payload = item && dragPayload(item, imagesDir())
+    const payload = item && (asFile === true ? textFilePayload(item) : dragPayload(item, imagesDir()))
     if (payload) e.sender.startDrag(payload)
   })
   ipcMain.handle('items:drop', (_e, { paths, text } = {}) => {

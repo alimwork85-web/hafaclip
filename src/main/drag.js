@@ -120,6 +120,19 @@ export function dragPayload(item, imagesDir) {
   return null
 }
 
+/** A text item (or a text-only group) as a .txt file to drag, named after its first words. */
+export function textFilePayload(item) {
+  const text = item.kind === 'text' ? item.text : item.kind === 'group' && item.parts.every((p) => p.kind === 'text') ? item.parts.map((p) => p.text).join('\r\n') : null
+  if (!text) return null
+  const words = text.trim().split(/\r?\n/)[0].replace(/[\\/:*?"<>|]/g, ' ').replace(/\s+/g, ' ').slice(0, 40).trim()
+  // A fresh folder per drag keeps the readable name without clashes.
+  const dir = join(tempDir(), randomUUID())
+  mkdirSync(dir, { recursive: true })
+  const dest = join(dir, `${item.name?.replace(/[\\/:*?"<>|]/g, ' ') || words || 'Text'}.txt`)
+  writeFileSync(dest, text)
+  return { files: [dest], icon: genericIcon() }
+}
+
 /** A history item for files dropped onto the panel; only real, existing paths are kept. */
 export function itemFromDroppedPaths(paths) {
   if (!Array.isArray(paths)) return null
