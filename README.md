@@ -77,6 +77,14 @@ Paste straight into the app you were using, or just copy with a click.
 
 Western digits (٠١٢ → 012) or without Arabic diacritics, without changing the saved item.
 
+<img src="assets/features/pictures-en.svg" alt="Pictures as files" height="44">
+
+**New in 3.9.** Paste an image as a PNG or JPG file. Paste JPG and PNG files without their metadata (location, camera, dates): the picture is not re-encoded, so it keeps its rotation and colours. A group of pictures pastes as one PDF, a page each.
+
+<img src="assets/features/file-actions-en.svg" alt="File actions" height="44">
+
+**New in 3.9.** A files card's More actions menu copies the path, shows the file in its folder, or opens a terminal there.
+
 <img src="assets/features/layout-en.svg" alt="Fix keyboard layout" height="44">
 
 Turn `hgsghl ugd;l` into «السلام عليكم» (and back) with one click.
@@ -84,6 +92,8 @@ Turn `hgsghl ugd;l` into «السلام عليكم» (and back) with one click.
 <img src="assets/features/merge-en.svg" alt="Copy, drag, merge" height="44">
 
 Copy part of a text, drag and drop in and out, merge several items into one (drag a card onto another, or <kbd>Ctrl</kbd>+click) and split them back.
+
+**New in 3.9.** Hold <kbd>Shift</kbd> as you start dragging a text card to drop it as a `.txt` file.
 
 <img src="assets/features/groups-en.svg" alt="Named groups" height="44">
 
@@ -114,6 +124,10 @@ Can be turned off from the tray icon, and capturing can be paused on demand.
 <img src="assets/features/backup-en.svg" alt="Easy backup" height="44">
 
 **New in 3.1.** Settings → Data folder → Open, then copy that folder.
+
+<img src="assets/features/report-en.svg" alt="Report a problem" height="44">
+
+**New in 3.9.** Settings → Report a problem → Copy diagnostics copies the version, Windows, screens and settings (never your history), ready to paste into an issue.
 
 ## Screenshots
 
@@ -257,6 +271,14 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 
 بأرقام غربية (٠١٢ ← 012) أو بدون تشكيل، دون تغيير العنصر المحفوظ.
 
+<img src="assets/features/pictures-ar.svg" alt="الصور كملفات" height="44">
+
+**جديد في 3.9.** الصق الصورة كملف PNG أو JPG. والصق ملفات JPG و PNG بدون بياناتها الوصفية (الموقع والكاميرا والتواريخ): لا يُعاد ترميز الصورة، فيبقى اتجاهها وألوانها. ومجموعة الصور تُلصق كملف PDF واحد، صفحة لكل صورة.
+
+<img src="assets/features/file-actions-ar.svg" alt="إجراءات الملفات" height="44">
+
+**جديد في 3.9.** من «إجراءات أخرى» في بطاقة الملفات: انسخ المسار، أو أظهر الملف في مجلده، أو افتح الطرفية هناك.
+
 <img src="assets/features/layout-ar.svg" alt="تصحيح لغة لوحة المفاتيح" height="44">
 
 حوّل `hgsghl ugd;l` إلى «السلام عليكم» (والعكس) بنقرة.
@@ -264,6 +286,8 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 <img src="assets/features/merge-ar.svg" alt="انسخ واسحب وادمج" height="44">
 
 انسخ جزءًا من النص، واسحب وأفلت من اللوحة وإليها، وادمج عدة عناصر في عنصر واحد (اسحب بطاقة إلى بطاقة أخرى، أو Ctrl+نقرة) ثم افصلها.
+
+**جديد في 3.9.** اضغط <kbd>Shift</kbd> وأنت تبدأ سحب بطاقة نص لتفلتها كملف `.txt`.
 
 <img src="assets/features/groups-ar.svg" alt="مجموعات بأسماء" height="44">
 
@@ -294,6 +318,10 @@ Built with [Electron](https://www.electronjs.org), [React](https://react.dev), [
 <img src="assets/features/backup-ar.svg" alt="نسخ احتياطي سهل" height="44">
 
 **جديد في 3.1.** الإعدادات ← مجلد البيانات ← فتح، ثم انسخ المجلد. وللاستعادة: أغلق حافة وأعد المجلد مكانه.
+
+<img src="assets/features/report-ar.svg" alt="الإبلاغ عن مشكلة" height="44">
+
+**جديد في 3.9.** الإعدادات ← الإبلاغ عن مشكلة ← نسخ معلومات التشخيص: ينسخ الإصدار ونسخة ويندوز والشاشات والإعدادات (دون سجلك أبدًا)، جاهزة للصقها في بلاغ.
 
 ### التثبيت
 

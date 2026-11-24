@@ -53,12 +53,18 @@ const F = [
   { key: 'paste-as', c: C.amber, icon: '<path d="M4 7h11M12 4l3 3-3 3M20 17H9M12 14l-3 3 3 3"/>',
     en: ['Paste as…', 'Western digits (٠١٢ → 012) or without Arabic diacritics, without changing the saved item.'],
     ar: ['لصق بعد تحويل', 'بأرقام غربية (٠١٢ ← 012) أو بدون تشكيل، دون تغيير العنصر المحفوظ.'] },
+  { key: 'pictures', c: C.green, isNew: '3.9', icon: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/>',
+    en: ['Pictures as files', 'Paste an image as a PNG or JPG file. Paste JPG and PNG files without their metadata (location, camera, dates): the picture is not re-encoded, so it keeps its rotation and colours. A group of pictures pastes as one PDF, a page each.'],
+    ar: ['الصور كملفات', 'الصق الصورة كملف PNG أو JPG. والصق ملفات JPG و PNG بدون بياناتها الوصفية (الموقع والكاميرا والتواريخ): لا يُعاد ترميز الصورة، فيبقى اتجاهها وألوانها. ومجموعة الصور تُلصق كملف PDF واحد، صفحة لكل صورة.'] },
+  { key: 'file-actions', c: C.sky, isNew: '3.9', icon: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M8 12l2 2-2 2M12 16h4"/>',
+    en: ['File actions', 'A files card\'s More actions menu copies the path, shows the file in its folder, or opens a terminal there.'],
+    ar: ['إجراءات الملفات', 'من «إجراءات أخرى» في بطاقة الملفات: انسخ المسار، أو أظهر الملف في مجلده، أو افتح الطرفية هناك.'] },
   { key: 'layout', c: C.pink, icon: '<path d="M4 5h8M8 3v2M5 11c2.5 0 5-2.5 6-6M7 8c1 2 3 3 5 3M13 20l4-9 4 9M14.5 17h5"/>',
     en: ['Fix keyboard layout', 'Turn `hgsghl ugd;l` into «السلام عليكم» (and back) with one click.'],
     ar: ['تصحيح لغة لوحة المفاتيح', 'حوّل `hgsghl ugd;l` إلى «السلام عليكم» (والعكس) بنقرة.'] },
   { key: 'merge', c: C.violet, icon: '<path d="M6 3v6a6 6 0 0 0 6 6h7M16 12l3 3-3 3M6 21v-5"/>',
-    en: ['Copy, drag, merge', 'Copy part of a text, drag and drop in and out, merge several items into one (drag a card onto another, or <kbd>Ctrl</kbd>+click) and split them back.'],
-    ar: ['انسخ واسحب وادمج', 'انسخ جزءًا من النص، واسحب وأفلت من اللوحة وإليها، وادمج عدة عناصر في عنصر واحد (اسحب بطاقة إلى بطاقة أخرى، أو Ctrl+نقرة) ثم افصلها.'] },
+    en: ['Copy, drag, merge', 'Copy part of a text, drag and drop in and out, merge several items into one (drag a card onto another, or <kbd>Ctrl</kbd>+click) and split them back. Hold <kbd>Shift</kbd> as you start dragging a text card to drop it as a `.txt` file (new in 3.9).'],
+    ar: ['انسخ واسحب وادمج', 'انسخ جزءًا من النص، واسحب وأفلت من اللوحة وإليها، وادمج عدة عناصر في عنصر واحد (اسحب بطاقة إلى بطاقة أخرى، أو Ctrl+نقرة) ثم افصلها. واضغط <kbd>Shift</kbd> وأنت تبدأ سحب بطاقة نص لتفلتها كملف `.txt` (جديد في 3.9).'] },
   { key: 'groups', c: C.teal, isNew: '3.2', icon: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M8 13h8M8 16h5"/>',
     en: ['Named groups', 'Give a group a name (it is found by search), paste the whole group or just one part of it, and take a part back out. A group left with one part becomes a single item again. Don\'t use groups? Turn off Settings → Merging and groups.'],
     ar: ['مجموعات بأسماء', 'سمِّ المجموعة باسم تجده بالبحث، والصق المجموعة كاملة أو جزءًا واحدًا منها، وأخرج أي جزء منها. والمجموعة التي يبقى فيها جزء واحد تعود عنصرًا عاديًا. لا تحتاج المجموعات؟ عطّلها من الإعدادات ← الدمج والمجموعات.'] },
@@ -79,7 +85,10 @@ const F = [
     ar: ['ينبّهك بالإصدارات الجديدة', 'سطر صغير فيه رابط التنزيل، ولا يُنزَّل أو يُثبَّت شيء من تلقاء نفسه.'] },
   { key: 'backup', c: C.sky, isNew: '3.1', icon: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 10v6M9 13l3 3 3-3"/>',
     en: ['Easy backup', 'Settings → Data folder → Open, then copy that folder.'],
-    ar: ['نسخ احتياطي سهل', 'الإعدادات ← مجلد البيانات ← فتح، ثم انسخ المجلد. وللاستعادة: أغلق حافة وأعد المجلد مكانه.'] }
+    ar: ['نسخ احتياطي سهل', 'الإعدادات ← مجلد البيانات ← فتح، ثم انسخ المجلد. وللاستعادة: أغلق حافة وأعد المجلد مكانه.'] },
+  { key: 'report', c: C.amber, isNew: '3.9', icon: '<path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/>',
+    en: ['Report a problem', 'Settings → Report a problem → Copy diagnostics copies the version, Windows, screens and settings (never your history), ready to paste into an issue.'],
+    ar: ['الإبلاغ عن مشكلة', 'الإعدادات ← الإبلاغ عن مشكلة ← نسخ معلومات التشخيص: ينسخ الإصدار ونسخة ويندوز والشاشات والإعدادات (دون سجلك أبدًا)، جاهزة للصقها في بلاغ.'] }
 ]
 
 const H = 52
