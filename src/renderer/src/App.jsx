@@ -347,6 +347,15 @@ export default function App() {
     }
   }
 
+  const pasteConverted = async (item, mode) => {
+    collapse()
+    const r = await window.panel.pasteConverted(item.id, mode)
+    if (!r.ok) {
+      setExpanded(true)
+      setToast({ text: tr(r.error), tone: 'error' })
+    }
+  }
+
   const pasteEmoji = async (emoji) => {
     collapse()
     const r = await window.panel.pasteEmoji(emoji)
@@ -408,6 +417,7 @@ export default function App() {
       onSplit={() => window.panel.splitItem(item.id)}
       onFixLayout={() => fixItemLayout(item)}
       onPasteAs={(convert) => pasteAs(item, convert)}
+      onPasteConverted={(mode) => pasteConverted(item, mode)}
       onPreview={() => setPreviewId(previewId === item.id ? null : item.id)}
       onPaste={() => paste(item)}
       onPastePart={async (partId) => {

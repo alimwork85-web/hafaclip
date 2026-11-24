@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { randomUUID } from 'node:crypto'
 import { allowFocus, foregroundWindow, pasteInto, watchClipboard, windowAddress, writeItem } from './clipboard'
-import { cleanTemp, dragPayload, itemFromDroppedPaths } from './drag'
+import { cleanTemp, convertedFiles, dragPayload, itemFromDroppedPaths } from './drag'
 import { createTray } from './tray'
 import { HANDLE_COLORS, HANDLE_LENGTHS, HANDLE_THICKNESS, isInHotZone, PANEL_WIDTHS, PREVIEW_SPACE } from '../renderer/src/hotZone'
 import { resolveLang } from '../renderer/src/i18n'
@@ -365,6 +365,19 @@ function createWindow() {
   ipcMain.handle('text:paste', async (_e, text) => {
     if (typeof text !== 'string' || !text) return { ok: false, error: 'Nothing to add' }
     await writeItem({ kind: 'text', text }, imagesDir())
+    watcher.skipCurrent()
+    await pasteBack()
+    return { ok: true }
+  })
+  // A converted copy of an image (PNG, JPG, or without metadata) is pasted as a file and kept out of the history.
+  ipcMain.handle('items:paste-converted', async (_e, id, mode) => {
+    const item = typeof id === 'string' && findItem(id)
+    if (!item) return { ok: false, error: 'Item not found' }
+    try {
+      await writeItem({ kind: 'files', files: convertedFiles(item, mode, imagesDir()) }, imagesDir())
+    } catch (err) {
+      return { ok: false, error: err.message }
+    }
     watcher.skipCurrent()
     await pasteBack()
     return { ok: true }
